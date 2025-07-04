@@ -1,0 +1,75 @@
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  .form-section {
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .section-label {
+    color: black;
+  }
+
+  .color-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .color-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: border 0.2s, transform 0.2s;
+
+    &.selected {
+      border: 2px solid #3f51b5;
+      transform: scale(1.1);
+    }
+  }
+
+  .color-circle.custom-checker {
+    background: linear-gradient(
+      45deg,
+      #ccc 25%,
+      transparent 25%,
+      transparent 75%,
+      #ccc 75%
+    );
+    background-size: 8px 8px;
+  }
+
+  .custom-color-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 0.7rem;
+    align-items: center;
+  }
+
+  .color-picker {
+    width: 50px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    top: -3px;
+  }
+
+  .custom-hex-input {
+    flex: 1;
+  }
+
+  .widget-input {
+    padding-top: 0.7rem;
+  }
+}

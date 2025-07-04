@@ -1,0 +1,15 @@
+<div class="chart-wrapper">
+  <ng-container *ngIf="chartData$ | async as chartData">
+    <ng-container *ngIf="chartOptions$ | async as chartOptions">
+      <ng-container *ngIf="chartType$ | async as chartType">
+        <canvas
+          *ngIf="chartType !== 'table'"
+          baseChart
+          [data]="chartData"
+          [options]="chartOptions"
+          [type]="chartType"
+        ></canvas>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>

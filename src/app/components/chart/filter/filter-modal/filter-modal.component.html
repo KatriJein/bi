@@ -1,0 +1,106 @@
+<h1 mat-dialog-title>
+  {{ data.filterToEdit ? "Редактировать фильтр" : "Добавить фильтр" }}
+</h1>
+
+<div mat-dialog-content class="filter-dialog-content">
+  <!-- Выбор свойства -->
+  <mat-form-field appearance="outline" class="full-width input">
+    <mat-label>Свойство</mat-label>
+    <mat-select [(ngModel)]="selectedColumn" (ngModelChange)="onColumnChange()">
+      <mat-option *ngFor="let col of data.columns" [value]="col">
+        {{ col.alias }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Выбор операции -->
+  <ng-container *ngIf="selectedColumn">
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Операция</mat-label>
+      <mat-select
+        [(ngModel)]="selectedFilterType"
+        (ngModelChange)="onFilterTypeChange()"
+      >
+        <mat-option *ngFor="let type of filterTypes" [value]="type">
+          {{ type }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </ng-container>
+
+  <!-- Значение фильтра -->
+  <ng-container *ngIf="selectedFilterType">
+    <!-- Множественный выбор -->
+    <div *ngIf="isMultiSelectFilter()" class="multi-select-grid">
+      <mat-card class="value-list">
+        <mat-card-title class="title">Доступные</mat-card-title>
+        <mat-divider></mat-divider>
+        <mat-nav-list>
+          <mat-list-item
+            *ngFor="let value of availableValues"
+            (click)="addToSelected(value)"
+            class="clickable"
+          >
+            {{ value }}
+          </mat-list-item>
+        </mat-nav-list>
+      </mat-card>
+
+      <mat-card class="value-list">
+        <mat-card-title class="title">Выбранные</mat-card-title>
+        <mat-divider></mat-divider>
+        <mat-nav-list>
+          <mat-list-item
+            *ngFor="let value of filterValueMulti"
+            (click)="removeFromSelected(value)"
+            class="clickable selected"
+          >
+            {{ value }}
+          </mat-list-item>
+        </mat-nav-list>
+      </mat-card>
+    </div>
+
+    <!-- Диапазон дат -->
+    <div
+      *ngIf="selectedFilterType === 'Принадлежит диапазону'"
+      class="date-range"
+    >
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Дата от</mat-label>
+        <input matInput [(ngModel)]="filterValueDateRange[0]" type="date" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Дата до</mat-label>
+        <input matInput [(ngModel)]="filterValueDateRange[1]" type="date" />
+      </mat-form-field>
+    </div>
+
+    <!-- Одиночное значение -->
+    <mat-form-field
+      *ngIf="
+        !isMultiSelectFilter() &&
+        !isEmptyFilter() &&
+        selectedFilterType !== 'Принадлежит диапазону'
+      "
+      appearance="outline"
+      class="full-width"
+    >
+      <mat-label>Значение</mat-label>
+      <input matInput [(ngModel)]="filterValueSingle" />
+    </mat-form-field>
+  </ng-container>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onAdd()"
+    [disabled]="!selectedFilterType"
+  >
+    {{ data.filterToEdit ? "Сохранить" : "Добавить" }}
+  </button>
+</div>

@@ -1,0 +1,48 @@
+<div class="router-content">
+  <div class="header">
+    <h2 class="title">Список таблиц</h2>
+    <button mat-flat-button color="primary" [routerLink]="['/table', 'new']">
+      <mat-icon>add</mat-icon>
+      Добавить таблицу
+    </button>
+  </div>
+
+  <div class="content">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Поиск таблиц</mat-label>
+      <input
+        matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Введите название таблицы"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-nav-list>
+      <a
+        mat-list-item
+        *ngFor="let table of filteredTables$ | async"
+        [routerLink]="['/table', table.id]"
+        class="item"
+      >
+        <div class="info-container">
+          <div class="info">
+            <mat-icon class="icon">{{
+              getTableIcon(table.settings?.chartType || "line")
+            }}</mat-icon>
+            <span class="name">{{ table.name }}</span>
+          </div>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="onDelete(table.id || '', $event)"
+            class="delete-button"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </a>
+    </mat-nav-list>
+  </div>
+</div>

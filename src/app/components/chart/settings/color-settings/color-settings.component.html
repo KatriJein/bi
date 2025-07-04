@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Настройка цветов графика</h2>
+<mat-dialog-content>
+  <div class="color-row" *ngFor="let color of colors; let i = index">
+    <input type="color" [value]="color" (input)="onColorInput(i, $event)" />
+    <input type="text" [value]="color" (input)="onColorInput(i, $event)" />
+
+    <button
+      mat-icon-button
+      (click)="moveUp(i)"
+      [disabled]="i === 0"
+      title="Вверх"
+    >
+      <mat-icon>arrow_upward</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      (click)="moveDown(i)"
+      [disabled]="i === colors.length - 1"
+      title="Вниз"
+    >
+      <mat-icon>arrow_downward</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      color="warn"
+      (click)="removeColor(i)"
+      title="Удалить"
+      class="delete-button"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+
+  <button mat-flat-button (click)="addColor()">Добавить цвет</button>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Отмена</button>
+  <button mat-raised-button color="primary" (click)="save()">Сохранить</button>
+</mat-dialog-actions>

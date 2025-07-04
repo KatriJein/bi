@@ -1,0 +1,17 @@
+<ng-container *ngIf="chart$ | async as chart">
+  <ng-container *ngIf="dataset$ | async as dataset">
+    <div class="chart-container">
+      <canvas
+        baseChart
+        [data]="chartData"
+        [options]="chartOptions"
+        [type]="chartType"
+        class="chart"
+      ></canvas>
+    </div>
+  </ng-container>
+</ng-container>
+
+<ng-template #loading>
+  <p>Загрузка графика...</p>
+</ng-template>

@@ -1,0 +1,147 @@
+.settings-container {
+  height: 100vh;
+  color: black;
+}
+
+.settings-sidenav {
+  width: 300px;
+  background-color: var(--light-blue);
+  padding: 0.5rem;
+  border-radius: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  padding: 0.8rem;
+}
+
+.user-avatar {
+  width: 115px;
+  height: 115px;
+  border-radius: 50%;
+}
+
+.user-name {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: black;
+}
+
+.back-button {
+  margin-bottom: 1rem;
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    text-decoration: none;
+    color: black;
+    border-radius: var(--border-radius);
+  }
+
+  mat-icon {
+    font-size: 20px;
+    position: relative;
+    top: -1px;
+  }
+}
+
+.settings-list {
+  margin: 0.8rem 0;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  a {
+    text-align: center;
+    text-decoration: none;
+    color: black;
+    font-size: 20px;
+    border-radius: var(--border-radius);
+  }
+}
+
+.settings-list a.active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.router-content {
+  padding: 1.2rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: black;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+}
+
+.info-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 20px;
+  color: black;
+}
+
+.icon {
+  color: var(--blue);
+}
+
+.delete-button .mat-icon {
+  color: #e9382b;
+}
+
+.editable-icon {
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}

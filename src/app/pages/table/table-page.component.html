@@ -1,0 +1,57 @@
+<div class="table-page-container">
+  <div class="data-container">
+    <div class="chart-page-data-selection">
+      <div class="name">
+        <span class="label">Таблица:</span>
+        <mat-form-field appearance="outline" class="input">
+          <input
+            matInput
+            [formControl]="nameControl"
+            placeholder="Введите название таблицы"
+          />
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="fill">
+        <mat-label>Выберите датасет</mat-label>
+        <mat-select [formControl]="selectedDatasetControl">
+          <mat-option
+            *ngFor="let dataset of datasets$ | async"
+            [value]="dataset.id"
+          >
+            {{ dataset.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <app-data-selection-chart></app-data-selection-chart>
+    </div>
+
+    <div class="table">
+      <app-table
+        [rowData]="chartData$ | async"
+        [columnDefs]="colDefs$ | async"
+        [defaultColDef]="defaultColDef"
+      />
+    </div>
+  </div>
+
+  <mat-accordion class="advanced-settings">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Дополнительные настройки </mat-panel-title>
+      </mat-expansion-panel-header>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <div class="button-bar">
+    <button mat-raised-button class="warn-button" (click)="onDelete()">
+      Удалить
+    </button>
+    <div class="buttons-container">
+      <button mat-raised-button color="primary" (click)="onSave()">
+        Сохранить
+      </button>
+      <button mat-button (click)="onCancel()">Отменить</button>
+    </div>
+  </div>
+</div>

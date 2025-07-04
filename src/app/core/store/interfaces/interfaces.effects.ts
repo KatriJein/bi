@@ -1,0 +1,235 @@
+import { inject, Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { of } from 'rxjs';
+import {
+  catchError,
+  map,
+  mergeMap,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { InterfacesActions, InterfacesSelectors } from './index';
+import { InterfaceService } from '../../api/services';
+import { DashboardsActions } from '../dashboards';
+import { Store } from '@ngrx/store';
+import { UserSelectors } from '../user';
+import { User } from '../../models';
+
+@Injectable()
+export class InterfacesEffects {
+  private actions$ = inject(Actions);
+  private interfaceService = inject(InterfaceService);
+  private store = inject(Store);
+
+  loadInterfaces$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.loadInterfaces),
+      withLatestFrom(this.store.select(UserSelectors.selectUserId)),
+      switchMap(([, userId]) =>
+        this.interfaceService.loadUserInterfaces(userId || '').pipe(
+          switchMap((interfaces) => {
+            const dashboardsLoadActions = interfaces
+              .filter((intf) => !!intf.id)
+              .map((intf) =>
+                DashboardsActions.loadDashboards({ interfaceId: intf.id || '' })
+              );
+
+            return [
+              InterfacesActions.loadInterfacesSuccess({ interfaces }),
+              ...dashboardsLoadActions,
+            ];
+          }),
+          catchError((error) => {
+            console.error('[Effect] Ошибка при загрузке интерфейсов:', error);
+            return of(
+              InterfacesActions.loadInterfacesFailure({
+                error:
+                  error.message || 'Unknown error while loading interfaces',
+              })
+            );
+          })
+        )
+      )
+    )
+  );
+
+  createInterface$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.createInterface),
+      withLatestFrom(this.store.select(UserSelectors.selectUserId)),
+      mergeMap(([{ name, order }, userId]) => {
+        if (!userId) {
+          return of(
+            InterfacesActions.createInterfaceFailure({
+              error: 'User ID not found',
+            })
+          );
+        }
+
+        return this.interfaceService.createInterface(name, userId, order).pipe(
+          map((newInterface) =>
+            InterfacesActions.createInterfaceSuccess({
+              interface: newInterface,
+            })
+          ),
+          catchError((error) =>
+            of(
+              InterfacesActions.createInterfaceFailure({
+                error: error.message,
+              })
+            )
+          )
+        );
+      })
+    )
+  );
+
+  deleteInterface$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.deleteInterface),
+      withLatestFrom(this.store.select(UserSelectors.selectUserId)),
+      mergeMap(([{ interfaceId, order }, userId]) => {
+        if (!userId) {
+          return of(
+            InterfacesActions.deleteInterfaceFailure({
+              error: 'User ID not found',
+            })
+          );
+        }
+
+        return this.interfaceService
+          .deleteInterface(interfaceId, userId, order)
+          .pipe(
+            map((id) => InterfacesActions.deleteInterfaceSuccess({ id })),
+            catchError((error) =>
+              of(
+                InterfacesActions.deleteInterfaceFailure({
+                  error: error.message || 'Unknown error',
+                })
+              )
+            )
+          );
+      })
+    )
+  );
+
+  updateInterfaceOrder$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.updateInterfaceOrder),
+      withLatestFrom(this.store.select(UserSelectors.selectUserId)),
+      mergeMap(([{ interfaceId, order, newOrder }, userId]) => {
+        if (!userId) {
+          return of(
+            InterfacesActions.updateInterfaceOrderFailure({
+              error: 'User ID not found',
+            })
+          );
+        }
+
+        return this.interfaceService
+          .updateInterfaceOrder(interfaceId, order, userId, newOrder)
+          .pipe(
+            map(({ id, order: updatedOrder }) =>
+              InterfacesActions.updateInterfaceOrderSuccess({
+                interface: { id, order: updatedOrder },
+              })
+            ),
+            catchError((error) =>
+              of(
+                InterfacesActions.updateInterfaceOrderFailure({
+                  error: error.message || 'Failed to update interface order',
+                })
+              )
+            )
+          );
+      })
+    )
+  );
+
+  updateInterfaceName$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.updateInterfaceName),
+      mergeMap(({ id, name }) =>
+        this.interfaceService.updateInterfaceName(id, name).pipe(
+          mergeMap((updatedInterface) => [
+            InterfacesActions.updateInterfaceNameSuccess({
+              interface: updatedInterface,
+            }),
+            InterfacesActions.loadInterfaces(),
+          ]),
+          catchError((error) =>
+            of(
+              InterfacesActions.updateInterfaceNameFailure({
+                error: error.message || 'Failed to update interface name',
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  setActiveInterface$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(InterfacesActions.setActiveInterface),
+        tap(({ id }) => {
+          if (id !== null) {
+            localStorage.setItem('activeInterfaceId', id);
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
+  syncActiveInterfaceWithLocalStorage$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(
+          InterfacesActions.setActiveInterface,
+          InterfacesActions.deleteInterfaceSuccess,
+          InterfacesActions.loadInterfacesSuccess,
+          InterfacesActions.createInterfaceSuccess
+        ),
+        withLatestFrom(
+          this.store.select(InterfacesSelectors.selectActiveInterfaceId)
+        ),
+        tap(([action, activeInterfaceId]) => {
+          if (activeInterfaceId) {
+            localStorage.setItem('activeInterfaceId', activeInterfaceId);
+          } else {
+            localStorage.removeItem('activeInterfaceId');
+          }
+        })
+      ),
+    { dispatch: false }
+  );
+
+  initActiveSelections$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(InterfacesActions.loadInterfacesSuccess),
+      map(() => {
+        const savedInterfaceId = localStorage.getItem('activeInterfaceId');
+        const savedDashboardId = localStorage.getItem('activeDashboardId');
+
+        const actions = [];
+
+        if (savedInterfaceId) {
+          actions.push(
+            InterfacesActions.setActiveInterface({ id: savedInterfaceId })
+          );
+        }
+
+        if (savedDashboardId) {
+          actions.push(
+            DashboardsActions.setActiveDashboard({ id: savedDashboardId })
+          );
+        }
+
+        return actions;
+      }),
+      switchMap((actions) => actions)
+    )
+  );
+}

@@ -1,0 +1,83 @@
+<h2 mat-dialog-title>
+  {{
+    type === "chart"
+      ? "Создание графического виджета"
+      : type === "table"
+      ? "Создание виджета таблицы"
+      : "Создание текстового виджета"
+  }}
+</h2>
+
+<mat-dialog-content [formGroup]="form" class="widget-form">
+  <mat-form-field appearance="outline" class="full-width widget-input">
+    <mat-label>Название виджета</mat-label>
+    <input matInput formControlName="name" required minlength="1" />
+    <mat-error *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+      Название виджета не может быть пустым.
+    </mat-error>
+  </mat-form-field>
+
+  <ng-container *ngIf="isChartWidget">
+    <mat-form-field appearance="outline" class="full-width widget-input">
+      <mat-label>Выбрать график</mat-label>
+      <mat-select formControlName="chartId" required>
+        <mat-option>
+          <ngx-mat-select-search
+            [formControl]="chartSearchCtrl"
+            placeholderLabel="Поиск по названию..."
+            noEntriesFoundLabel="Не найдено"
+          ></ngx-mat-select-search>
+        </mat-option>
+        <mat-option
+          *ngFor="let chart of filteredCharts$ | async"
+          [value]="chart.id"
+        >
+          {{ chart.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error
+        *ngIf="form.get('chartId')?.invalid && form.get('chartId')?.touched"
+      >
+        Необходимо выбрать график
+      </mat-error>
+    </mat-form-field>
+  </ng-container>
+
+  <ng-container *ngIf="isTableWidget">
+    <mat-form-field appearance="outline" class="full-width widget-input">
+      <mat-label>Выбрать таблицу</mat-label>
+      <mat-select formControlName="chartId" required>
+        <mat-option>
+          <ngx-mat-select-search
+            [formControl]="tableSearchCtrl"
+            placeholderLabel="Поиск по названию..."
+            noEntriesFoundLabel="Не найдено"
+          ></ngx-mat-select-search>
+        </mat-option>
+        <mat-option
+          *ngFor="let table of filteredTables$ | async"
+          [value]="table.id"
+        >
+          {{ table.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error
+        *ngIf="form.get('chartId')?.invalid && form.get('chartId')?.touched"
+      >
+        Необходимо выбрать таблицу
+      </mat-error>
+    </mat-form-field>
+  </ng-container>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отменить</button>
+  <button
+    mat-button
+    color="primary"
+    [disabled]="form.invalid || (isChartWidget && !form.get('chartId')?.value)"
+    [mat-dialog-close]="form.value"
+  >
+    Создать
+  </button>
+</mat-dialog-actions>

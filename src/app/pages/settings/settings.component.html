@@ -1,0 +1,30 @@
+<mat-sidenav-container class="settings-container">
+  <mat-sidenav mode="side" opened class="settings-sidenav">
+    <div class="back-button">
+      <a mat-button routerLink="/" class="back-link">
+        <mat-icon>arrow_back</mat-icon>
+        На главную
+      </a>
+    </div>
+
+    <div class="user-info" *ngIf="user$ | async as user">
+      <img src="/assets/img/acc.png" alt="User" class="user-avatar" />
+      <h3 class="user-name">{{ user.name }}</h3>
+    </div>
+
+    <mat-nav-list class="settings-list">
+      <a
+        mat-list-item
+        *ngFor="let button of buttons"
+        [routerLink]="button.link"
+        routerLinkActive="active"
+      >
+        {{ button.name }}
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

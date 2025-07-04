@@ -1,0 +1,75 @@
+<div class="dashboard-page">
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav mode="side" opened class="sidebar">
+      <div>
+        <div
+          class="active-interface"
+          *ngIf="activeInterface$ | async as activeInterface"
+        >
+          <h3 class="title">{{ activeInterface.name }}</h3>
+        </div>
+        <mat-divider></mat-divider>
+        <mat-nav-list>
+          <ng-container *ngIf="dashboards$ | async as dashboards">
+            <ng-container
+              *ngIf="activeDashboardId$ | async as activeDashboardId"
+            >
+              <mat-list-item
+                *ngFor="let dash of dashboards"
+                class="dashboard-item"
+                routerLinkActive="active"
+                [class.active]="dash.id === activeDashboardId"
+                [routerLink]="['/dashboard', dash.id]"
+              >
+                {{ dash.name }}
+              </mat-list-item>
+            </ng-container>
+          </ng-container>
+        </mat-nav-list>
+      </div>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <div class="dashboard-content">
+        <div class="dashboard-header">
+          <h2>Виджеты текущего дашборда</h2>
+          <div class="actions">
+            <button
+              mat-button
+              color="primary"
+              class="refresh-widget-button"
+              (click)="onRefreshWidgets()"
+            >
+              <mat-icon>refresh</mat-icon>
+              Обновить
+            </button>
+
+            <button
+              mat-flat-button
+              [matMenuTriggerFor]="addWidgetMenu"
+              color="primary"
+              class="add-widget-button"
+            >
+              Добавить виджет
+            </button>
+          </div>
+
+          <mat-menu #addWidgetMenu="matMenu">
+            <button mat-menu-item (click)="openWidgetDialog('text')">
+              Текст
+            </button>
+            <button mat-menu-item (click)="openWidgetDialog('chart')">
+              График
+            </button>
+            <button mat-menu-item (click)="openWidgetDialog('table')">
+              Таблица
+            </button>
+          </mat-menu>
+        </div>
+
+        <div #gridStackContainer class="grid-stack"></div>
+        <ng-template #widgetHost></ng-template>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

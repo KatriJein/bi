@@ -1,0 +1,11 @@
+<ng-container *ngIf="(table$ | async) && (dataset$ | async)">
+  <app-table
+    [rowData]="chartData$ | async"
+    [columnDefs]="colDefs$ | async"
+    [defaultColDef]="defaultColDef"
+  />
+</ng-container>
+
+<ng-template #loading>
+  <p>Загрузка таблицы...</p>
+</ng-template>

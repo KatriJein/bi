@@ -1,0 +1,135 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use "@angular/material" as mat;
+@use "sass:math";
+
+$default-min-bp: 375px;
+$default-max-bp: 1920px;
+
+@function round($number, $decimals: 0) {
+  $n: 1;
+  @if $decimals > 0 {
+    @for $i from 1 through $decimals {
+      $n: $n * 10;
+    }
+  }
+  @return math.div(math.round($number * $n), $n);
+}
+
+@function px-to-rem($px) {
+  $rems: math.div($px, 16px) * 1rem;
+  @return $rems;
+}
+
+@function fluid(
+  $min-size,
+  $max-size,
+  $min-breakpoint: $default-min-bp,
+  $max-breakpoint: $default-max-bp,
+  $unit: vw
+) {
+  $slope: math.div($max-size - $min-size, $max-breakpoint - $min-breakpoint);
+  $slope-to-unit: round($slope * 100, 2);
+  $intercept-rem: round(px-to-rem($min-size - $slope * $min-breakpoint), 2);
+  $min-size-rem: round(px-to-rem($min-size), 2);
+  $max-size-rem: round(px-to-rem($max-size), 2);
+  @return clamp(
+    #{$min-size-rem},
+    #{$slope-to-unit}#{$unit} + #{$intercept-rem},
+    #{$max-size-rem}
+  );
+}
+
+@function fluid-px(
+  $min-size,
+  $max-size,
+  $min-breakpoint: 375px,
+  $max-breakpoint: 1920px,
+  $unit: vw
+) {
+  $slope: math.div($max-size - $min-size, $max-breakpoint - $min-breakpoint);
+  $slope-to-unit: round($slope * 100, 2);
+  $intercept: round($min-size - $slope * $min-breakpoint, 2);
+  $min-size-px: round($min-size, 2);
+  $max-size-px: round($max-size, 2);
+
+  @return clamp(
+    #{$min-size-px},
+    calc(#{$slope-to-unit}#{$unit} + #{$intercept}px),
+    #{$max-size-px}
+  );
+}
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$cyan-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./assets/fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./assets/fonts/Roboto-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("./assets/fonts/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  --blue: #50b8c5;
+  --blue-hover: #1a7480;
+  --grey: #9ea09f;
+  --grey-button: #c8c9c9;
+  --grey-button-hover: #babbbb;
+  --blue-button: #9dd6dd;
+  --blue-button-hover: #85cdd6;
+  --light-blue: #daf0f3;
+  --light-blue-hover: #e7f5f7;
+  --red: #f44336;
+
+  --border-radius: 0.625rem;
+
+  --font-size-16: #{fluid(14px, 16px)};
+  --font-size-18: #{fluid(16px, 18px)};
+  --font-size-20: #{fluid(18px, 20px)};
+  --font-size-22: #{fluid(20px, 22px)};
+  --font-size-24: #{fluid(22px, 24px)};
+  --font-size-32: #{fluid(24px, 32px)};
+  --font-size-38: #{fluid(26px, 38px)};
+  --font-size-48: #{fluid(28px, 48px)};
+  --font-size-85: #{fluid(30px, 85px)};
+
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}

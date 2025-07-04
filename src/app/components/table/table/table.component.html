@@ -1,0 +1,35 @@
+<div class="table-container">
+  <div class="active-filters-panel" *ngIf="activeFilters.length > 0">
+    <div class="filters">
+      <span *ngFor="let filter of activeFilters" class="filter-badge">
+        {{ colIdToHeaderName[filter.colId] }} =
+        <strong>{{ filter.value }}</strong>
+        <button
+          mat-icon-button
+          color="warn"
+          (click)="removeFilter(filter.colId)"
+          class="icon-button"
+        >
+          <mat-icon aria-label="Delete" class="icon">close</mat-icon>
+        </button>
+      </span>
+    </div>
+    <button mat-raised-button color="warn" (click)="resetAllFilters()">
+      Сбросить все фильтры
+    </button>
+  </div>
+
+  <ag-grid-angular
+    style="width: 100%; height: 100%"
+    [rowData]="rowData || []"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [theme]="myTheme"
+    [localeText]="localeText"
+    [paginationAutoPageSize]="true"
+    [pagination]="true"
+    (gridReady)="onGridReady($event)"
+    (cellClicked)="onCellClicked($event)"
+    (columnEverythingChanged)="columnEverythingChanged()"
+  />
+</div>

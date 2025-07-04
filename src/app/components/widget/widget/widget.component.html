@@ -1,0 +1,26 @@
+<div class="widget" (click)="handleClick($event)">
+  <p
+    [ngClass]="{ 'text-widget': widget.type === 'text' }"
+    [ngStyle]="{
+      'font-size':
+        'var(--font-size-' + widget.visualSettings?.fontSizeTitle + ')',
+      color: widget.visualSettings?.colorTitle,
+      'text-align': widget.visualSettings?.textAlign || 'left',
+      'align-items': widget.type === 'text' ? getVerticalAlign(widget.visualSettings?.verticalAlign) : null,
+    }"
+  >
+    <span
+      class="title"
+      [ngStyle]="{
+      'text-align': widget.visualSettings?.textAlign || 'left',
+    }"
+      >{{ widget.title || "Без названия" }}</span
+    >
+  </p>
+
+  <div *ngIf="widget.chartId" class="content-wrapper">
+    <app-chart-renderer *ngIf="!shouldShowTable()" [chartId]="widget.chartId" />
+
+    <app-table-renderer *ngIf="shouldShowTable()" [tableId]="widget.chartId" />
+  </div>
+</div>

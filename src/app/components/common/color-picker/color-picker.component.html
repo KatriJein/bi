@@ -1,0 +1,43 @@
+<div class="color-picker">
+  <div class="form-section">
+    <label class="section-label">{{ label }}</label>
+    <div class="color-options">
+      <div
+        *ngFor="let c of predefinedColors"
+        class="color-circle"
+        [class.selected]="selectedColor === c"
+        [ngStyle]="{ backgroundColor: c }"
+        (click)="selectColor(c)"
+        [title]="c"
+      ></div>
+
+      <!-- Кнопка для кастомного цвета -->
+      <div
+        class="color-circle custom-checker"
+        [class.selected]="selectedColor === 'custom'"
+        (click)="selectColor('custom')"
+        title="Другой цвет"
+      ></div>
+    </div>
+  </div>
+
+  <!-- HEX поле и color picker -->
+  <div *ngIf="selectedColor === 'custom'" class="custom-color-wrapper">
+    <input
+      type="color"
+      class="color-picker"
+      [value]="customColor"
+      (input)="onCustomColorPicked($event)"
+    />
+    <mat-form-field appearance="outline" class="widget-input custom-hex-input">
+      <mat-label>Цвет (#hex)</mat-label>
+      <input
+        matInput
+        [value]="customColor"
+        (input)="customColorChange.emit($any($event.target).value)"
+        maxlength="7"
+        placeholder="#FF0000"
+      />
+    </mat-form-field>
+  </div>
+</div>

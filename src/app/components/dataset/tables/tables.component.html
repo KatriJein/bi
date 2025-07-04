@@ -1,0 +1,40 @@
+<div class="container">
+  <!-- Панель доступных таблиц -->
+  <div class="panel">
+    <h3>Доступные таблицы</h3>
+    <div
+      cdkDropList
+      id="availableTables"
+      [cdkDropListData]="allTables"
+      [cdkDropListConnectedTo]="['selectedTables']"
+      (cdkDropListDropped)="onTableDrop($event)"
+      class="list"
+    >
+      <div *ngFor="let table of allTables" cdkDrag class="item">
+        {{ table.tableName }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Панель выбранных таблиц -->
+  <div class="panel right">
+    <h3>Выбранные таблицы</h3>
+    <div
+      cdkDropList
+      id="selectedTables"
+      [cdkDropListData]="selectedTables"
+      [cdkDropListConnectedTo]="['availableTables']"
+      (cdkDropListDropped)="onTableDrop($event)"
+      class="drop-zone"
+    >
+      <div *ngIf="selectedTables.length > 0; else placeholder">
+        <div *ngFor="let table of selectedTables" cdkDrag class="item">
+          {{ table.tableName }}
+        </div>
+      </div>
+      <ng-template #placeholder>
+        <p class="text-gray-500 italic">Перетащите таблицу сюда</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+<ng-container *ngIf="dataset$ | async as dataset">
+  <table
+    mat-table
+    [dataSource]="dataset?.columns || []"
+    class="mat-elevation-z8"
+  >
+    <!-- Alias Column -->
+    <ng-container matColumnDef="alias">
+      <th mat-header-cell *matHeaderCellDef>Имя</th>
+      <td mat-cell *matCellDef="let column; let i = index">
+        <ng-container *ngIf="isEditing(i, 'alias'); else aliasView">
+          <input
+            matInput
+            [value]="column.alias"
+            (blur)="onBlur($event, i, 'alias')"
+            (keydown.enter)="onEnter($event, i, 'alias')"
+          />
+        </ng-container>
+        <ng-template #aliasView>
+          <span (click)="startEditing(i, 'alias')">{{ column.alias }}</span>
+        </ng-template>
+      </td>
+    </ng-container>
+
+    <!-- Name Column (Read-only) -->
+    <ng-container matColumnDef="columnName">
+      <th mat-header-cell *matHeaderCellDef>Источник поля</th>
+      <td mat-cell *matCellDef="let column">
+        {{ column.tableName }}.{{ column.columnName }}
+      </td>
+    </ng-container>
+
+    <!-- Type Column -->
+    <ng-container matColumnDef="dataType">
+      <th mat-header-cell *matHeaderCellDef>Тип поля</th>
+      <td mat-cell *matCellDef="let column; let i = index">
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-select
+            [value]="column.dataType"
+            (selectionChange)="updateValue(i, 'dataType', $event.value)"
+          >
+            <mat-option *ngFor="let type of fieldTypes" [value]="type.value">
+              <mat-icon class="mr-2">{{ type.icon }}</mat-icon>
+              {{ type.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </td>
+    </ng-container>
+
+    <!-- Visible Column -->
+    <ng-container matColumnDef="isVisible">
+      <th mat-header-cell *matHeaderCellDef>Виден</th>
+      <td mat-cell *matCellDef="let column; let i = index">
+        <mat-checkbox
+          [ngModel]="column.isVisible"
+          (ngModelChange)="updateValue(i, 'isVisible', $event)"
+        ></mat-checkbox>
+      </td>
+    </ng-container>
+
+    <!-- Aggregate Column -->
+    <ng-container matColumnDef="aggregate">
+      <th mat-header-cell *matHeaderCellDef>Агрегация</th>
+      <td mat-cell *matCellDef="let column; let i = index">
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-select
+            [value]="column.aggregate"
+            (selectionChange)="updateValue(i, 'aggregate', $event.value)"
+          >
+            <mat-option
+              *ngFor="let option of aggregateOptions[column.dataType] || []"
+              [value]="option"
+            >
+              {{ option }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</ng-container>

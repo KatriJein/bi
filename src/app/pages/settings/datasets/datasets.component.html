@@ -1,0 +1,46 @@
+<div class="router-content">
+  <div class="header">
+    <h2 class="title">Список датасетов</h2>
+    <button mat-flat-button color="primary" [routerLink]="['/dataset', 'new']">
+      <mat-icon>add</mat-icon>
+      Добавить датасет
+    </button>
+  </div>
+
+  <div class="content">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Поиск датасетов</mat-label>
+      <input
+        matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Введите название датасета"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-nav-list>
+      <a
+        mat-list-item
+        *ngFor="let dataset of filteredDatasets$ | async"
+        [routerLink]="['/dataset', dataset.id]"
+        class="item"
+      >
+        <div class="info-container">
+          <div class="info">
+            <mat-icon class="icon">storage</mat-icon>
+            <span class="name">{{ dataset.name }}</span>
+          </div>
+          <button
+            mat-icon-button
+            color="warn"
+            (click)="onDelete(dataset.id, $event)"
+            class="delete-button"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </a>
+    </mat-nav-list>
+  </div>
+</div>

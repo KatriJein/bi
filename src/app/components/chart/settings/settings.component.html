@@ -1,0 +1,14 @@
+<div class="settings-container">
+  <div class="settings-field" (click)="openColorSettings()">
+    <div class="label">Цвета графика</div>
+    <div class="colors-preview">
+      <ng-container *ngIf="colors$ | async as colors">
+        <div
+          class="color-dot"
+          *ngFor="let color of colors"
+          [style.backgroundColor]="color"
+        ></div>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+::ng-deep .mat-mdc-dialog-panel {
+  min-width: 480px !important;
+}
+
+.widget-form {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  overflow: visible;
+  gap: 1rem;
+}
+
+.widget-input {
+  padding-top: 0.7rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-section {
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.section-label {
+  color: black;
+}
+
+.font-size-toggle {
+  display: inline-flex;
+  width: auto;
+}
+
+.widget-actions {
+  display: flex;
+  justify-content: space-between;
+
+  .delete-button {
+    color: white;
+    background-color: var(--red);
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.1rem;
+}

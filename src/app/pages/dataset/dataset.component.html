@@ -1,0 +1,30 @@
+<div class="layout-container">
+  <div class="name-row">
+    <div class="name">
+      <span class="label">Dataset:</span>
+      <mat-form-field appearance="outline" class="input">
+        <input
+          matInput
+          [formControl]="nameControl"
+          placeholder="Введите название датасета"
+        />
+      </mat-form-field>
+    </div>
+    <button mat-raised-button class="warn-button" (click)="onDelete()">Удалить</button>
+  </div>
+  <mat-tab-group class="tabs" (selectedTabChange)="handleTabChange($event)">
+    <mat-tab label="Источники">
+      <app-tables *ngIf="currentTab === 'tables'"></app-tables>
+    </mat-tab>
+    <mat-tab label="Поля">
+      <app-columns-table *ngIf="currentTab === 'columns'"></app-columns-table>
+    </mat-tab>
+  </mat-tab-group>
+
+  <div class="button-bar">
+    <button mat-raised-button color="primary" (click)="onSave()">
+      Сохранить
+    </button>
+    <button mat-button (click)="onCancel()">Отменить</button>
+  </div>
+</div>

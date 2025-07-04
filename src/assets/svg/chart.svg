@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<svg height="800px" width="800px" id="chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <g id="chart">
+    <path fill="currentColor" d="M24,23H0v-2h24V23z M23,19h-6V1h6V19z M19,17h2V3h-2V17z M15,19H9V9h6V19z M11,17h2v-6h-2V17z M7,19H1V5h6V19z M3,17h2V7 H3V17z"/>
+  </g>
+</svg>

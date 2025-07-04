@@ -1,0 +1,65 @@
+.edit-icon-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.8rem !important;
+  padding-bottom: 0.8rem !important;
+  color: black;
+}
+
+.title {
+  color: black;
+}
+
+.preview {
+  display: flex;
+  justify-content: center;
+
+  .icon-preview {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+  }
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 64px);
+  grid-template-rows: repeat(1, 64px);
+  gap: 0.8rem;
+  justify-content: center;
+
+  .icon-option {
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      object-fit: cover;
+    }
+
+    &.selected {
+      border-color: var(--blue);
+    }
+  }
+}
+
+.icon-option {
+  --mdc-icon-button-icon-size: 40px;
+
+  .mat-icon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}

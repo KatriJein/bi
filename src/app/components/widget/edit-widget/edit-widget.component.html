@@ -1,0 +1,120 @@
+<h2 mat-dialog-title>Редактирование виджета</h2>
+
+<mat-dialog-content [formGroup]="form" class="widget-form">
+  <!-- Название/текст -->
+  <mat-form-field appearance="outline" class="full-width widget-input">
+    <mat-label>{{ isChart ? "Название виджета" : "Текст" }}</mat-label>
+    <input matInput formControlName="name" minlength="1" required />
+    <mat-error *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+      {{ isChart ? "Название обязательно" : "Текст не может быть пустым" }}
+    </mat-error>
+  </mat-form-field>
+
+  <!-- График -->
+  <ng-container *ngIf="isChart">
+    <mat-form-field appearance="outline" class="full-width widget-input">
+      <mat-label>Выбрать график</mat-label>
+      <mat-select formControlName="chartId" required>
+        <mat-option>
+          <ngx-mat-select-search
+            [formControl]="chartSearchCtrl"
+            placeholderLabel="Поиск по названию..."
+            noEntriesFoundLabel="Не найдено"
+          ></ngx-mat-select-search>
+        </mat-option>
+        <mat-option
+          *ngFor="let chart of filteredCharts$ | async"
+          [value]="chart.id"
+        >
+          {{ chart.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </ng-container>
+
+  <!-- Общие параметры -->
+  <!-- Размер шрифта -->
+  <div class="form-section">
+    <label class="section-label">Размер шрифта заголовка:</label>
+    <mat-button-toggle-group
+      formControlName="fontSize"
+      hideSingleSelectionIndicator="true"
+      class="font-size-toggle"
+      name="fontSize"
+      aria-label="Font size"
+    >
+      <mat-button-toggle *ngFor="let size of fontSizes" [value]="size">
+        {{ size }}px
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Выравнивание текста по горизонтали -->
+  <div class="form-section">
+    <label class="section-label">Выравнивание текста:</label>
+    <mat-button-toggle-group
+      formControlName="textAlign"
+      hideSingleSelectionIndicator="true"
+      class="text-align-toggle"
+      name="textAlign"
+      aria-label="Text alignment"
+    >
+      <mat-button-toggle
+        *ngFor="let align of textAlignOptions"
+        [value]="align.value"
+      >
+        <mat-icon>{{ align.icon }}</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Вертикальное выравнивание только для текста -->
+  <div class="form-section" *ngIf="isText">
+    <label class="section-label">Вертикальное выравнивание:</label>
+    <mat-button-toggle-group
+      formControlName="verticalAlign"
+      hideSingleSelectionIndicator="true"
+      class="text-align-toggle"
+      name="verticalAlign"
+      aria-label="Vertical alignment"
+    >
+      <mat-button-toggle
+        *ngFor="let align of verticalAlignOptions"
+        [value]="align.value"
+      >
+        <mat-icon>{{ align.icon }}</mat-icon>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Цвет -->
+  <app-color-picker
+    [selectedColor]="form.value.color || '#000000'"
+    [customColor]="form.value.customColor || '#000000'"
+    (selectedColorChange)="selectColor($event)"
+    (customColorChange)="onColorPicked($event)"
+    label="Цвет заголовка"
+  ></app-color-picker>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="widget-actions">
+  <button
+    mat-raised-button
+    color="warn"
+    class="delete-button"
+    (click)="onDeleteWidget()"
+  >
+    Удалить
+  </button>
+  <div class="dialog-actions">
+    <button mat-button mat-dialog-close>Отменить</button>
+    <button
+      mat-button
+      color="primary"
+      [disabled]="form.invalid"
+      (click)="onSubmit()"
+    >
+      Сохранить
+    </button>
+  </div>
+</mat-dialog-actions>

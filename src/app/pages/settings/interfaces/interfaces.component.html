@@ -1,0 +1,83 @@
+<div class="router-content">
+  <div class="header">
+    <h2 class="title">Список интерфейсов</h2>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openCreateInterfaceModal()"
+    >
+      <mat-icon>add</mat-icon>
+      Добавить интерфейс
+    </button>
+  </div>
+
+  <div class="content">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Поиск интерфейсов</mat-label>
+      <input
+        matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Введите название интерфейса"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-nav-list>
+      <ng-container *ngIf="filteredInterfaces$ | async as interfaces">
+        <a
+          mat-list-item
+          *ngFor="
+            let interface of interfaces;
+            let i = index;
+            trackBy: trackById
+          "
+          [routerLink]="['/settings', 'dashboards', interface.id]"
+          class="item"
+        >
+          <div class="info-container">
+            <div class="info">
+              <mat-icon class="icon">widgets</mat-icon>
+              <span class="name">{{ interface.name }}</span>
+            </div>
+            <div class="actions">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="moveInterfaceUp(interface, $event)"
+                [disabled]="i === 0"
+              >
+                <mat-icon>arrow_upward</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="moveInterfaceDown(interface, $event)"
+                [disabled]="i === interfaces.length - 1"
+              >
+                <mat-icon>arrow_downward</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="openEditInterfaceModal(interface, $event)"
+              >
+                <mat-icon>settings</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="
+                  onDelete(interface.id || '', interface.order || 0, $event)
+                "
+                class="delete-button"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </a>
+      </ng-container>
+    </mat-nav-list>
+  </div>
+</div>

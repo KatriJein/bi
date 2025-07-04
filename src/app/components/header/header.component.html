@@ -1,0 +1,18 @@
+<header class="header">
+  <app-logo class="logo" />
+  @if (user$ | async; as user) {
+  <button mat-button class="user" [matMenuTriggerFor]="userMenu">
+    <div class="container">
+      <img class="photo" src="/assets/img/acc.png" alt="personal photo" />
+      <span class="name">{{ user.name }}</span>
+    </div>
+  </button>
+
+  <mat-menu #userMenu>
+    <ng-template matMenuContent>
+      <button mat-menu-item [routerLink]="'/settings'">Настройки</button>
+      <button mat-menu-item>Выйти</button>
+    </ng-template>
+  </mat-menu>
+  }
+</header>
