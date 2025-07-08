@@ -7,7 +7,7 @@
           baseChart
           [data]="chartData"
           [options]="chartOptions"
-          [type]="chartType"
+          [type]="chartType === 'horizontalBar' ? 'bar' : chartType"
         ></canvas>
       </ng-container>
     </ng-container>

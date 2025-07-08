@@ -15,16 +15,15 @@ import {
   DataSelectionChartComponent,
 } from '../../components/chart';
 import { Dataset } from '../../core/models';
-import {
-  ChartPageStateService,
-  ChartType,
-} from '../../services';
+import { ChartPageStateService } from '../../services';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute } from '@angular/router';
 import { MatInputModule } from '@angular/material/input';
 import { Location } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ChartSettingsComponent } from '../../components/chart/settings';
+import { ChartType } from '../../core/store/charts';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-chart-page',
@@ -41,7 +40,8 @@ import { ChartSettingsComponent } from '../../components/chart/settings';
     MatButtonModule,
     MatInputModule,
     MatExpansionModule,
-    ChartSettingsComponent
+    ChartSettingsComponent,
+    MatIconModule,
   ],
 })
 export class ChartPageComponent implements OnInit {
@@ -131,5 +131,20 @@ export class ChartPageComponent implements OnInit {
 
   onCancel(): void {
     this.location.back();
+  }
+
+  getDisplayName(value: ChartType | null): string {
+    if (!value) return 'Выберите тип';
+
+    const names = {
+      line: 'Линейный',
+      bar: 'Столбчатый',
+      pie: 'Круговой',
+      table: 'Таблица',
+      doughnut: 'Кольцевой',
+      horizontalBar: 'Линейчатый',
+    };
+
+    return names[value]; 
   }
 }

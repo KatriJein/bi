@@ -1,17 +1,24 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as ChartsActions from './charts.actions';
-import { ChartType } from '../../../services/chart-state.service';
 
-export type sortingType = {
+export type SortingType = {
   columnName: string;
   direction: 'asc' | 'desc';
 };
 
-export type filterType = {
+export type FilterType = {
   columnName: string;
   filterType: string;
   value: any;
 };
+
+export type ChartType =
+  | 'line'
+  | 'bar'
+  | 'pie'
+  | 'table'
+  | 'doughnut'
+  | 'horizontalBar';
 
 export interface ChartDto {
   id: string | null;
@@ -19,8 +26,8 @@ export interface ChartDto {
   datasetId: string | null;
   xAxis: string | null;
   yAxis: string[] | null;
-  filters: filterType[] | null;
-  sorting: sortingType[] | null;
+  filters: FilterType[] | null;
+  sorting: SortingType[] | null;
   settings?: {
     chartType?: ChartType;
     colors?: string[];

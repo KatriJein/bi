@@ -17,8 +17,8 @@ import {
   tap,
 } from 'rxjs';
 import { Column, Dataset } from '../core/models';
-import { ChartDto, ChartsActions, ChartsSelectors } from '../core/store/charts';
-import { ChartType, FilterColumn } from '.';
+import { ChartDto, ChartsActions, ChartsSelectors, ChartType } from '../core/store/charts';
+import { FilterColumn } from '.';
 import {
   collectAllColumns,
   createChartDataRequests,

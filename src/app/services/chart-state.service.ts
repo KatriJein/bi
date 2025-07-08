@@ -16,7 +16,12 @@ import { Store } from '@ngrx/store';
 import { Column, Dataset } from '../core/models';
 import { DatasetsActions, DatasetsSelectors } from '../core/store/datasets';
 import { ChartService } from '../core/api/services/chart.service';
-import { ChartDto, ChartsActions, ChartsSelectors } from '../core/store/charts';
+import {
+  ChartDto,
+  ChartsActions,
+  ChartsSelectors,
+  ChartType,
+} from '../core/store/charts';
 import {
   ColumnKey,
   ExtendedColumn,
@@ -33,7 +38,6 @@ import {
 } from '../utils';
 import { COLORS } from '../constants';
 
-export type ChartType = 'line' | 'bar' | 'pie' | 'table';
 export type AggregateType = 'SUM' | 'AVG' | 'COUNT' | 'MAX' | 'MIN' | 'NONE';
 
 export type ColumnWithExtras<T = {}> = Column & T;
@@ -553,49 +557,4 @@ export class ChartPageStateService {
       this.measuresSubject.next(cols.filter((c) => c.aggregate !== 'NONE'));
     });
   }
-
-  // Удаление колонки из всех полей
-  // private removeColumnFromAll(column: Column, exceptKey: ColumnKey) {
-  //   const keys: ColumnKey[] = [
-  //     // 'dimensions',
-  //     // 'measures',
-  //     'xAxis',
-  //     'yAxis',
-  //     'filters',
-  //     'sorting',
-  //   ];
-
-  //   for (const key of keys) {
-  //     if (key === exceptKey) continue;
-
-  //     const subject = this.getSubjectByKey(key);
-  //     const current = subject.getValue();
-  //     // const filtered = current.filter(
-  //     //   (c) => c.columnName !== column.columnName
-  //     // );
-
-  //     let filtered: ExtendedColumn[];
-
-  //     if (key === 'filters') {
-  //       // Удаляем только точное совпадение по всем параметрам
-  //       filtered = current.filter((c) => {
-  //         if (!('filterType' in c) || !('value' in c)) return true;
-  //         if (!('filterType' in column) || !('value' in column)) return true;
-  //         return !(
-  //           c.columnName === column.columnName &&
-  //           c.tableName === column.tableName &&
-  //           c.filterType === column.filterType &&
-  //           c.value === column.value
-  //         );
-  //       });
-  //     } else {
-  //       // Удаляем по columnName
-  //       filtered = current.filter((c) => c.columnName !== column.columnName);
-  //     }
-
-  //     if (filtered.length !== current.length) {
-  //       subject.next(filtered);
-  //     }
-  //   }
-  // }
 }

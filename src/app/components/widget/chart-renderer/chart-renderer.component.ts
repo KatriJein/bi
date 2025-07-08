@@ -169,7 +169,10 @@ export class ChartRendererComponent implements OnChanges {
             chart?.settings?.chartType &&
             chart.settings.chartType !== 'table'
           ) {
-            this.chartType = chart.settings.chartType;
+            this.chartType =
+              chart.settings.chartType === 'horizontalBar'
+                ? 'bar'
+                : chart.settings.chartType;
           }
 
           if (chart?.datasetId) {

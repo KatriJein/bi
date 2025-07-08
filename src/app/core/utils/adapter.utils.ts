@@ -1,4 +1,4 @@
-import { ChartDto, sortingType } from '../store/charts';
+import { ChartDto, SortingType } from '../store/charts';
 
 export function toChartCreateRequest(dto: ChartDto): {
   name: string;
@@ -6,7 +6,7 @@ export function toChartCreateRequest(dto: ChartDto): {
   xAxis: string;
   yAxis: string[];
   filters?: Record<string, any>;
-  sorting?: sortingType[];
+  sorting?: SortingType[];
   settings?: Record<string, any>;
 } {
   if (!dto.name || !dto.datasetId || !dto.yAxis?.length) {

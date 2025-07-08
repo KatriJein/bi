@@ -45,11 +45,7 @@ export class ChartComponent {
         plugins: {
           legend: {
             position: 'top',
-            labels: {
-              font: {
-                size: 20,
-              },
-            },
+            labels: { font: { size: 20 } },
           },
           tooltip: {
             titleFont: { size: 16 },
@@ -58,64 +54,58 @@ export class ChartComponent {
         },
       };
 
-      if (chartType === 'pie') {
+      const commonScaleSettings = {
+        title: {
+          display: true,
+          font: { size: 20 },
+        },
+        ticks: {
+          font: { size: 14 },
+        },
+      };
+
+      if (chartType === 'pie' || chartType === 'doughnut') {
         return {
           ...baseOptions,
           aspectRatio: 2,
-          layout: {
-            padding: {
-              top: 10,
-              bottom: 10,
-              left: 10,
-              right: 10,
-            },
-          },
+          layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } },
           plugins: {
             ...baseOptions.plugins,
             legend: {
-              position: 'bottom',
-              labels: {
-                font: {
-                  size: 16,
-                },
-              },
+              position: chartType === 'doughnut' ? 'right' : 'bottom',
+              labels: { font: { size: 16 } },
             },
           },
         };
       }
 
+      const scales =
+        chartType === 'horizontalBar'
+          ? {
+              y: {
+                ...commonScaleSettings,
+                title: { ...commonScaleSettings.title, text: xTitle },
+              },
+              x: {
+                ...commonScaleSettings,
+                title: { ...commonScaleSettings.title, text: yTitle },
+              },
+            }
+          : {
+              x: {
+                ...commonScaleSettings,
+                title: { ...commonScaleSettings.title, text: xTitle },
+              },
+              y: {
+                ...commonScaleSettings,
+                title: { ...commonScaleSettings.title, text: yTitle },
+              },
+            };
+
       return {
         ...baseOptions,
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: xTitle,
-              font: {
-                size: 20,
-              },
-            },
-            ticks: {
-              font: {
-                size: 14,
-              },
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: yTitle,
-              font: {
-                size: 20,
-              },
-            },
-            ticks: {
-              font: {
-                size: 14,
-              },
-            },
-          },
-        },
+        ...(chartType === 'horizontalBar' && { indexAxis: 'y' }),
+        scales,
       };
     })
   );
@@ -135,31 +125,34 @@ export class ChartComponent {
       const xCol = xAxis[0];
       const labels = rawData.map((row) => row[toCamelCase(xCol.columnName)]);
 
-      if (chartType === 'pie') {
-        const yCol = yAxis[0];
-        const data = rawData.map((row) => row[toCamelCase(yCol.columnName)]);
-        return {
-          labels,
-          datasets: [
-            {
-              label: yCol.alias,
-              data,
-              backgroundColor: colors,
-            },
-          ],
-        };
+      switch (chartType) {
+        case 'pie':
+        case 'doughnut':
+          const yCol = yAxis[0];
+          const data = rawData.map((row) => row[toCamelCase(yCol.columnName)]);
+          return {
+            labels,
+            datasets: [
+              {
+                label: yCol.alias,
+                data,
+                backgroundColor: colors,
+              },
+            ],
+          };
+
+        default:
+          const defaultDatasets = yAxis.map((col, idx) => ({
+            label: col.alias,
+            data: rawData.map((row) => row[toCamelCase(col.columnName)]),
+            backgroundColor: colors[idx % colors.length],
+            borderColor: colors[idx % colors.length],
+            borderWidth: 2,
+            fill: false,
+            tension: 0.2,
+          }));
+          return { labels, datasets: defaultDatasets };
       }
-
-      const datasets = yAxis.map((col, idx) => ({
-        label: col.alias,
-        data: rawData.map((row) => row[toCamelCase(col.columnName)]),
-        backgroundColor: colors[idx % colors.length],
-        borderColor: colors[idx % colors.length],
-        fill: false,
-        tension: 0.2,
-      }));
-
-      return { labels, datasets };
     })
   );
 }

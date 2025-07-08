@@ -30,9 +30,40 @@
       <mat-form-field appearance="fill">
         <mat-label>Тип графика</mat-label>
         <mat-select [formControl]="chartTypeControl">
-          <mat-option value="line">Линейный</mat-option>
-          <mat-option value="bar">Столбчатый</mat-option>
-          <mat-option value="pie">Круговой</mat-option>
+          <mat-select-trigger>
+            {{ getDisplayName(chartTypeControl.value) }}
+          </mat-select-trigger>
+
+          <mat-option value="line">
+            <div class="option-with-icon">
+              <mat-icon>show_chart</mat-icon>
+              <span>Линейный</span>
+            </div>
+          </mat-option>
+          <mat-option value="bar">
+            <div class="option-with-icon">
+              <mat-icon>bar_chart</mat-icon>
+              <span>Столбчатый</span>
+            </div>
+          </mat-option>
+          <mat-option value="pie">
+            <div class="option-with-icon">
+              <mat-icon>pie_chart</mat-icon>
+              <span>Круговой</span>
+            </div>
+          </mat-option>
+          <mat-option value="doughnut">
+            <div class="option-with-icon">
+              <mat-icon>donut_large</mat-icon>
+              <span>Кольцевой</span>
+            </div>
+          </mat-option>
+          <mat-option value="horizontalBar">
+            <div class="option-with-icon">
+              <mat-icon>stacked_bar_chart</mat-icon>
+              <span>Линейчатый</span>
+            </div>
+          </mat-option>
         </mat-select>
       </mat-form-field>
 

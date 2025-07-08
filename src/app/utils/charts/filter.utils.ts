@@ -1,10 +1,10 @@
 import { from, escape, ColumnTable } from 'arquero';
 import { toCamelCase } from '../../core/utils';
-import { filterType } from '../../core/store/charts';
+import { FilterType } from '../../core/store/charts';
 
 export function applyFilters(
   data: Record<string, any>[],
-  filters: filterType[]
+  filters: FilterType[]
 ): ColumnTable {
   let aqTable = from(data);
 

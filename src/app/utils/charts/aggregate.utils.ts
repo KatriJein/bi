@@ -1,6 +1,6 @@
 import { op, desc } from 'arquero';
 import { Column } from '../../core/models';
-import { filterType, sortingType } from '../../core/store/charts';
+import { FilterType, SortingType } from '../../core/store/charts';
 import { toCamelCase } from '../../core/utils';
 import { applyFilters } from './filter.utils';
 
@@ -10,8 +10,8 @@ export function getAggregatedData(
   data: Record<string, any>[],
   xAxis: string,
   yAxis: Column[],
-  sorting: sortingType[] | null,
-  filters: filterType[] | null
+  sorting: SortingType[] | null,
+  filters: FilterType[] | null
 ): any[] {
   const aggregations = yAxis.map((col) => ({
     column: toCamelCase(col.columnName),

@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { GraphqlService } from './grapghql.service';
 import { getChartsQuery, getDataQuery } from '../graphql/queries';
-import { ChartDto, sortingType } from '../../store/charts';
+import { ChartDto, SortingType } from '../../store/charts';
 import {
   CreateChartType,
   DeleteChartType,
@@ -42,7 +42,7 @@ export class ChartService {
     xAxis: string;
     yAxis: string[];
     filters?: Record<string, any>;
-    sorting?: sortingType[];
+    sorting?: SortingType[];
     settings?: Record<string, any>;
   }): Observable<ChartDto> {
     const variables = {
@@ -106,7 +106,7 @@ export class ChartService {
       xAxis?: string;
       yAxis?: string[];
       filters?: Record<string, any>;
-      sorting?: sortingType[];
+      sorting?: SortingType[];
       settings?: Record<string, any>;
     }
   ): Observable<ChartDto> {

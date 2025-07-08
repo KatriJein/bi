@@ -73,3 +73,14 @@
     background-color: #d32f2f !important;
   }
 }
+
+.option-with-icon {
+  display: flex;
+  align-items: center;
+
+  mat-icon {
+    font-size: 25px;
+    height: 25px;
+    width: 25px;
+  }
+}
