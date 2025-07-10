@@ -6,4 +6,3 @@ export * from './dashboard/dashboard.component';
 export * from './settings/settings.component';
 export * from './settings/index';
 export * from './layouts/header-layout/header-layout.component';
-export * from './table/table-page.component';

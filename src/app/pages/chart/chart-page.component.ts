@@ -10,10 +10,7 @@ import {
   startWith,
   Subscription,
 } from 'rxjs';
-import {
-  ChartComponent,
-  DataSelectionChartComponent,
-} from '../../components/chart';
+import { ChartComponent, DataSelectionComponent } from '../../components/chart';
 import { Dataset } from '../../core/models';
 import { ChartPageStateService } from '../../services';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +21,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { ChartSettingsComponent } from '../../components/chart/settings';
 import { ChartType } from '../../core/store/charts';
 import { MatIconModule } from '@angular/material/icon';
+import {
+  CHART_TYPES,
+  getChartDisplayName,
+  getChartIcon,
+} from '../../constants';
+import { TableComponent } from '../../components/table/table/table.component';
 
 @Component({
   selector: 'app-chart-page',
@@ -35,7 +38,7 @@ import { MatIconModule } from '@angular/material/icon';
     ReactiveFormsModule,
     MatSelectModule,
     MatFormFieldModule,
-    DataSelectionChartComponent,
+    DataSelectionComponent,
     ChartComponent,
     MatButtonModule,
     MatInputModule,
@@ -48,6 +51,10 @@ export class ChartPageComponent implements OnInit {
   private state = inject(ChartPageStateService);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
+
+  chartTypes = CHART_TYPES;
+  getIcon = getChartIcon;
+  getDisplayName = getChartDisplayName;
 
   private chartTypeSubscription: Subscription = Subscription.EMPTY;
 
@@ -131,20 +138,5 @@ export class ChartPageComponent implements OnInit {
 
   onCancel(): void {
     this.location.back();
-  }
-
-  getDisplayName(value: ChartType | null): string {
-    if (!value) return 'Выберите тип';
-
-    const names = {
-      line: 'Линейный',
-      bar: 'Столбчатый',
-      pie: 'Круговой',
-      table: 'Таблица',
-      doughnut: 'Кольцевой',
-      horizontalBar: 'Линейчатый',
-    };
-
-    return names[value]; 
   }
 }

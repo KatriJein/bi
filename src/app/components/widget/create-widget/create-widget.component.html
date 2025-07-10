@@ -42,32 +42,6 @@
       </mat-error>
     </mat-form-field>
   </ng-container>
-
-  <ng-container *ngIf="isTableWidget">
-    <mat-form-field appearance="outline" class="full-width widget-input">
-      <mat-label>Выбрать таблицу</mat-label>
-      <mat-select formControlName="chartId" required>
-        <mat-option>
-          <ngx-mat-select-search
-            [formControl]="tableSearchCtrl"
-            placeholderLabel="Поиск по названию..."
-            noEntriesFoundLabel="Не найдено"
-          ></ngx-mat-select-search>
-        </mat-option>
-        <mat-option
-          *ngFor="let table of filteredTables$ | async"
-          [value]="table.id"
-        >
-          {{ table.name }}
-        </mat-option>
-      </mat-select>
-      <mat-error
-        *ngIf="form.get('chartId')?.invalid && form.get('chartId')?.touched"
-      >
-        Необходимо выбрать таблицу
-      </mat-error>
-    </mat-form-field>
-  </ng-container>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

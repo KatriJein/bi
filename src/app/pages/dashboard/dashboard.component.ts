@@ -291,8 +291,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           (result): result is { name: string; chartId?: string } =>
             !!result?.name
         ),
-        switchMap((formValue) =>
-          combineLatest([
+        switchMap((formValue) => {
+          const widgetType = formValue.chartId
+            ? this.stateService.getWidgetType(formValue.chartId)
+            : type;
+
+          return combineLatest([
             this.stateService.activeDashboard$.pipe(
               filter((dashboard): dashboard is DashboardDto => !!dashboard?.id),
               take(1)
@@ -310,22 +314,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 title: formValue.name,
                 position: {
                   width: 8,
-                  height: type === 'text' ? 1 : 6,
+                  height: widgetType === 'text' ? 1 : 6,
                   x: 0,
                   y: maxBottom,
                 },
-                type,
+                type: widgetType,
               };
 
-              return type === 'chart' || type === 'table'
+              return widgetType === 'chart' || widgetType === 'table'
                 ? { ...base, chartId: formValue.chartId }
                 : base;
             }),
             switchMap((widgetData) =>
               this.stateService.createWidget(widgetData)
             )
-          )
-        )
+          );
+        })
       )
       .subscribe();
   }

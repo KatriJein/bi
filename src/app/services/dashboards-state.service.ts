@@ -5,6 +5,7 @@ import {
   distinctUntilChanged,
   map,
   switchMap,
+  take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -14,8 +15,10 @@ import {
   DashboardsSelectors,
 } from '../core/store/dashboards';
 import { WidgetService } from '../core/api/services';
-import { Widget } from '../core/api/graphql/types';
+import { Widget, WidgetType } from '../core/api/graphql/types';
 import isEqual from 'lodash/isEqual';
+import { ChartDto } from '../core/store/charts';
+import { selectChartById } from '../core/store/charts/charts.selector';
 
 @Injectable({
   providedIn: 'root',
@@ -88,6 +91,30 @@ export class DashboardStateService {
           .pipe(tap(() => this.loadWidgets(dashboardId)));
       })
     );
+  }
+
+  getWidgetType(chartId: string | null): WidgetType {
+    if (chartId === null) {
+      return 'text';
+    }
+
+    let chart: ChartDto | undefined;
+    this.store
+      .select(selectChartById(chartId))
+      .pipe(take(1))
+      .subscribe((c) => (chart = c));
+
+    if (!chart) {
+      return 'text';
+    }
+
+    const chartType = chart.settings?.chartType;
+
+    if (chartType === 'table') {
+      return 'table';
+    }
+
+    return 'chart';
   }
 
   removeWidget(id: string) {

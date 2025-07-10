@@ -34,7 +34,6 @@ export class SettingsComponent {
   buttons = [
     { link: 'datasets', name: 'Датасеты' },
     { link: 'charts', name: 'Графики' },
-    { link: 'tables', name: 'Таблицы' },
     { link: 'interfaces', name: 'Интерфейсы' },
     { link: 'dashboards', name: 'Дашборды' },
   ];

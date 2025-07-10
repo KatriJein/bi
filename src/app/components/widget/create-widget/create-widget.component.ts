@@ -46,7 +46,7 @@ export class CreateWidgetModalComponent implements OnInit {
   });
 
   chartSearchCtrl = new FormControl('');
-  charts$ = this.store.select(ChartsSelectors.selectGraphs);
+  charts$ = this.store.select(ChartsSelectors.selectCharts);
   filteredCharts$: Observable<ChartDto[]> = combineLatest([
     this.charts$,
     this.chartSearchCtrl.valueChanges.pipe(startWith('')),
@@ -58,29 +58,12 @@ export class CreateWidgetModalComponent implements OnInit {
     )
   );
 
-  tableSearchCtrl = new FormControl('');
-  tables$ = this.store.select(ChartsSelectors.selectTables);
-  filteredTables$: Observable<ChartDto[]> = combineLatest([
-    this.tables$,
-    this.tableSearchCtrl.valueChanges.pipe(startWith('')),
-  ]).pipe(
-    map(([tables, search]) =>
-      tables.filter((t) =>
-        t.name.toLowerCase().includes((search ?? '').toLowerCase())
-      )
-    )
-  );
-
   constructor() {}
 
   ngOnInit(): void {}
 
   get isChartWidget(): boolean {
     return this.type === 'chart';
-  }
-
-  get isTableWidget(): boolean {
-    return this.type === 'table';
   }
 
   get isTextWidget(): boolean {

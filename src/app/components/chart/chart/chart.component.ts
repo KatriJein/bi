@@ -8,6 +8,9 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { toCamelCase } from '../../../core/utils';
+import { TableComponent } from '../../table/table/table.component';
+import { ColDef } from 'ag-grid-community';
+import { getAgGridFilterType } from '../../../constants';
 
 @Component({
   selector: 'app-chart',
@@ -20,6 +23,7 @@ import { toCamelCase } from '../../../core/utils';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatSelectModule,
+    TableComponent,
   ],
 })
 export class ChartComponent {
@@ -28,7 +32,6 @@ export class ChartComponent {
   xAxis$ = this.chartPageStateService.xAxis$;
   yAxis$ = this.chartPageStateService.yAxis$;
   colors$ = this.chartPageStateService.colorSettings$;
-
   chartType$ = this.chartPageStateService.chartType$;
 
   chartOptions$: Observable<ChartConfiguration['options']> = combineLatest([
@@ -110,6 +113,8 @@ export class ChartComponent {
     })
   );
 
+  tableData$ = this.chartPageStateService.chartData$;
+
   chartData$: Observable<ChartConfiguration['data']> = combineLatest([
     this.chartPageStateService.chartData$,
     this.chartPageStateService.xAxis$,
@@ -118,7 +123,7 @@ export class ChartComponent {
     this.colors$,
   ]).pipe(
     map(([rawData, xAxis, yAxis, chartType, colors]) => {
-      if (!xAxis.length || !yAxis.length || rawData.length === 0) {
+      if (!yAxis.length || rawData.length === 0) {
         return { labels: [], datasets: [] };
       }
 
@@ -155,4 +160,22 @@ export class ChartComponent {
       }
     })
   );
+
+  colDefs$: Observable<ColDef[]> = this.yAxis$.pipe(
+    map((columns) =>
+      columns.map((column) => ({
+        field: toCamelCase(column.columnName),
+        headerName: column.alias,
+        filter: getAgGridFilterType(column.dataType),
+        filterParams: {
+          buttons: ['reset', 'apply'],
+        },
+      }))
+    )
+  );
+
+  defaultColDef: ColDef = {
+    flex: 1,
+    floatingFilter: true,
+  };
 }

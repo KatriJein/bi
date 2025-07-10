@@ -38,7 +38,7 @@ export class ChartsSettingsComponent {
   getChartIcon = getChartIcon;
 
   charts$: Observable<ChartDto[]> = this.store.select(
-    ChartsSelectors.selectGraphs
+    ChartsSelectors.selectCharts
   );
 
   filteredCharts$ = combineLatest([

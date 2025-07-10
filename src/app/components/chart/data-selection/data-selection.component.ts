@@ -1,18 +1,16 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Column } from '../../../core/models';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  ChartPageStateService,
-  FilterColumn,
-} from '../../../services';
+import { ChartPageStateService, FilterColumn } from '../../../services';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { take } from 'rxjs';
 import { FilterModalComponent } from '../filter/filter-modal/filter-modal.component';
+import { ChartType } from '../../../core/store/charts';
 
 export type ColumnKey =
   | 'xAxis'
@@ -25,7 +23,7 @@ export type ColumnKey =
 export type ExtendedColumn = Column | FilterColumn;
 
 @Component({
-  selector: 'app-data-selection-chart',
+  selector: 'app-data-selection',
   imports: [
     CommonModule,
     DragDropModule,
@@ -37,16 +35,23 @@ export type ExtendedColumn = Column | FilterColumn;
   styleUrl: './data-selection.component.scss',
   standalone: true,
 })
-export class DataSelectionChartComponent {
+export class DataSelectionComponent {
   private dialog = inject(MatDialog);
   private stateService = inject(ChartPageStateService);
 
+  chartType$ = this.stateService.chartType$;
+  currentChartType = toSignal(this.chartType$, {
+    initialValue: 'line' as ChartType,
+  });
+
   dimensions = toSignal(this.stateService.dimensions$, { initialValue: [] });
   measures = toSignal(this.stateService.measures$, { initialValue: [] });
-
   columns = toSignal(this.stateService.allColumns$, { initialValue: [] });
 
-  xAxis = toSignal(this.stateService.xAxis$, { initialValue: [] });
+  xAxis =
+    this.currentChartType() !== 'table'
+      ? toSignal(this.stateService.xAxis$, { initialValue: [] })
+      : signal([]);
   yAxis = toSignal(this.stateService.yAxis$, { initialValue: [] });
   filters = toSignal(this.stateService.filters$, {
     initialValue: [] as FilterColumn[],
@@ -138,5 +143,24 @@ export class DataSelectionChartComponent {
 
         this.stateService.updateColumns('filters', updatedFilters);
       });
+  }
+
+  getConnectedLists(source: string): string[] {
+    const baseLists = ['dimensions', 'measures', 'filters', 'sorting'];
+
+    if (this.currentChartType() !== 'table') {
+      if (source === 'xAxis') {
+        return [...baseLists, 'yAxis'];
+      }
+      if (source === 'yAxis') {
+        return [...baseLists, 'xAxis'];
+      }
+      return [...baseLists, 'xAxis', 'yAxis'];
+    } else {
+      if (source === 'yAxis') {
+        return baseLists;
+      }
+      return [...baseLists, 'yAxis'];
+    }
   }
 }

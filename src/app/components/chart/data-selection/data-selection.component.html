@@ -8,7 +8,7 @@
         id="dimensions"
         [cdkDropListData]="dimensions()"
         class="list"
-        [cdkDropListConnectedTo]="['xAxis', 'yAxis', 'filters', 'sorting']"
+        [cdkDropListConnectedTo]="getConnectedLists('dimensions')"
         (cdkDropListDropped)="drop($event, 'dimensions')"
       >
         <div *ngFor="let col of dimensions()" cdkDrag>{{ col.alias }}</div>
@@ -22,7 +22,7 @@
         cdkDropList
         id="measures"
         [cdkDropListData]="measures()"
-        [cdkDropListConnectedTo]="['xAxis', 'yAxis', 'filters', 'sorting']"
+        [cdkDropListConnectedTo]="getConnectedLists('measures')"
         (cdkDropListDropped)="drop($event, 'measures')"
         class="list"
       >
@@ -32,40 +32,31 @@
   </div>
 
   <div class="panel right">
-    <div class="column-container">
-      <div class="column-header"><h3>Ось X</h3></div>
-
-      <div
-        cdkDropList
-        [cdkDropListData]="xAxis()"
-        [cdkDropListConnectedTo]="[
-          'dimensions',
-          'measures',
-          'yAxis',
-          'filters',
-          'sorting'
-        ]"
-        (cdkDropListDropped)="drop($event, 'xAxis')"
-        class="drop-zone"
-        id="xAxis"
-      >
-        <div *ngFor="let item of xAxis()" cdkDrag>{{ item.alias }}</div>
+    <ng-container *ngIf="currentChartType() !== 'table'">
+      <div class="column-container">
+        <div class="column-header"><h3>Ось X</h3></div>
+        <div
+          cdkDropList
+          id="xAxis"
+          [cdkDropListData]="xAxis()"
+          class="drop-zone"
+          [cdkDropListConnectedTo]="getConnectedLists('xAxis')"
+          (cdkDropListDropped)="drop($event, 'xAxis')"
+        >
+          <div *ngFor="let item of xAxis()" cdkDrag>{{ item.alias }}</div>
+        </div>
       </div>
-    </div>
+    </ng-container>
 
     <div class="column-container">
-      <div class="column-header"><h3>Ось Y</h3></div>
+      <div class="column-header">
+        <h3>{{ currentChartType() !== "table" ? "Ось Y" : "Столбцы" }}</h3>
+      </div>
 
       <div
         cdkDropList
         [cdkDropListData]="yAxis()"
-        [cdkDropListConnectedTo]="[
-          'dimensions',
-          'measures',
-          'xAxis',
-          'filters',
-          'sorting'
-        ]"
+        [cdkDropListConnectedTo]="getConnectedLists('yAxis')"
         (cdkDropListDropped)="drop($event, 'yAxis')"
         class="drop-zone"
         id="yAxis"
@@ -90,18 +81,14 @@
       <div
         cdkDropList
         [cdkDropListData]="filters()"
-        [cdkDropListConnectedTo]="[
-          'dimensions',
-          'measures',
-          'xAxis',
-          'yAxis',
-          'sorting'
-        ]"
+        [cdkDropListConnectedTo]="getConnectedLists('filters')"
         (cdkDropListDropped)="drop($event, 'filters')"
         class="drop-zone"
         id="filters"
       >
-        <div *ngFor="let item of filters()" cdkDrag (click)="editFilter(item)">{{ item.alias }}</div>
+        <div *ngFor="let item of filters()" cdkDrag (click)="editFilter(item)">
+          {{ item.alias }}
+        </div>
       </div>
     </div>
 
@@ -111,13 +98,7 @@
       <div
         cdkDropList
         [cdkDropListData]="sorting()"
-        [cdkDropListConnectedTo]="[
-          'dimensions',
-          'measures',
-          'xAxis',
-          'yAxis',
-          'filters'
-        ]"
+        [cdkDropListConnectedTo]="getConnectedLists('sorting')"
         (cdkDropListDropped)="drop($event, 'sorting')"
         class="drop-zone"
         id="sorting"

@@ -2,6 +2,7 @@
   <ng-container *ngIf="chartData$ | async as chartData">
     <ng-container *ngIf="chartOptions$ | async as chartOptions">
       <ng-container *ngIf="chartType$ | async as chartType">
+        <!-- Графики -->
         <canvas
           *ngIf="chartType !== 'table'"
           baseChart
@@ -9,6 +10,15 @@
           [options]="chartOptions"
           [type]="chartType === 'horizontalBar' ? 'bar' : chartType"
         ></canvas>
+
+        <!-- Таблица -->
+        <div *ngIf="chartType === 'table'" class="table-container">
+          <app-table
+            [rowData]="tableData$ | async"
+            [columnDefs]="colDefs$ | async"
+            [defaultColDef]="defaultColDef"
+          />
+        </div>
       </ng-container>
     </ng-container>
   </ng-container>

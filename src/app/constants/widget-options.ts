@@ -1,3 +1,4 @@
+import { ChartType } from '../core/store/charts';
 import { COLORS } from './colors';
 
 export const fontSizes = [16, 18, 20, 22, 24];
@@ -17,15 +18,30 @@ export const verticalAlignOptions = [
   { value: 'bottom', icon: 'vertical_align_bottom' },
 ];
 
-export function getChartIcon(
-  chartType: 'line' | 'bar' | 'pie' | 'table'
-): string {
-  const iconMap: Record<'line' | 'bar' | 'pie' | 'table', string> = {
+export function getChartIcon(chartType: ChartType): string {
+  const iconMap: Record<ChartType, string> = {
     line: 'show_chart',
     bar: 'bar_chart',
     pie: 'pie_chart',
     table: 'table_chart',
+    doughnut: 'donut_large',
+    horizontalBar: 'notes',
   };
 
   return iconMap[chartType];
+}
+
+export function getChartDisplayName(chartType: ChartType | null): string {
+  if (!chartType) return 'Выберите тип';
+
+  const nameMap: Record<ChartType, string> = {
+    line: 'Линейный',
+    bar: 'Столбчатый',
+    pie: 'Круговой',
+    doughnut: 'Кольцевой',
+    horizontalBar: 'Линейчатый',
+    table: 'Таблица',
+  };
+
+  return nameMap[chartType];
 }

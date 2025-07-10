@@ -11,8 +11,6 @@ import {
   InterfacesSettingsComponent,
   MainComponent,
   SettingsComponent,
-  TablePageComponent,
-  TablesSettingsComponent,
 } from './pages';
 
 export const routes: Routes = [
@@ -26,8 +24,6 @@ export const routes: Routes = [
       { path: 'dataset/:id', component: DatasetComponent },
       { path: 'chart/new', component: ChartPageComponent },
       { path: 'chart/:id', component: ChartPageComponent },
-      { path: 'table/new', component: TablePageComponent },
-      { path: 'table/:id', component: TablePageComponent },
     ],
   },
   //settings
@@ -38,7 +34,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'datasets', pathMatch: 'full' },
       { path: 'datasets', component: DatasetsSettingsComponent },
       { path: 'charts', component: ChartsSettingsComponent },
-      { path: 'tables', component: TablesSettingsComponent },
       { path: 'interfaces', component: InterfacesSettingsComponent },
       {
         path: 'dashboards',

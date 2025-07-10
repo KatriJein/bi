@@ -37,6 +37,8 @@ import {
   processChartData,
 } from '../utils';
 import { COLORS } from '../constants';
+import { WidgetType } from '../core/api/graphql/types';
+import { selectChartById } from '../core/store/charts/charts.selector';
 
 export type AggregateType = 'SUM' | 'AVG' | 'COUNT' | 'MAX' | 'MIN' | 'NONE';
 
@@ -120,10 +122,7 @@ export class ChartPageStateService {
   chartData$: Observable<any[]> = this.chart$.pipe(
     filter(
       (chart): chart is ChartDto =>
-        !!chart &&
-        !!chart.xAxis &&
-        Array.isArray(chart.yAxis) &&
-        chart.yAxis.length > 0
+        !!chart && Array.isArray(chart.yAxis) && chart.yAxis.length > 0
     ),
     switchMap((chart) =>
       combineLatest([
@@ -191,7 +190,7 @@ export class ChartPageStateService {
                   map(({ data }) =>
                     processChartData(
                       data,
-                      chart.xAxis as string,
+                      chart.xAxis || '',
                       yAxisColumns,
                       sortingColumns,
                       filtersColumns
@@ -203,7 +202,7 @@ export class ChartPageStateService {
                     const merged = results.flatMap((r) => r.data);
                     return processChartData(
                       merged,
-                      chart.xAxis as string,
+                      chart.xAxis || '',
                       yAxisColumns,
                       sortingColumns,
                       filtersColumns
@@ -222,6 +221,7 @@ export class ChartPageStateService {
     this.yAxisSubject.next([]);
     this.sortingSubject.next([]);
     this.filtersSubject.next([]);
+
     this.updateChartField('xAxis', null);
     this.updateChartField('yAxis', []);
     this.updateChartField('sorting', []);
@@ -246,6 +246,7 @@ export class ChartPageStateService {
       sorting: null,
       settings: null,
     };
+
     this.setChart(newChart);
     this.xAxisSubject.next([]);
     this.yAxisSubject.next([]);
@@ -383,6 +384,7 @@ export class ChartPageStateService {
           this.setSelectedDatasetId(chart.datasetId);
           const type = chart.settings?.chartType as ChartType;
           if (type) {
+            console.log(type);
             this.chartTypeSubject.next(type);
           }
         }),
@@ -501,13 +503,7 @@ export class ChartPageStateService {
   updateChart(): void {
     const chart = this.chartSubject.getValue();
 
-    if (
-      !chart ||
-      !chart.id ||
-      !chart.datasetId ||
-      !chart.xAxis ||
-      !chart.yAxis?.length
-    ) {
+    if (!chart || !chart.id || !chart.datasetId || !chart.yAxis?.length) {
       console.error('Chart is not complete or missing ID');
       return;
     }

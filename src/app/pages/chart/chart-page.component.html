@@ -23,7 +23,7 @@
         </mat-select>
       </mat-form-field>
 
-      <app-data-selection-chart></app-data-selection-chart>
+      <app-data-selection></app-data-selection>
     </div>
 
     <div class="chart-page-chart-container">
@@ -34,34 +34,10 @@
             {{ getDisplayName(chartTypeControl.value) }}
           </mat-select-trigger>
 
-          <mat-option value="line">
+          <mat-option *ngFor="let type of chartTypes" [value]="type">
             <div class="option-with-icon">
-              <mat-icon>show_chart</mat-icon>
-              <span>Линейный</span>
-            </div>
-          </mat-option>
-          <mat-option value="bar">
-            <div class="option-with-icon">
-              <mat-icon>bar_chart</mat-icon>
-              <span>Столбчатый</span>
-            </div>
-          </mat-option>
-          <mat-option value="pie">
-            <div class="option-with-icon">
-              <mat-icon>pie_chart</mat-icon>
-              <span>Круговой</span>
-            </div>
-          </mat-option>
-          <mat-option value="doughnut">
-            <div class="option-with-icon">
-              <mat-icon>donut_large</mat-icon>
-              <span>Кольцевой</span>
-            </div>
-          </mat-option>
-          <mat-option value="horizontalBar">
-            <div class="option-with-icon">
-              <mat-icon>stacked_bar_chart</mat-icon>
-              <span>Линейчатый</span>
+              <mat-icon>{{ getIcon(type) }}</mat-icon>
+              <span>{{ getDisplayName(type) }}</span>
             </div>
           </mat-option>
         </mat-select>
