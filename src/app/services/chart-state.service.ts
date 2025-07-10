@@ -75,6 +75,14 @@ export class ChartPageStateService {
     )
   );
 
+  availableChildTables$ = this.store
+    .select(ChartsSelectors.selectTableCharts)
+    .pipe(
+      map((tables) =>
+        tables.filter((table) => table.id !== this.getCurrentChart()?.id)
+      )
+    );
+
   // Текущий график
   private chartSubject = new BehaviorSubject<ChartDto | null>(null);
   chart$ = this.chartSubject.asObservable();
@@ -240,6 +248,7 @@ export class ChartPageStateService {
       name: 'Новый график',
       id: null,
       datasetId: datasetId ?? null,
+      childId: null,
       xAxis: null,
       yAxis: null,
       filters: null,
@@ -384,7 +393,6 @@ export class ChartPageStateService {
           this.setSelectedDatasetId(chart.datasetId);
           const type = chart.settings?.chartType as ChartType;
           if (type) {
-            console.log(type);
             this.chartTypeSubject.next(type);
           }
         }),
@@ -468,7 +476,7 @@ export class ChartPageStateService {
   saveChart(): void {
     const chart = this.chartSubject.getValue();
 
-    if (!chart || !chart.datasetId || !chart.xAxis || !chart.yAxis?.length) {
+    if (!chart || !chart.datasetId || !chart.yAxis?.length) {
       console.error('Chart is not complete');
       return;
     }
@@ -478,6 +486,7 @@ export class ChartPageStateService {
         chart: {
           name: chart.name || 'Новый график',
           datasetId: chart.datasetId,
+          childId: chart.childId ?? null,
           xAxis: chart.xAxis,
           yAxis: chart.yAxis,
           filters: chart.filters ?? null,
@@ -514,6 +523,7 @@ export class ChartPageStateService {
           id: chart.id,
           name: chart.name,
           datasetId: chart.datasetId,
+          childId: chart.childId ?? null,
           xAxis: chart.xAxis,
           yAxis: chart.yAxis,
           filters: chart.filters ?? null,

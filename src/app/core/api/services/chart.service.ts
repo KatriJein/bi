@@ -36,15 +36,7 @@ export class ChartService {
       );
   }
 
-  createChart(chart: {
-    name: string;
-    datasetId: string;
-    xAxis: string;
-    yAxis: string[];
-    filters?: Record<string, any>;
-    sorting?: SortingType[];
-    settings?: Record<string, any>;
-  }): Observable<ChartDto> {
+  createChart(chart: Partial<ChartDto>): Observable<ChartDto> {
     const variables = {
       name: chart.name,
       datasetId: chart.datasetId,
@@ -53,6 +45,7 @@ export class ChartService {
       filters: chart.filters || null,
       sorting: chart.sorting || null,
       settings: chart.settings || null,
+      childId: chart.childId || null,
     };
 
     return this.graphql
@@ -103,6 +96,7 @@ export class ChartService {
     patch: {
       name?: string;
       datasetId?: string;
+      childId?: string | null;
       xAxis?: string;
       yAxis?: string[];
       filters?: Record<string, any>;

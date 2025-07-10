@@ -128,7 +128,9 @@ export class ChartComponent {
       }
 
       const xCol = xAxis[0];
-      const labels = rawData.map((row) => row[toCamelCase(xCol.columnName)]);
+      const labels = (rawData || []).map((row) => {
+        return xCol?.columnName ? row[toCamelCase(xCol.columnName)] : '';
+      });
 
       switch (chartType) {
         case 'pie':

@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import {
   distinctUntilChanged,
   filter,
+  map,
   Observable,
   startWith,
   Subscription,
@@ -63,6 +64,9 @@ export class ChartPageComponent implements OnInit {
     startWith(this.state.getChartType())
   );
 
+  childChartControl = new FormControl<string | null>(null);
+  availableChildCharts$ = this.state.availableChildTables$;
+
   datasets$: Observable<Dataset[]> = this.state.datasets$;
   selectedDatasetControl = new FormControl<string | null>(null);
   selectedDatasetControl$ = this.state.selectedDataset$;
@@ -113,6 +117,16 @@ export class ChartPageComponent implements OnInit {
 
     this.nameControl.valueChanges.subscribe((name) => {
       this.state.updateChartField('name', name || '');
+    });
+
+    this.childChartControl.valueChanges.subscribe((childId) => {
+      this.state.updateChartField('childId', childId);
+    });
+
+    this.state.chart$.subscribe((chart) => {
+      this.childChartControl.setValue(chart?.childId || null, {
+        emitEvent: false,
+      });
     });
   }
 

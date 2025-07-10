@@ -1,8 +1,10 @@
 import {
   Component,
+  EventEmitter,
   inject,
   Input,
   OnChanges,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 import { select, Store } from '@ngrx/store';
@@ -15,6 +17,7 @@ import {
   of,
   switchMap,
   take,
+  tap,
 } from 'rxjs';
 import { ChartDto, ChartsSelectors } from '../../../core/store/charts';
 import { DatasetDto, DatasetsSelectors } from '../../../core/store/datasets';
@@ -46,6 +49,25 @@ export class TableRendererComponent implements OnChanges {
   private store = inject(Store);
   private tableService = inject(ChartService);
   @Input() tableId!: string;
+  @Input() initialFilter?: { field: string; value: any } | null;
+  @Output() tableDoubleClick = new EventEmitter<{
+    tableId: string;
+    field: string;
+    value: any;
+  }>();
+
+  onTableDoubleClick(event: { field: string; value: any }): void {
+    if (!this.tableSubject.value?.childId) {
+      console.error('Table ID is missing');
+      return;
+    }
+
+    this.tableDoubleClick.emit({
+      tableId: this.tableSubject.value.childId,
+      field: event.field,
+      value: event.value,
+    });
+  }
 
   private tableSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);

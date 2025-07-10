@@ -1,13 +1,14 @@
-import { ChartDto, SortingType } from '../store/charts';
+import { ChartDto, FilterType, SortingType } from '../store/charts';
 
 export function toChartCreateRequest(dto: ChartDto): {
   name: string;
   datasetId: string;
   xAxis: string;
   yAxis: string[];
-  filters?: Record<string, any>;
+  filters?: FilterType[];
   sorting?: SortingType[];
   settings?: Record<string, any>;
+  childId?: string | null;
 } {
   if (!dto.name || !dto.datasetId || !dto.yAxis?.length) {
     throw new Error('Invalid chart data: missing required fields');
@@ -22,8 +23,9 @@ export function toChartCreateRequest(dto: ChartDto): {
     datasetId: dto.datasetId,
     xAxis: dto.xAxis ?? '',
     yAxis: dto.yAxis,
-    filters: dto.filters ?? {},
+    filters: dto.filters ?? [],
     sorting: dto.sorting ?? undefined,
     settings: dto.settings ?? {},
+    childId: dto.childId ?? null,
   };
 }

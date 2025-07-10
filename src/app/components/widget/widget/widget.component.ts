@@ -20,6 +20,11 @@ import { TableRendererComponent } from '../table-renderer/table-renderer.compone
 export class WidgetComponent {
   @Input() widget!: Widget;
   @Input() onEditWidget?: (widget: Widget) => void;
+  @Input() onTableDoubleClick?: (event: {
+    tableId: string;
+    field: string;
+    value: any;
+  }) => void;
 
   shouldShowTable(): boolean {
     return this.widget.type === 'table';

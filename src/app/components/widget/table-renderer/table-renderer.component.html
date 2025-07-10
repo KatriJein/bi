@@ -3,6 +3,8 @@
     [rowData]="chartData$ | async"
     [columnDefs]="colDefs$ | async"
     [defaultColDef]="defaultColDef"
+    [initialFilter]="initialFilter"
+    (cellDoubleClicked)="onTableDoubleClick($event)"
   />
 </ng-container>
 

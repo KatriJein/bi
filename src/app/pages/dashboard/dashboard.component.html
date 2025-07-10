@@ -1,6 +1,7 @@
 <div class="dashboard-page">
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav mode="side" opened class="sidebar">
+      <!-- Ваш сайдбар остается без изменений -->
       <div>
         <div
           class="active-interface"
@@ -21,7 +22,14 @@
                 [class.active]="dash.id === activeDashboardId"
                 [routerLink]="['/dashboard', dash.id]"
               >
-                {{ dash.name }}
+                <div class="dashboard-item-content">
+                  <mat-icon
+                    [svgIcon]="dash.iconId || 'chart'"
+                    [ngStyle]="{ color: dash.color }"
+                    class="dashboard-icon"
+                  ></mat-icon>
+                  {{ dash.name }}
+                </div>
               </mat-list-item>
             </ng-container>
           </ng-container>
@@ -31,41 +39,68 @@
 
     <mat-sidenav-content>
       <div class="dashboard-content">
-        <div class="dashboard-header">
-          <h2>Виджеты текущего дашборда</h2>
-          <div class="actions">
-            <button
-              mat-button
-              color="primary"
-              class="refresh-widget-button"
-              (click)="onRefreshWidgets()"
-            >
-              <mat-icon>refresh</mat-icon>
-              Обновить
-            </button>
+        <mat-tab-group
+          [(selectedIndex)]="selectedTabIndex"
+          class="dashboard-tabs"
+        >
+          <!-- Вкладка с виджетами -->
+          <mat-tab label="Виджеты">
+            <div class="widgets-tab-content">
+              <div class="dashboard-header">
+                <div class="actions">
+                  <button
+                    mat-button
+                    color="primary"
+                    class="refresh-widget-button"
+                    (click)="onRefreshWidgets()"
+                  >
+                    <mat-icon>refresh</mat-icon>
+                    Обновить
+                  </button>
+                  <button
+                    mat-flat-button
+                    [matMenuTriggerFor]="addWidgetMenu"
+                    color="primary"
+                    class="add-widget-button"
+                  >
+                    Добавить виджет
+                  </button>
+                </div>
+                <mat-menu #addWidgetMenu="matMenu">
+                  <button mat-menu-item (click)="openWidgetDialog('text')">
+                    Текст
+                  </button>
+                  <button mat-menu-item (click)="openWidgetDialog('chart')">
+                    График
+                  </button>
+                </mat-menu>
+              </div>
+              <div #gridStackContainer class="grid-stack"></div>
+              <ng-template #widgetHost></ng-template>
+            </div>
+          </mat-tab>
 
-            <button
-              mat-flat-button
-              [matMenuTriggerFor]="addWidgetMenu"
-              color="primary"
-              class="add-widget-button"
-            >
-              Добавить виджет
-            </button>
-          </div>
-
-          <mat-menu #addWidgetMenu="matMenu">
-            <button mat-menu-item (click)="openWidgetDialog('text')">
-              Текст
-            </button>
-            <button mat-menu-item (click)="openWidgetDialog('chart')">
-              График
-            </button>
-          </mat-menu>
-        </div>
-
-        <div #gridStackContainer class="grid-stack"></div>
-        <ng-template #widgetHost></ng-template>
+          <!-- Вкладка с расширенной таблицей -->
+          <mat-tab label="Расширенная таблица" [disabled]="!expandedTableId">
+            <div class="expanded-table-tab-content" *ngIf="expandedTableId">
+              <div class="expanded-table-header">
+                <button mat-button (click)="selectedTabIndex = 0">
+                  <mat-icon>arrow_back</mat-icon>
+                  Назад к виджетам
+                </button>
+                <h3 *ngIf="expandedTableFilter">
+                  Фильтр: {{ expandedTableFilter.field }} =
+                  {{ expandedTableFilter.value }}
+                </h3>
+              </div>
+              <app-table-renderer
+                [tableId]="expandedTableId"
+                [initialFilter]="expandedTableFilter"
+              >
+              </app-table-renderer>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>

@@ -5,6 +5,7 @@ mutation updateChart($id: UUID!, $patch: ChartPatch!) {
   updateChart(input: {patch: $patch, id: $id}) {
     chart {
       datasetId
+      childId
       name
       filters
       sorting

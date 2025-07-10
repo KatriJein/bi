@@ -24,6 +24,7 @@ export interface ChartDto {
   id: string | null;
   name: string;
   datasetId: string | null;
+  childId: string | null;
   xAxis: string | null;
   yAxis: string[] | null;
   filters: FilterType[] | null;

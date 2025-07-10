@@ -4,6 +4,7 @@ export const createChartMutation = gql(`
   mutation createChart(
     $name: String!,
     $datasetId: UUID!,
+    $childId: UUID,
     $xAxis: String!,
     $yAxis: [String]!,
     $filters: JSON,
@@ -14,6 +15,7 @@ export const createChartMutation = gql(`
       input: {
         chart: {
           datasetId: $datasetId,
+          childId: $childId,
           name: $name,
           xAxis: $xAxis,
           yAxis: $yAxis,
@@ -27,6 +29,7 @@ export const createChartMutation = gql(`
         id
         name
         datasetId
+        childId
         xAxis
         yAxis
         filters

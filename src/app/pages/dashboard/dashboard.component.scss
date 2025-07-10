@@ -1,9 +1,12 @@
 .dashboard-page {
   height: calc(100vh - 104px);
   background-color: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidenav-container {
+  flex: 1;
   height: 100%;
 }
 
@@ -19,6 +22,19 @@
 
 .dashboard-item {
   border-radius: var(--border-radius) !important;
+
+  .dashboard-item-content {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .dashboard-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .active-interface {
@@ -44,7 +60,7 @@
 .dashboard-header {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
 
   .actions {
@@ -75,4 +91,103 @@
 
 .grid-stack > .grid-stack-item {
   transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+.expanded-table-container {
+  height: 800px;
+  display: flex;
+  flex-direction: column;
+
+  .expanded-table-header {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3 {
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  app-table-renderer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; // Это важно для правильного расчета высоты
+
+    ::ng-deep {
+      .table-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 16px;
+
+        ag-grid-angular {
+          flex: 1;
+          width: 100%;
+          min-height: 0;
+        }
+      }
+
+      .active-filters-panel {
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+
+        .filters {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .filter-badge {
+          display: flex;
+          align-items: center;
+          padding: 4px 8px;
+          background-color: white;
+          border-radius: 16px;
+          border: 1px solid #e0e0e0;
+
+          .icon-button {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+
+            .icon {
+              font-size: 16px;
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.expanded-table-tab-content {
+  height: 780px;
+  display: flex;
+  flex-direction: column;
+}
+
+.expanded-table-tab-content {
+  app-table-renderer {
+    flex: 1;
+    min-height: 0;
+  }
 }

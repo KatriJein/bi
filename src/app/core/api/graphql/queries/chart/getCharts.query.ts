@@ -5,6 +5,7 @@ export const getChartsQuery = gql(`query getCharts {
     nodes {
       name
       datasetId
+      childId
       filters
       sorting
       id

@@ -1,8 +1,10 @@
 import {
   Component,
+  EventEmitter,
   Input,
   OnChanges,
   OnInit,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 import {
@@ -16,7 +18,7 @@ import {
 import { AgGridAngular } from 'ag-grid-angular';
 import { MatIconModule } from '@angular/material/icon';
 import { AG_GRID_LOCALE_RU, AG_GRID_THEME } from '../../../constants';
-import { Observable } from 'rxjs';
+import { debounceTime, Observable, Subject, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -32,6 +34,12 @@ export class TableComponent implements OnInit, OnChanges {
   @Input() rowData: any[] | null = [];
   @Input() columnDefs: ColDef[] | null = [];
   @Input() defaultColDef: ColDef = {};
+  @Input() initialFilter?: { field: string; value: any } | null;
+
+  @Output() cellDoubleClicked = new EventEmitter<{
+    field: string;
+    value: any;
+  }>();
 
   gridApi!: GridApi;
 
@@ -43,6 +51,17 @@ export class TableComponent implements OnInit, OnChanges {
   });
 
   localeText = AG_GRID_LOCALE_RU;
+
+  private clickSubject = new Subject<{ field: string; value: any } | null>();
+  private clickSubscription: Subscription;
+
+  constructor() {
+    this.clickSubscription = this.clickSubject
+      .pipe(debounceTime(300))
+      .subscribe((cell) => {
+        this.applyFilter(cell!.field, cell!.value);
+      });
+  }
 
   ngOnInit() {}
 
@@ -56,6 +75,10 @@ export class TableComponent implements OnInit, OnChanges {
       }, {} as { [key: string]: string });
 
       this.syncFiltersWithColumns();
+    }
+
+    if (changes['initialFilter'] && this.gridApi) {
+      this.applyInitialFilter();
     }
   }
 
@@ -82,7 +105,21 @@ export class TableComponent implements OnInit, OnChanges {
 
   onGridReady(params: any): void {
     this.gridApi = params.api;
+    this.applyInitialFilter();
     this.syncFiltersWithColumns();
+  }
+
+  private async applyFilter(field: string, value: any): Promise<void> {
+    const filterInstance = await this.gridApi.getColumnFilterInstance(field);
+
+    if (filterInstance?.setModel) {
+      filterInstance.setModel({
+        type: 'equals',
+        filter: value,
+      });
+      this.gridApi.onFilterChanged();
+      this.updateActiveFilters();
+    }
   }
 
   columnEverythingChanged(): void {
@@ -113,23 +150,44 @@ export class TableComponent implements OnInit, OnChanges {
 
     if (!columnField || cellValue === undefined || cellValue === null) return;
 
-    const filterInstance = await this.gridApi.getColumnFilterInstance(
-      columnField
-    );
+    this.clickSubject.next({ field: columnField, value: cellValue });
+  }
 
-    if (filterInstance?.setModel) {
-      filterInstance.setModel({
-        type: 'equals',
-        filter: cellValue,
-      });
-      this.gridApi.onFilterChanged();
-      this.updateActiveFilters();
-    }
+  onCellDoubleClicked(event: any): void {
+    this.clickSubject.next(null);
+
+    this.cellDoubleClicked.emit({
+      field: event.colDef.field,
+      value: event.value,
+    });
+  }
+
+  ngOnDestroy() {
+    this.clickSubscription.unsubscribe();
   }
 
   resetAllFilters(): void {
     this.gridApi.setFilterModel(null);
     this.gridApi.onFilterChanged();
     this.activeFilters = [];
+  }
+
+  private async applyInitialFilter(): Promise<void> {
+    console.log('Applying initial filter:', this.initialFilter);
+    console.log('GridApi ready:', !!this.gridApi);
+    console.log('ColumnDefs:', this.columnDefs);
+    if (!this.initialFilter || !this.gridApi) return;
+
+    const { field, value } = this.initialFilter;
+    const filterInstance = await this.gridApi.getColumnFilterInstance(field);
+
+    if (filterInstance?.setModel) {
+      filterInstance.setModel({
+        type: 'equals',
+        filter: value,
+      });
+      this.gridApi.onFilterChanged();
+      this.updateActiveFilters();
+    }
   }
 }
