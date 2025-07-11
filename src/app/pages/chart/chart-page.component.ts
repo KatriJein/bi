@@ -28,6 +28,7 @@ import {
   getChartIcon,
 } from '../../constants';
 import { TableComponent } from '../../components/table/table/table.component';
+import { DoughnutChartComponent } from "../../components/chart/custom-charts/doughnut-procent/doughnut-procent.component";
 
 @Component({
   selector: 'app-chart-page',
@@ -46,7 +47,8 @@ import { TableComponent } from '../../components/table/table/table.component';
     MatExpansionModule,
     ChartSettingsComponent,
     MatIconModule,
-  ],
+    DoughnutChartComponent
+],
 })
 export class ChartPageComponent implements OnInit {
   private state = inject(ChartPageStateService);

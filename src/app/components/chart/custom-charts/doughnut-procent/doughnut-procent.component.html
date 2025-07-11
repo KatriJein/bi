@@ -1,0 +1,12 @@
+<div class="chart-wrapper">
+  <div class="doughnut-container">
+    <canvas
+      baseChart
+      [data]="doughnutChartData"
+      [options]="doughnutChartOptions"
+      [type]="doughnutChartType"
+    ></canvas>
+    <div class="center-percentage">{{ percentage }}%</div>
+  </div>
+  <div class="chart-title">{{ title }}</div>
+</div>

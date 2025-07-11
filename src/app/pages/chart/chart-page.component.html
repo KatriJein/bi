@@ -47,9 +47,9 @@
         appearance="fill"
         *ngIf="chartTypeControl.value === 'table'"
       >
-        <mat-label>Дочерний график (необязательно)</mat-label>
+        <mat-label>Детализация таблицы (необязательно)</mat-label>
         <mat-select [formControl]="childChartControl">
-          <mat-option [value]="null">Нет дочернего графика</mat-option>
+          <mat-option [value]="null">Нет дочерней таблицы</mat-option>
           <mat-option
             *ngFor="let chart of availableChildCharts$ | async"
             [value]="chart.id"
