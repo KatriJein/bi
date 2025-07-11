@@ -81,7 +81,7 @@
           </mat-tab>
 
           <!-- Вкладка с расширенной таблицей -->
-          <mat-tab label="Расширенная таблица" [disabled]="!expandedTableId">
+          <mat-tab label="Детализация" [disabled]="!expandedTableId">
             <div class="expanded-table-tab-content" *ngIf="expandedTableId">
               <div class="expanded-table-header">
                 <button mat-button (click)="selectedTabIndex = 0">
@@ -89,8 +89,7 @@
                   Назад к виджетам
                 </button>
                 <h3 *ngIf="expandedTableFilter">
-                  Фильтр: {{ expandedTableFilter.field }} =
-                  {{ expandedTableFilter.value }}
+                  {{ expandedTableName }}
                 </h3>
               </div>
               <app-table-renderer

@@ -117,6 +117,20 @@ export class DashboardStateService {
     return 'chart';
   }
 
+  getTableName(id: string | null): string {
+    if (id === null) {
+      return '';
+    }
+    let name: string = '';
+
+    this.store
+      .select(selectChartById(id))
+      .pipe(take(1))
+      .subscribe((c) => (name = c?.name || ''));
+
+    return name;
+  }
+
   removeWidget(id: string) {
     const current = this.widgetsSubject.getValue();
     this.widgetsSubject.next(current.filter((w) => w.id !== id));

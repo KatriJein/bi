@@ -78,14 +78,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
 
-  expandedTableData: any[] | null = null;
-  expandedTableColDefs: ColDef[] = [];
-  defaultColDef: ColDef = {
-    flex: 1,
-    floatingFilter: true,
-  };
-
   expandedTableId: string | null = null;
+  expandedTableName: string | null = null;
   expandedTableFilter: { field: string; value: any } | null = null;
   selectedTabIndex = 0;
 
@@ -95,11 +89,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ): void {
     this.expandedTableId = tableId;
     this.expandedTableFilter = filter;
-    this.selectedTabIndex = 1; // Переключаем на вкладку с таблицей
-
-    // Здесь можно добавить загрузку данных
-    // Например, через сервис:
-    // this.loadExpandedTableData(tableId, filter);
+    this.selectedTabIndex = 1;
+    this.expandedTableName = this.stateService.getTableName(tableId);
   }
 
   activeInterface$ = this.stateService.activeInterface$;
