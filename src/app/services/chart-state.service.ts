@@ -75,11 +75,11 @@ export class ChartPageStateService {
     )
   );
 
-  availableChildTables$ = this.store
-    .select(ChartsSelectors.selectTableCharts)
+  availableChildCharts$ = this.store
+    .select(ChartsSelectors.selectCharts)
     .pipe(
-      map((tables) =>
-        tables.filter((table) => table.id !== this.getCurrentChart()?.id)
+      map((charts) =>
+        charts.filter((chart) => chart.id !== this.getCurrentChart()?.id)
       )
     );
 

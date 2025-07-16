@@ -6,7 +6,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import {
   distinctUntilChanged,
   filter,
-  map,
   Observable,
   startWith,
   Subscription,
@@ -27,8 +26,6 @@ import {
   getChartDisplayName,
   getChartIcon,
 } from '../../constants';
-import { TableComponent } from '../../components/table/table/table.component';
-import { DoughnutChartComponent } from "../../components/chart/custom-charts/doughnut-procent/doughnut-procent.component";
 
 @Component({
   selector: 'app-chart-page',
@@ -47,8 +44,7 @@ import { DoughnutChartComponent } from "../../components/chart/custom-charts/dou
     MatExpansionModule,
     ChartSettingsComponent,
     MatIconModule,
-    DoughnutChartComponent
-],
+  ],
 })
 export class ChartPageComponent implements OnInit {
   private state = inject(ChartPageStateService);
@@ -67,7 +63,7 @@ export class ChartPageComponent implements OnInit {
   );
 
   childChartControl = new FormControl<string | null>(null);
-  availableChildCharts$ = this.state.availableChildTables$;
+  availableChildCharts$ = this.state.availableChildCharts$;
 
   datasets$: Observable<Dataset[]> = this.state.datasets$;
   selectedDatasetControl = new FormControl<string | null>(null);

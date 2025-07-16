@@ -1,0 +1,15 @@
+<div class="wrapper">
+  <app-chart-renderer
+    *ngIf="isChart$ | async"
+    [chartId]="chartId"
+    [initialFilters]="initialFilters"
+    (chartClick)="handleClick($event)"
+  />
+
+  <app-table-renderer
+    *ngIf="isTable$ | async"
+    [tableId]="chartId"
+    [initialFilters]="initialFilters"
+    (tableDoubleClick)="handleClick($event)"
+  />
+</div>

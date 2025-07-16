@@ -1,8 +1,10 @@
 import {
   Component,
+  EventEmitter,
   inject,
   Input,
   OnChanges,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 import { DatasetDto, DatasetsSelectors } from '../../../core/store/datasets';
@@ -35,6 +37,7 @@ import {
 } from '../../../utils';
 import { Column } from '../../../core/models';
 import { ChartService } from '../../../core/api/services';
+import { FilterEmitType, FilterTypeExp } from '../../../pages';
 
 @Component({
   selector: 'app-chart-renderer',
@@ -46,6 +49,8 @@ export class ChartRendererComponent implements OnChanges {
   private store = inject(Store);
   private chartService = inject(ChartService);
   @Input() chartId!: string;
+  @Input() initialFilters?: FilterTypeExp[] | null;
+  @Output() chartClick = new EventEmitter<FilterEmitType>();
 
   private chartSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
@@ -75,8 +80,15 @@ export class ChartRendererComponent implements OnChanges {
             ? findColumnsByNames(chart.yAxis, dataset)
             : [];
 
+          const combinedFilters = this.combineFilters(
+            chart.filters || [],
+            this.initialFilters || []
+          );
+
+          console.log(combinedFilters, 'combinedFilters');
+
           const filtersColumns: FilterColumn[] =
-            chart.filters
+            combinedFilters
               ?.map((f) => {
                 const baseCol = findColumnByName(f.columnName, dataset);
                 if (!baseCol) return null;
@@ -87,6 +99,8 @@ export class ChartRendererComponent implements OnChanges {
                 };
               })
               .filter((x): x is FilterColumn => x !== null) ?? [];
+
+          console.log(filtersColumns, 'filtersColumns');
 
           const sortingColumns = Array.isArray(chart.sorting)
             ? findColumnsByNames(
@@ -202,6 +216,7 @@ export class ChartRendererComponent implements OnChanges {
             const xAxis = chart.xAxis
               ? [findColumnByName(chart.xAxis, dataset)]
               : [];
+
             const yAxis = Array.isArray(chart.yAxis)
               ? findColumnsByNames(chart.yAxis, dataset)
               : [];
@@ -226,5 +241,75 @@ export class ChartRendererComponent implements OnChanges {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+  }
+
+  private combineFilters(
+    chartFilters: any[],
+    initialFilters: FilterTypeExp[]
+  ): FilterColumn[] {
+    const initialAsFilterColumns = initialFilters.map((filter) => ({
+      columnName: filter.field,
+      filterType: 'Равно',
+      value: filter.value,
+    }));
+
+    const combined = [...chartFilters];
+
+    initialAsFilterColumns.forEach((initialFilter) => {
+      const existingIndex = combined.findIndex(
+        (f) => f.columnName === initialFilter.columnName
+      );
+      if (existingIndex >= 0) {
+        combined[existingIndex] = initialFilter;
+      } else {
+        combined.push(initialFilter);
+      }
+    });
+
+    return combined;
+  }
+
+  onChartClick(event: any) {
+    if (!this.chartSubject.value?.childId) {
+      console.error('Child chart ID is missing');
+      return;
+    }
+
+    if (event.active?.length > 0) {
+      const clickedElementIndex = event.active[0].index;
+      const datasetIndex = event.active[0].datasetIndex;
+
+      this.chartSubject.pipe(take(1)).subscribe((chart) => {
+        this.datasetSubject.pipe(take(1)).subscribe((dataset) => {
+          if (!chart || !dataset) return;
+
+          const xAxis = chart.xAxis;
+          const yAxis = Array.isArray(chart.yAxis)
+            ? chart.yAxis[datasetIndex]
+            : chart.yAxis;
+
+          if (!xAxis || !yAxis) return;
+
+          const xValue = this.chartData?.labels?.[clickedElementIndex];
+          const yValue =
+            this.chartData?.datasets?.[datasetIndex]?.data?.[
+              clickedElementIndex
+            ];
+
+          const filters = [
+            { field: xAxis, value: xValue },
+            { field: yAxis, value: yValue },
+          ];
+
+          const uniqueFilters =
+            xAxis === yAxis ? [{ field: xAxis, value: xValue }] : filters;
+
+          this.chartClick.emit({
+            chartId: chart.childId || '',
+            filters: uniqueFilters,
+          });
+        });
+      });
+    }
   }
 }

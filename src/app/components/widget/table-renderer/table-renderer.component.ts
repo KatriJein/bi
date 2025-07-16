@@ -38,6 +38,7 @@ import { toCamelCase } from '../../../core/utils';
 import { getAgGridFilterType } from '../../../constants';
 import { TableComponent } from '../../table/table/table.component';
 import { CommonModule } from '@angular/common';
+import { FilterEmitType, FilterTypeExp } from '../../../pages';
 
 @Component({
   selector: 'app-table-renderer',
@@ -49,23 +50,18 @@ export class TableRendererComponent implements OnChanges {
   private store = inject(Store);
   private tableService = inject(ChartService);
   @Input() tableId!: string;
-  @Input() initialFilter?: { field: string; value: any } | null;
-  @Output() tableDoubleClick = new EventEmitter<{
-    tableId: string;
-    field: string;
-    value: any;
-  }>();
+  @Input() initialFilters?: FilterTypeExp[] | null;
+  @Output() tableDoubleClick = new EventEmitter<FilterEmitType>();
 
-  onTableDoubleClick(event: { field: string; value: any }): void {
+  onTableDoubleClick(event: FilterTypeExp): void {
     if (!this.tableSubject.value?.childId) {
-      console.error('Table ID is missing');
+      console.error('Child chart ID is missing');
       return;
     }
 
     this.tableDoubleClick.emit({
-      tableId: this.tableSubject.value.childId,
-      field: event.field,
-      value: event.value,
+      chartId: this.tableSubject.value.childId,
+      filters: [{ field: event.field, value: event.value }],
     });
   }
 

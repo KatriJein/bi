@@ -81,22 +81,28 @@
           </mat-tab>
 
           <!-- Вкладка с расширенной таблицей -->
-          <mat-tab label="Детализация" [disabled]="!expandedTableId">
-            <div class="expanded-table-tab-content" *ngIf="expandedTableId">
+          <mat-tab label="Детализация" [disabled]="!expandedChartId">
+            <div class="expanded-table-tab-content" *ngIf="expandedChartId">
               <div class="expanded-table-header">
                 <button mat-button (click)="selectedTabIndex = 0">
                   <mat-icon>arrow_back</mat-icon>
                   Назад к виджетам
                 </button>
-                <h3 *ngIf="expandedTableFilter">
-                  {{ expandedTableName }}
+                <h3 *ngIf="expandedChartFilter">
+                  {{ expandedChartName }}
                 </h3>
               </div>
-              <app-table-renderer
-                [tableId]="expandedTableId"
-                [initialFilter]="expandedTableFilter"
+              <app-chart-container
+                [chartId]="expandedChartId"
+                [initialFilters]="expandedChartFilter"
+                (chartClick)="handleChartExpanded($event)"
+              ></app-chart-container>
+              <!-- <app-table-renderer
+                [tableId]="expandedChartId"
+                [initialFilter]="expandedChartFilter"
+                (tableDoubleClick)="handleChartExpanded($event)"
               >
-              </app-table-renderer>
+              </app-table-renderer> -->
             </div>
           </mat-tab>
         </mat-tab-group>

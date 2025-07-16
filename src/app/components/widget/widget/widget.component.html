@@ -18,13 +18,9 @@
     >
   </p>
 
-  <div *ngIf="widget.chartId" class="content-wrapper">
-    <app-chart-renderer *ngIf="!shouldShowTable()" [chartId]="widget.chartId" />
-
-    <app-table-renderer
-      *ngIf="shouldShowTable()"
-      [tableId]="widget.chartId"
-      (tableDoubleClick)="onTableDoubleClick?.($event)"
-    />
-  </div>
+  <app-chart-container
+    *ngIf="widget.chartId"
+    [chartId]="widget.chartId"
+    (chartClick)="onChartExpClick?.($event)"
+  ></app-chart-container>
 </div>

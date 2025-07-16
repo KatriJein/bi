@@ -27,9 +27,9 @@ import {
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-
-import { DashboardDto } from '../../core/store/dashboards';
-import { WidgetComponent } from '../../components/widget';
+import { take } from 'rxjs/operators';
+import { MatIcon } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 import {
   GridStack,
   GridStackOptions,
@@ -38,14 +38,21 @@ import {
 } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
 import { Widget, WidgetType } from '../../core/api/graphql/types';
-import { debounceTime, take } from 'rxjs/operators';
-import { MatIcon } from '@angular/material/icon';
 import { EditWidgetModalComponent } from '../../components/widget/edit-widget/edit-widget.component';
 import { CreateWidgetModalComponent } from '../../components/widget/create-widget/create-widget.component';
-import { MatTabsModule } from '@angular/material/tabs';
-import { TableComponent } from '../../components/table/table/table.component';
-import { ColDef } from 'ag-grid-community';
-import { TableRendererComponent } from '../../components/widget/table-renderer/table-renderer.component';
+import { ChartContainerComponent } from '../../components/common';
+import { DashboardDto } from '../../core/store/dashboards';
+import { WidgetComponent } from '../../components/widget';
+
+export type FilterTypeExp = {
+  field: string;
+  value: any;
+};
+
+export type FilterEmitType = {
+  chartId: string;
+  filters: FilterTypeExp[];
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -60,8 +67,7 @@ import { TableRendererComponent } from '../../components/widget/table-renderer/t
     MatButtonModule,
     MatIcon,
     MatTabsModule,
-
-    TableRendererComponent,
+    ChartContainerComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -78,19 +84,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
 
-  expandedTableId: string | null = null;
-  expandedTableName: string | null = null;
-  expandedTableFilter: { field: string; value: any } | null = null;
+  expandedChartId: string | null = null;
+  expandedChartName: string | null = null;
+  expandedChartFilter: FilterTypeExp[] | null = null;
   selectedTabIndex = 0;
 
-  openExpandedTable(
-    tableId: string,
-    filter: { field: string; value: any }
-  ): void {
-    this.expandedTableId = tableId;
-    this.expandedTableFilter = filter;
+  openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
+    this.expandedChartId = chartId;
+    this.expandedChartFilter = filters;
     this.selectedTabIndex = 1;
-    this.expandedTableName = this.stateService.getTableName(tableId);
+    this.expandedChartName = this.stateService.getTableName(chartId);
   }
 
   activeInterface$ = this.stateService.activeInterface$;
@@ -283,21 +286,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const componentRef = this.widgetHost.createComponent(WidgetComponent);
     componentRef.instance.widget = widget;
     componentRef.instance.onEditWidget = (w) => this.openEditWidgetDialog(w);
-    componentRef.instance.onTableDoubleClick = (event) =>
-      this.handleTableDoubleClick(event);
+    componentRef.instance.onChartExpClick = (event) =>
+      this.handleChartExpanded(event);
     content.appendChild(componentRef.location.nativeElement);
     this.widgetComponentRefs.set(widget.id, componentRef);
   }
 
-  handleTableDoubleClick(event: {
-    tableId: string;
-    field: string;
-    value: any;
-  }): void {
-    this.openExpandedTable(event.tableId, {
-      field: event.field,
-      value: event.value,
-    });
+  handleChartExpanded(event: FilterEmitType): void {
+    this.openExpandedChart(event.chartId, event.filters);
   }
 
   ngOnDestroy() {

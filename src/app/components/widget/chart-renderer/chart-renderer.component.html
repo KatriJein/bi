@@ -1,17 +1,20 @@
 <ng-container *ngIf="chart$ | async as chart">
   <ng-container *ngIf="dataset$ | async as dataset">
     <div class="chart-container">
+      <div *ngIf="initialFilters?.length" class="filter-indicator">
+        Применены фильтры:
+        <span *ngFor="let filter of initialFilters; let last = last">
+          {{ filter.field }} = {{ filter.value }}{{ last ? "" : ", " }}
+        </span>
+      </div>
       <canvas
         baseChart
         [data]="chartData"
         [options]="chartOptions"
         [type]="chartType"
         class="chart"
+        (chartClick)="onChartClick($event)"
       ></canvas>
     </div>
   </ng-container>
 </ng-container>
-
-<ng-template #loading>
-  <p>Загрузка графика...</p>
-</ng-template>

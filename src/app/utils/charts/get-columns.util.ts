@@ -1,4 +1,5 @@
 import { Column, Dataset } from '../../core/models';
+import { toCamelCase } from '../../core/utils';
 
 // Поиск колонки по имени
 export function findColumnByName(
@@ -6,7 +7,16 @@ export function findColumnByName(
   dataset: Dataset
 ): Column | null {
   if (!name || !dataset.columns) return null;
-  return dataset.columns.find((c) => c.columnName === name) ?? null;
+
+  const exactMatch = dataset.columns.find((c) => c.columnName === name);
+  if (exactMatch) return exactMatch;
+
+  const camelCaseSearch = toCamelCase(name);
+  return (
+    dataset.columns.find(
+      (c) => toCamelCase(c.columnName) === camelCaseSearch
+    ) ?? null
+  );
 }
 
 // Поиск колонок по именам
@@ -16,6 +26,14 @@ export function findColumnsByNames(
 ): Column[] {
   if (!names || !dataset.columns) return [];
   return names
-    .map((name) => dataset.columns!.find((c) => c.columnName === name))
+    .map((name) => {
+      const exactMatch = dataset.columns!.find((c) => c.columnName === name);
+      if (exactMatch) return exactMatch;
+
+      const camelCaseSearch = toCamelCase(name);
+      return dataset.columns!.find(
+        (c) => toCamelCase(c.columnName) === camelCaseSearch
+      );
+    })
     .filter((c): c is Column => !!c);
 }

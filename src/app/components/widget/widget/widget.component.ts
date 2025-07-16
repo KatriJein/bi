@@ -2,33 +2,20 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { Widget } from '../../../core/api/graphql/types';
-import { ChartRendererComponent } from '../chart-renderer/chart-renderer.component';
-import { TableRendererComponent } from '../table-renderer/table-renderer.component';
+import { FilterEmitType } from '../../../pages';
+import { ChartContainerComponent } from '../../common';
 
 @Component({
   selector: 'app-widget',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    ChartRendererComponent,
-    TableRendererComponent,
-  ],
+  imports: [CommonModule, MatCardModule, ChartContainerComponent],
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.scss'],
 })
 export class WidgetComponent {
   @Input() widget!: Widget;
   @Input() onEditWidget?: (widget: Widget) => void;
-  @Input() onTableDoubleClick?: (event: {
-    tableId: string;
-    field: string;
-    value: any;
-  }) => void;
-
-  shouldShowTable(): boolean {
-    return this.widget.type === 'table';
-  }
+  @Input() onChartExpClick?: (event: FilterEmitType) => void;
 
   getVerticalAlign(value: string | undefined): string {
     switch (value) {
@@ -43,7 +30,10 @@ export class WidgetComponent {
 
   handleClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (target.closest('.table-container')) {
+    if (
+      target.closest('.table-container') ||
+      target.closest('.chart-container')
+    ) {
       return;
     }
 

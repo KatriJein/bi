@@ -20,6 +20,8 @@ import { AG_GRID_LOCALE_RU, AG_GRID_THEME } from '../../../constants';
 import { debounceTime, filter, Subject, Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { FilterTypeExp } from '../../../pages';
+import { toCamelCase } from '../../../core/utils';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -33,16 +35,13 @@ export class TableComponent implements OnChanges {
   @Input() rowData: any[] | null = [];
   @Input() columnDefs: ColDef[] | null = [];
   @Input() defaultColDef: ColDef = {};
-  @Input() initialFilter?: { field: string; value: any } | null;
+  @Input() initialFilters?: FilterTypeExp[] | null;
 
-  @Output() cellDoubleClicked = new EventEmitter<{
-    field: string;
-    value: any;
-  }>();
+  @Output() cellDoubleClicked = new EventEmitter<FilterTypeExp>();
 
   gridApi!: GridApi;
   private isGridReady = false;
-  private pendingFilter: { field: string; value: any } | null = null;
+  private pendingFilters: FilterTypeExp[] | null = null;
 
   activeFilters: { colId: string; value: any }[] = [];
   colIdToHeaderName: { [key: string]: string } = {};
@@ -79,18 +78,12 @@ export class TableComponent implements OnChanges {
       this.syncFiltersWithColumns();
     }
 
-    if (changes['initialFilter'] && this.gridApi) {
-      this.applyFilterReplacingAll(
-        this.initialFilter!.field,
-        this.initialFilter!.value
-      );
+    if (changes['initialFilters'] && this.gridApi && this.initialFilters) {
+      this.applyFiltersReplacingAll(this.initialFilters);
     }
 
-    if (changes['rowData'] && this.gridApi && this.initialFilter) {
-      this.applyFilterReplacingAll(
-        this.initialFilter!.field,
-        this.initialFilter!.value
-      );
+    if (changes['rowData'] && this.gridApi && this.initialFilters) {
+      this.applyFiltersReplacingAll(this.initialFilters);
     }
   }
 
@@ -106,14 +99,11 @@ export class TableComponent implements OnChanges {
     this.gridApi = params.api;
     this.isGridReady = true;
 
-    this.pendingFilter
-      ? this.applyFilterReplacingAll(
-          this.pendingFilter.field,
-          this.pendingFilter.value
-        )
-      : this.applyInitialFilter();
+    this.pendingFilters
+      ? this.applyFiltersReplacingAll(this.pendingFilters)
+      : this.applyInitialFilters();
 
-    this.pendingFilter = null;
+    this.pendingFilters = null;
     this.syncFiltersWithColumns();
   }
 
@@ -135,50 +125,59 @@ export class TableComponent implements OnChanges {
     });
   }
 
-  private async applyInitialFilter(): Promise<void> {
-    if (!this.initialFilter) return;
+  private async applyInitialFilters(): Promise<void> {
+    if (!this.initialFilters || this.initialFilters.length === 0) return;
 
     if (this.gridApi && this.isGridReady) {
-      const { field, value } = this.initialFilter;
-      await this.applyFilterReplacingAll(field, value);
+      await this.applyFiltersReplacingAll(this.initialFilters);
     } else {
-      this.pendingFilter = this.initialFilter;
+      this.pendingFilters = [...this.initialFilters];
     }
   }
 
-  private async applyFilterReplacingAll(
-    field: string,
-    value: any
+  private async applyFiltersReplacingAll(
+    filters: FilterTypeExp[]
   ): Promise<void> {
+    if (!filters || filters.length === 0) {
+      this.clearAllFilters();
+      return;
+    }
+
     if (!this.gridApi) {
       console.warn('Grid API not ready');
-      this.pendingFilter = { field, value };
+      this.pendingFilters = [...filters];
       return;
     }
 
     try {
-      this.gridApi.setFilterModel(null);
-      this.gridApi.onFilterChanged();
+      this.clearAllFilters();
 
-      const filterInstance = await this.gridApi.getColumnFilterInstance(field);
-      if (filterInstance?.setModel) {
-        filterInstance.setModel({
-          type: 'equals',
-          filter: value,
-        });
-        this.gridApi.onFilterChanged();
-        this.updateActiveFilters();
-      }
+      const filterPromises = filters.map(async (filter) => {
+        const filterInstance = await this.gridApi.getColumnFilterInstance(
+          toCamelCase(filter.field)
+        );
+
+        if (filterInstance?.setModel) {
+          filterInstance.setModel({
+            type: 'equals',
+            filter: filter.value,
+          });
+        }
+      });
+
+      await Promise.all(filterPromises);
+      this.gridApi.onFilterChanged();
+      this.updateActiveFilters();
     } catch (error) {
-      console.error('Error applying filter (replacing):', error);
-      this.pendingFilter = { field, value };
+      console.error('Error applying filters (replacing):', error);
+      this.pendingFilters = [...filters];
     }
   }
 
   private async applyFilterAppending(field: string, value: any): Promise<void> {
     if (!this.gridApi) {
       console.warn('Grid API not ready');
-      this.pendingFilter = { field, value };
+      this.pendingFilters = [{ field, value }];
       return;
     }
 
@@ -194,7 +193,7 @@ export class TableComponent implements OnChanges {
       }
     } catch (error) {
       console.error('Error applying filter (appending):', error);
-      this.pendingFilter = { field, value };
+      this.pendingFilters = [{ field, value }];
     }
   }
 
@@ -206,7 +205,9 @@ export class TableComponent implements OnChanges {
     this.updateActiveFilters();
   }
 
-  resetAllFilters(): void {
+  clearAllFilters(): void {
+    if (!this.gridApi) return;
+
     this.gridApi.setFilterModel(null);
     this.gridApi.onFilterChanged();
     this.activeFilters = [];
