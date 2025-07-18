@@ -6,5 +6,6 @@ export const CHART_TYPES: ChartType[] = [
   'pie',
   'doughnut',
   'horizontalBar',
+  'doughnutPercent',
   'table',
 ];

@@ -487,7 +487,7 @@ export class ChartPageStateService {
           name: chart.name || 'Новый график',
           datasetId: chart.datasetId,
           childId: chart.childId ?? null,
-          xAxis: chart.xAxis,
+          xAxis: chart.xAxis ?? '',
           yAxis: chart.yAxis,
           filters: chart.filters ?? null,
           sorting: chart.sorting ?? null,

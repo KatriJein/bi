@@ -2,23 +2,32 @@
   <ng-container *ngIf="chartData$ | async as chartData">
     <ng-container *ngIf="chartOptions$ | async as chartOptions">
       <ng-container *ngIf="chartType$ | async as chartType">
-        <!-- Графики -->
-        <canvas
-          *ngIf="chartType !== 'table'"
-          baseChart
-          [data]="chartData"
-          [options]="chartOptions"
-          [type]="chartType === 'horizontalBar' ? 'bar' : chartType"
-        ></canvas>
+        <ng-container [ngSwitch]="chartType">
 
-        <!-- Таблица -->
-        <div *ngIf="chartType === 'table'" class="table-container">
-          <app-table
-            [rowData]="tableData$ | async"
-            [columnDefs]="colDefs$ | async"
-            [defaultColDef]="defaultColDef"
-          />
-        </div>
+          <!-- Таблица -->
+          <div *ngSwitchCase="'table'" class="table-container">
+            <app-table
+              [rowData]="tableData$ | async"
+              [columnDefs]="colDefs$ | async"
+              [defaultColDef]="defaultColDef"
+            ></app-table>
+          </div>
+
+          <!-- Кольцевой с процентом -->
+          <div *ngSwitchCase="'doughnutPercent'" class="doughnut-container">
+            <app-doughnut-chart [data]="chartData"></app-doughnut-chart>
+          </div>
+
+          <!-- Графики -->
+          <canvas
+            *ngSwitchDefault
+            baseChart
+            [data]="chartData"
+            [options]="chartOptions"
+            [type]="normalizeChartType(chartType)"
+          ></canvas>
+
+        </ng-container>
       </ng-container>
     </ng-container>
   </ng-container>

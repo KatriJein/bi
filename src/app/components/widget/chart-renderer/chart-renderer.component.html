@@ -7,7 +7,17 @@
           {{ filter.field }} = {{ filter.value }}{{ last ? "" : ", " }}
         </span>
       </div>
+
+      <app-doughnut-chart
+        *ngIf="chart.settings?.chartType === 'doughnutPercent'"
+        [data]="chartData"
+      ></app-doughnut-chart>
+
       <canvas
+        *ngIf="
+          chart.settings?.chartType !== 'doughnutPercent' &&
+          chart.settings?.chartType !== 'table'
+        "
         baseChart
         [data]="chartData"
         [options]="chartOptions"

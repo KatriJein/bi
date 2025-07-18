@@ -10,7 +10,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { toCamelCase } from '../../../core/utils';
 import { TableComponent } from '../../table/table/table.component';
 import { ColDef } from 'ag-grid-community';
-import { getAgGridFilterType } from '../../../constants';
+import { COLORS, getAgGridFilterType } from '../../../constants';
+import { DoughnutChartComponent } from '../custom-charts/doughnut-procent/doughnut-procent.component';
+import { normalizeChartType } from '../../../utils';
 
 @Component({
   selector: 'app-chart',
@@ -24,10 +26,12 @@ import { getAgGridFilterType } from '../../../constants';
     MatFormFieldModule,
     MatSelectModule,
     TableComponent,
+    DoughnutChartComponent,
   ],
 })
 export class ChartComponent {
   private chartPageStateService = inject(ChartPageStateService);
+  normalizeChartType = normalizeChartType;
 
   xAxis$ = this.chartPageStateService.xAxis$;
   yAxis$ = this.chartPageStateService.yAxis$;
@@ -45,6 +49,7 @@ export class ChartComponent {
 
       const baseOptions: ChartConfiguration['options'] = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             position: 'top',
@@ -122,7 +127,7 @@ export class ChartComponent {
     this.chartType$,
     this.colors$,
   ]).pipe(
-    map(([rawData, xAxis, yAxis, chartType, colors]) => {
+    map(([rawData, xAxis, yAxis, chartType, customColors]) => {
       if (!yAxis.length || rawData.length === 0) {
         return { labels: [], datasets: [] };
       }
@@ -132,11 +137,16 @@ export class ChartComponent {
         return xCol?.columnName ? row[toCamelCase(xCol.columnName)] : '';
       });
 
+      const colors =
+        customColors && customColors.length ? customColors : COLORS;
+
       switch (chartType) {
+        case 'doughnutPercent':
         case 'pie':
         case 'doughnut':
           const yCol = yAxis[0];
           const data = rawData.map((row) => row[toCamelCase(yCol.columnName)]);
+
           return {
             labels,
             datasets: [

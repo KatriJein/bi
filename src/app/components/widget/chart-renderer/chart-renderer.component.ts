@@ -33,15 +33,17 @@ import {
   findColumnByName,
   findColumnsByNames,
   groupColumnsByTable,
+  normalizeChartType,
   processChartData,
 } from '../../../utils';
 import { Column } from '../../../core/models';
 import { ChartService } from '../../../core/api/services';
 import { FilterEmitType, FilterTypeExp } from '../../../pages';
+import { DoughnutChartComponent } from "../../chart/custom-charts/doughnut-procent/doughnut-procent.component";
 
 @Component({
   selector: 'app-chart-renderer',
-  imports: [CommonModule, BaseChartDirective],
+  imports: [CommonModule, BaseChartDirective, DoughnutChartComponent],
   templateUrl: './chart-renderer.component.html',
   styleUrl: './chart-renderer.component.scss',
 })
@@ -85,8 +87,6 @@ export class ChartRendererComponent implements OnChanges {
             this.initialFilters || []
           );
 
-          console.log(combinedFilters, 'combinedFilters');
-
           const filtersColumns: FilterColumn[] =
             combinedFilters
               ?.map((f) => {
@@ -99,8 +99,6 @@ export class ChartRendererComponent implements OnChanges {
                 };
               })
               .filter((x): x is FilterColumn => x !== null) ?? [];
-
-          console.log(filtersColumns, 'filtersColumns');
 
           const sortingColumns = Array.isArray(chart.sorting)
             ? findColumnsByNames(
@@ -183,10 +181,7 @@ export class ChartRendererComponent implements OnChanges {
             chart?.settings?.chartType &&
             chart.settings.chartType !== 'table'
           ) {
-            this.chartType =
-              chart.settings.chartType === 'horizontalBar'
-                ? 'bar'
-                : chart.settings.chartType;
+            this.chartType = normalizeChartType(chart.settings.chartType);
           }
 
           if (chart?.datasetId) {
@@ -225,13 +220,13 @@ export class ChartRendererComponent implements OnChanges {
               aggregatedData,
               xAxis.filter((col): col is Column => col !== null),
               yAxis,
-              this.chartType,
+              chart.settings?.chartType || 'line',
               chart.settings?.colors
             );
             this.chartOptions = buildChartOptions(
               xAxis.filter((col): col is Column => col !== null),
               yAxis,
-              this.chartType
+              chart.settings?.chartType || 'line'
             );
           });
         });

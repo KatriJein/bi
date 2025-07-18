@@ -1,6 +1,16 @@
-import { Component, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { buildChartOptions } from '../../../../utils';
+import { COLORS } from '../../../../constants';
 
 @Component({
   selector: 'app-doughnut-chart',
@@ -8,40 +18,107 @@ import { BaseChartDirective } from 'ng2-charts';
   styleUrls: ['./doughnut-procent.component.scss'],
   imports: [BaseChartDirective],
 })
-export class DoughnutChartComponent {
-  @Input() percentage: number = 95;
-  @Input() title: string = 'Вып.Выр';
+export class DoughnutChartComponent implements OnChanges, AfterViewInit {
+  @ViewChild('chartContainer') chartContainer!: ElementRef;
+  @Input() data: ChartConfiguration['data'] | undefined;
 
-  doughnutChartData: ChartConfiguration<'doughnut'>['data'] = {
-    labels: ['Заполнено', 'Осталось'],
+  percentage: number = 0;
+  title: string = '';
+
+  private readonly DEFAULT_COLOR = COLORS[0];
+  private readonly LIGHT_COLOR = '#E0E0E0';
+
+  doughnutChartData: ChartConfiguration['data'] = {
     datasets: [
       {
         data: [this.percentage, 100 - this.percentage],
-        backgroundColor: ['#50b8c5', '#E0E0E0'],
+        backgroundColor: [this.DEFAULT_COLOR, this.LIGHT_COLOR],
         borderWidth: 0,
       },
     ],
   };
 
-  doughnutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
-    responsive: true,
-    cutout: '70%',
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: false,
-      },
-    },
-  };
+  doughnutChartOptions: ChartConfiguration['options'] = buildChartOptions(
+    [],
+    [],
+    'doughnut'
+  );
 
   doughnutChartType = 'doughnut' as const;
 
-  ngOnChanges() {
-    this.doughnutChartData.datasets[0].data = [
-      this.percentage,
-      100 - this.percentage,
-    ];
+  ngAfterViewInit() {
+    this.updateFontSize();
+    window.addEventListener('resize', this.updateFontSize.bind(this));
+  }
+
+  private updateFontSize() {
+    if (!this.chartContainer) return;
+
+    const containerWidth = this.chartContainer.nativeElement.offsetWidth;
+    const percentageElement =
+      this.chartContainer.nativeElement.querySelector('.center-percentage');
+    const titleElement =
+      this.chartContainer.nativeElement.querySelector('.chart-title');
+
+    if (percentageElement) {
+      const fontSize = Math.min(Math.max(containerWidth * 0.8, 16), 60);
+      percentageElement.style.fontSize = `${fontSize}px`;
+    }
+
+    if (titleElement) {
+      const titleSize = Math.min(Math.max(containerWidth * 0.04, 14), 24);
+      titleElement.style.fontSize = `${titleSize}px`;
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.data && this.data.datasets?.length > 0) {
+      const dataset = this.data.datasets[0];
+
+      const rawPercentage =
+        dataset.data?.length > 0 ? (dataset.data[0] as number) : 0;
+      this.percentage = parseFloat(rawPercentage.toFixed(1));
+
+      this.title = dataset.label || '';
+
+      this.doughnutChartData = {
+        datasets: [
+          {
+            data: [this.percentage, 100 - this.percentage],
+            backgroundColor: this.getBackgroundColors(dataset),
+            borderWidth: 0,
+          },
+        ],
+      };
+    }
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('resize', this.updateFontSize.bind(this));
+  }
+
+  private getBackgroundColors(
+    dataset: ChartConfiguration['data']['datasets'][0]
+  ): string[] {
+    const primaryColor = this.getPrimaryColor(dataset);
+
+    return [primaryColor, this.LIGHT_COLOR];
+  }
+
+  private getPrimaryColor(
+    dataset: ChartConfiguration['data']['datasets'][0]
+  ): string {
+    if (!dataset.backgroundColor) return this.DEFAULT_COLOR;
+
+    if (Array.isArray(dataset.backgroundColor)) {
+      const firstColor = dataset.backgroundColor[0];
+      return typeof firstColor === 'string' ? firstColor : this.DEFAULT_COLOR;
+    }
+
+    if (typeof dataset.backgroundColor === 'string') {
+      return dataset.backgroundColor;
+    }
+
+    return this.DEFAULT_COLOR;
   }
 }

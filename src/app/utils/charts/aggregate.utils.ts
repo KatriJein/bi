@@ -13,10 +13,14 @@ export function getAggregatedData(
   sorting: SortingType[] | null,
   filters: FilterType[] | null
 ): any[] {
+  if (!data || data.length === 0) return [];
+
   const aggregations = yAxis.map((col) => ({
     column: toCamelCase(col.columnName),
     aggregate: col.aggregate as AggregateType,
   }));
+
+
 
   const hasNone = aggregations.some((a) => a.aggregate === 'NONE');
 
@@ -50,8 +54,12 @@ export function getAggregatedData(
   }
 
   try {
-    const table = applyFilters(data, filters ?? []);
-    const result = table.groupby(toCamelCase(xAxis)).rollup(rollupObj);
+    let table = applyFilters(data, filters ?? []);
+    if (!!xAxis && xAxis !== '') {
+      table = table.groupby(toCamelCase(xAxis));
+    }
+
+    const result = table.rollup(rollupObj);
 
     const sortingColumns = (sorting ?? []).map((s) =>
       s.direction === 'desc'

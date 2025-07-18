@@ -2,11 +2,12 @@ import { ChartConfiguration } from 'chart.js';
 import { Column } from '../../core/models';
 import { toCamelCase } from '../../core/utils';
 import { COLORS } from '../../constants';
+import { ChartType } from '../../core/store/charts';
 
 export function buildChartOptions(
   xAxis: Column[],
   yAxis: Column[],
-  chartType: ChartConfiguration['type']
+  chartType: ChartType
 ): ChartConfiguration['options'] {
   const xTitle = xAxis.length ? xAxis[0].alias : '';
   const yTitle = yAxis.map((col) => col.alias).join(', ');
@@ -17,11 +18,26 @@ export function buildChartOptions(
     plugins: {
       legend: {
         position: 'top',
+        labels: { font: { size: 20 } },
+      },
+      tooltip: {
+        titleFont: { size: 16 },
+        bodyFont: { size: 14 },
       },
     },
   };
 
-  if (chartType === 'pie') {
+  const commonScaleSettings = {
+    title: {
+      display: true,
+      font: { size: 20 },
+    },
+    ticks: {
+      font: { size: 14 },
+    },
+  };
+
+  if (chartType === 'pie' || chartType === 'doughnut') {
     return {
       ...baseOptions,
       aspectRatio: 2,
@@ -31,28 +47,40 @@ export function buildChartOptions(
       plugins: {
         ...baseOptions.plugins,
         legend: {
-          position: 'bottom',
+          position: chartType === 'doughnut' ? 'right' : 'bottom',
+          labels: { font: { size: 16 } },
         },
       },
     };
   }
 
+  const scales =
+    chartType === 'horizontalBar'
+      ? {
+          y: {
+            ...commonScaleSettings,
+            title: { ...commonScaleSettings.title, text: xTitle },
+          },
+          x: {
+            ...commonScaleSettings,
+            title: { ...commonScaleSettings.title, text: yTitle },
+          },
+        }
+      : {
+          x: {
+            ...commonScaleSettings,
+            title: { ...commonScaleSettings.title, text: xTitle },
+          },
+          y: {
+            ...commonScaleSettings,
+            title: { ...commonScaleSettings.title, text: yTitle },
+          },
+        };
+
   return {
     ...baseOptions,
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: xTitle,
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: yTitle,
-        },
-      },
-    },
+    ...(chartType === 'horizontalBar' && { indexAxis: 'y' }),
+    scales,
   };
 }
 
@@ -60,41 +88,46 @@ export function buildChartData(
   rawData: any[],
   xAxis: Column[],
   yAxis: Column[],
-  chartType: ChartConfiguration['type'],
+  chartType: ChartType,
   customColors?: string[]
 ): ChartConfiguration['data'] {
-  if (!xAxis.length || !yAxis.length || rawData.length === 0) {
+  if (!yAxis.length || rawData.length === 0) {
     return { labels: [], datasets: [] };
   }
 
   const xCol = xAxis[0];
-  const labels = rawData.map((row) => row[toCamelCase(xCol.columnName)]);
-
+  const labels = (rawData || []).map((row) => {
+    return xCol?.columnName ? row[toCamelCase(xCol.columnName)] : '';
+  });
   const colors = customColors && customColors.length ? customColors : COLORS;
 
-  if (chartType === 'pie') {
-    const yCol = yAxis[0];
-    const data = rawData.map((row) => row[toCamelCase(yCol.columnName)]);
-    return {
-      labels,
-      datasets: [
-        {
-          label: yCol.alias,
-          data,
-          backgroundColor: colors,
-        },
-      ],
-    };
+  switch (chartType) {
+    case 'doughnutPercent':
+    case 'pie':
+    case 'doughnut':
+      const yCol = yAxis[0];
+      const data = rawData.map((row) => row[toCamelCase(yCol.columnName)]);
+      return {
+        labels,
+        datasets: [
+          {
+            label: yCol.alias,
+            data,
+            backgroundColor: colors,
+          },
+        ],
+      };
+
+    default:
+      const defaultDatasets = yAxis.map((col, idx) => ({
+        label: col.alias,
+        data: rawData.map((row) => row[toCamelCase(col.columnName)]),
+        backgroundColor: colors[idx % colors.length],
+        borderColor: colors[idx % colors.length],
+        borderWidth: 2,
+        fill: false,
+        tension: 0.2,
+      }));
+      return { labels, datasets: defaultDatasets };
   }
-
-  const datasets = yAxis.map((col, idx) => ({
-    label: col.alias,
-    data: rawData.map((row) => row[toCamelCase(col.columnName)]),
-    backgroundColor: colors[idx % colors.length],
-    borderColor: colors[idx % colors.length],
-    fill: false,
-    tension: 0.2,
-  }));
-
-  return { labels, datasets };
 }

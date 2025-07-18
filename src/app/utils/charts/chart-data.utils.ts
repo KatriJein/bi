@@ -2,9 +2,10 @@ import { map, Observable } from 'rxjs';
 import { Column } from '../../core/models';
 import { toCamelCase } from '../../core/utils';
 import { FilterColumn } from '../../services/chart-state.service';
-import { ChartDto } from '../../core/store/charts';
+import { ChartDto, ChartType } from '../../core/store/charts';
 import { ChartService } from '../../core/api/services';
 import { getAggregatedData } from './aggregate.utils';
+import { ChartConfiguration } from 'chart.js';
 
 export function collectAllColumns(
   xAxis: Column | null,
@@ -52,4 +53,19 @@ export function processChartData(
   filters: FilterColumn[]
 ): any[] {
   return getAggregatedData(data, xAxis, yAxis, sorting, filters);
+}
+
+export function normalizeChartType(
+  chartType: ChartType
+): ChartConfiguration['type'] {
+  switch (chartType) {
+    case 'horizontalBar':
+      return 'bar';
+    case 'doughnutPercent':
+      return 'doughnut';
+    case 'table':
+      throw new Error('Table type should be handled separately');
+    default:
+      return chartType;
+  }
 }

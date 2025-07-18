@@ -30,6 +30,7 @@ export class ChartContainerComponent {
   chart$: Observable<ChartDto | null>;
   isChart$: Observable<boolean>;
   isTable$: Observable<boolean>;
+  isDoughnutPercent$: Observable<boolean>;
 
   constructor() {
     this.chart$ = this.store
@@ -47,6 +48,13 @@ export class ChartContainerComponent {
       map((chart) => {
         if (!chart) return false;
         return chart.settings?.chartType === 'table';
+      })
+    );
+
+    this.isDoughnutPercent$ = this.chart$.pipe(
+      map((chart) => {
+        if (!chart) return false;
+        return chart.settings?.chartType === 'doughnutPercent';
       })
     );
   }

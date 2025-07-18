@@ -14,10 +14,6 @@ export function toChartCreateRequest(dto: ChartDto): {
     throw new Error('Invalid chart data: missing required fields');
   }
 
-  if (dto.settings?.chartType !== 'table' && !dto.xAxis) {
-    throw new Error('Invalid chart data: missing required fields');
-  }
-
   return {
     name: dto.name,
     datasetId: dto.datasetId,

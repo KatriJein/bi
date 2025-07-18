@@ -18,7 +18,8 @@ export type ChartType =
   | 'pie'
   | 'table'
   | 'doughnut'
-  | 'horizontalBar';
+  | 'horizontalBar'
+  | 'doughnutPercent';
 
 export interface ChartDto {
   id: string | null;

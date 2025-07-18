@@ -1,5 +1,7 @@
 export function toCamelCase(snake: string): string {
-  return snake.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  return snake
+    .replace(/_+([a-zA-Z0-9])/g, (_, letter) => letter.toUpperCase())
+    .replace(/_+/g, '');
 }
 
 export type TsType =

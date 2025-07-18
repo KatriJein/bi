@@ -26,6 +26,7 @@ export function getChartIcon(chartType: ChartType): string {
     table: 'table_chart',
     doughnut: 'donut_large',
     horizontalBar: 'notes',
+    doughnutPercent: 'donut_large',
   };
 
   return iconMap[chartType];
@@ -41,6 +42,7 @@ export function getChartDisplayName(chartType: ChartType | null): string {
     doughnut: 'Кольцевой',
     horizontalBar: 'Линейчатый',
     table: 'Таблица',
+    doughnutPercent: 'Кольцевой с процентом',
   };
 
   return nameMap[chartType];
