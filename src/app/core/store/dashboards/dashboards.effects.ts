@@ -11,12 +11,13 @@ import {
   tap,
 } from 'rxjs/operators';
 import { DashboardsActions } from './index';
-import { DashboardService } from '../../api/services';
+import { DashboardFiltersService, DashboardService } from '../../api/services';
 
 @Injectable()
 export class DashboardsEffects {
   private actions$ = inject(Actions);
   private dashboardService = inject(DashboardService);
+  private dashboardFiltersService = inject(DashboardFiltersService);
 
   loadDashboards$ = createEffect(() =>
     this.actions$.pipe(
@@ -165,5 +166,88 @@ export class DashboardsEffects {
         })
       ),
     { dispatch: false }
+  );
+
+  //Фильтры
+  loadFilters$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.loadDashboardsSuccess),
+      switchMap(() =>
+        this.dashboardFiltersService.getDashboardFilters().pipe(
+          map((filters) =>
+            DashboardsActions.loadDashboardFiltersSuccess({ filters })
+          ),
+          catchError((error) =>
+            of(
+              DashboardsActions.loadDashboardFiltersFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  createFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.createDashboardFilter),
+      switchMap(({ filter }) =>
+        this.dashboardFiltersService.createDashboardFilter(filter).pipe(
+          map((created) =>
+            DashboardsActions.createDashboardFilterSuccess({
+              filter: created,
+            })
+          ),
+          catchError((error) =>
+            of(
+              DashboardsActions.createDashboardFilterFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  updateFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.updateDashboardFilter),
+      switchMap(({ id, patch }) =>
+        this.dashboardFiltersService.updateDashboardFilter(id, patch).pipe(
+          map((updated) =>
+            DashboardsActions.updateDashboardFilterSuccess({
+              filter: updated,
+            })
+          ),
+          catchError((error) =>
+            of(
+              DashboardsActions.updateDashboardFilterFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  deleteFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.deleteDashboardFilter),
+      switchMap(({ id }) =>
+        this.dashboardFiltersService.deleteDashboardFilter(id).pipe(
+          map(() => DashboardsActions.deleteDashboardFilterSuccess({ id })),
+          catchError((error) =>
+            of(
+              DashboardsActions.deleteDashboardFilterFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
   );
 }

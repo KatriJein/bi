@@ -1,4 +1,4 @@
-import { Component, inject, Input, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Column } from '../../../core/models';
@@ -61,8 +61,6 @@ export class DataSelectionComponent {
   });
 
   drop(event: CdkDragDrop<any[]>, target: string) {
-    if (event.previousContainer === event.container) return;
-
     const prevKey = event.previousContainer.id as ColumnKey;
     const targetKey = target as ColumnKey;
 
@@ -72,6 +70,13 @@ export class DataSelectionComponent {
     ];
 
     const [movedItem] = prevData.splice(event.previousIndex, 1);
+
+    if (prevKey === targetKey) {
+      targetData.splice(event.previousIndex, 1);
+      targetData.splice(event.currentIndex, 0, movedItem);
+      this.stateService.updateColumns(targetKey, targetData);
+      return;
+    }
 
     const newMovedItem: ExtendedColumn =
       targetKey === 'sorting'
@@ -84,7 +89,9 @@ export class DataSelectionComponent {
     const exists = targetData.some(
       (c) => c.columnName === newMovedItem.columnName
     );
+
     this.stateService.updateColumns(prevKey, prevData);
+
     if (!exists) {
       targetData.splice(event.currentIndex, 0, newMovedItem);
       this.stateService.updateColumns(targetKey, targetData);

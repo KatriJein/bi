@@ -15,10 +15,11 @@ import {
   DashboardsSelectors,
 } from '../core/store/dashboards';
 import { WidgetService } from '../core/api/services';
-import { Widget, WidgetType } from '../core/api/graphql/types';
-import isEqual from 'lodash/isEqual';
-import { ChartDto } from '../core/store/charts';
+import { DashboardFilter, Widget, WidgetType } from '../core/api/graphql/types';
+import isEqual from 'lodash-es/isEqual';
+import { ChartDto, SelectionType } from '../core/store/charts';
 import { selectChartById } from '../core/store/charts/charts.selector';
+import { SelectionColumnType } from '../constants';
 
 @Injectable({
   providedIn: 'root',
@@ -48,6 +49,11 @@ export class DashboardStateService {
 
   activeDashboard$ = this.store.select(
     DashboardsSelectors.selectActiveDashboard
+  );
+
+  filters$ = this.activeDashboard$.pipe(
+    map((dashboard) => dashboard?.selections || []),
+    distinctUntilChanged()
   );
 
   private widgetsSubject = new BehaviorSubject<Widget[]>([]);
@@ -145,6 +151,35 @@ export class DashboardStateService {
     return this.widgetService
       .deleteWidget(widget.id)
       .pipe(tap(() => this.loadWidgets(widget.dashboardId)));
+  }
+
+  addFilter(selection: SelectionType): void {
+    this.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
+      if (!dashboard) return;
+
+      this.store.dispatch(
+        DashboardsActions.createDashboardFilter({
+          filter: {
+            dashboardId: dashboard.id as string,
+            name: selection.columnName,
+            fieldType: selection.columnType,
+            filterType: selection.filterType,
+          },
+        })
+      );
+    });
+  }
+
+  removeFilter(selection: DashboardFilter): void {
+    this.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
+      if (!dashboard) return;
+
+      this.store.dispatch(
+        DashboardsActions.deleteDashboardFilter({
+          id: selection.id as string,
+        })
+      );
+    });
   }
 
   constructor() {}

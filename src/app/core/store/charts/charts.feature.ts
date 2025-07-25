@@ -1,5 +1,6 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as ChartsActions from './charts.actions';
+import { ChartFilter } from '../../api/graphql/types';
 
 export type SortingType = {
   columnName: string;
@@ -10,6 +11,12 @@ export type FilterType = {
   columnName: string;
   filterType: string;
   value: any;
+};
+
+export type SelectionType = {
+  columnName: string;
+  columnType: string;
+  filterType: string;
 };
 
 export type ChartType =
@@ -35,6 +42,7 @@ export interface ChartDto {
     colors?: string[];
     [key: string]: any;
   } | null;
+  selections?: ChartFilter[] | null;
 }
 
 export interface ChartsState {
@@ -119,6 +127,81 @@ export const ChartsFeature = createFeature({
     on(ChartsActions.deleteChartFailure, (state, { error }) => ({
       ...state,
       isLoading: false,
+      error,
+    })),
+
+    //Фильтры
+    // Загрузка фильтров
+    on(ChartsActions.loadChartFilters, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(ChartsActions.loadChartFiltersSuccess, (state, { filters }) => {
+      const charts = state.charts.map((chart) => ({
+        ...chart,
+        selections: filters.filter((f) => f.chartId === chart.id),
+      }));
+
+      return {
+        ...state,
+        charts,
+        isLoading: false,
+      };
+    }),
+    on(ChartsActions.loadChartFiltersFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
+
+    // Создание фильтра
+    on(ChartsActions.createChartFilterSuccess, (state, { filter }) => ({
+      ...state,
+      charts: state.charts.map((chart) =>
+        chart.id === filter.chartId
+          ? {
+              ...chart,
+              selections: [...(chart.selections ?? []), filter],
+            }
+          : chart
+      ),
+    })),
+    on(ChartsActions.createChartFilterFailure, (state, { error }) => ({
+      ...state,
+      error,
+    })),
+
+    // Обновление фильтра
+    on(ChartsActions.updateChartFilterSuccess, (state, { filter }) => ({
+      ...state,
+      charts: state.charts.map((chart) =>
+        chart.id === filter.chartId
+          ? {
+              ...chart,
+              selections:
+                chart.selections?.map((f) =>
+                  f.id === filter.id ? filter : f
+                ) ?? [],
+            }
+          : chart
+      ),
+    })),
+    on(ChartsActions.updateChartFilterFailure, (state, { error }) => ({
+      ...state,
+      error,
+    })),
+
+    // Удаление фильтра
+    on(ChartsActions.deleteChartFilterSuccess, (state, { id }) => ({
+      ...state,
+      charts: state.charts.map((chart) => ({
+        ...chart,
+        selections: chart.selections?.filter((f) => f.id !== id) ?? [],
+      })),
+    })),
+    on(ChartsActions.deleteChartFilterFailure, (state, { error }) => ({
+      ...state,
       error,
     }))
   ),

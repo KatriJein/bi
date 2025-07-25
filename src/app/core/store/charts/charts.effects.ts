@@ -5,11 +5,13 @@ import { of } from 'rxjs';
 import { ChartService } from '../../api/services/chart.service';
 import { ChartsActions } from '.';
 import { toChartCreateRequest } from '../../utils';
+import { ChartFiltersService } from '../../api/services';
 
 @Injectable()
 export class ChartsEffects {
   private actions$ = inject(Actions);
   private chartService = inject(ChartService);
+  private chartFiltersService = inject(ChartFiltersService);
 
   loadCharts$ = createEffect(() =>
     this.actions$.pipe(
@@ -82,6 +84,67 @@ export class ChartsEffects {
         this.chartService.deleteChart(id).pipe(
           map(() => ChartsActions.deleteChartSuccess({ id })),
           catchError((error) => of(ChartsActions.deleteChartFailure({ error })))
+        )
+      )
+    )
+  );
+
+  // Фильтры
+  loadChartFilters$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.loadChartsSuccess),
+      switchMap(() =>
+        this.chartFiltersService.getChartFilters().pipe(
+          map((filters) => ChartsActions.loadChartFiltersSuccess({ filters })),
+          catchError((error) =>
+            of(ChartsActions.loadChartFiltersFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  createChartFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.createChartFilter),
+      switchMap(({ filter }) =>
+        this.chartFiltersService.createChartFilter(filter).pipe(
+          map((created) =>
+            ChartsActions.createChartFilterSuccess({ filter: created })
+          ),
+          catchError((error) =>
+            of(ChartsActions.loadChartFiltersFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  updateChartFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.updateChartFilter),
+      switchMap(({ id, patch }) =>
+        this.chartFiltersService.updateChartFilter(id, patch).pipe(
+          map((updated) =>
+            ChartsActions.updateChartFilterSuccess({ filter: updated })
+          ),
+          catchError((error) =>
+            of(ChartsActions.loadChartFiltersFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  deleteChartFilter$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.deleteChartFilter),
+      switchMap(({ id }) =>
+        this.chartFiltersService.deleteChartFilter(id).pipe(
+          map(() => ChartsActions.deleteChartFilterSuccess({ id })),
+          catchError((error) =>
+            of(ChartsActions.loadChartFiltersFailure({ error: error.message }))
+          )
         )
       )
     )

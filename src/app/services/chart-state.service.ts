@@ -21,6 +21,7 @@ import {
   ChartsActions,
   ChartsSelectors,
   ChartType,
+  SelectionType,
 } from '../core/store/charts';
 import {
   ColumnKey,
@@ -324,11 +325,16 @@ export class ChartPageStateService {
     const chart = this.chartSubject.getValue();
     if (!chart) return;
 
-    const updatedChart = {
-      ...chart,
-      settings: { ...chart.settings, [key]: value },
+    const updatedSettings = {
+      ...(chart.settings || {}),
+      [key]: value,
     };
-    this.chartSubject.next(updatedChart);
+
+    this.chartSubject.next({
+      ...chart,
+      settings: updatedSettings,
+    });
+    console.log(this.chartSubject.getValue());
   }
 
   // Установка графика
@@ -550,6 +556,42 @@ export class ChartPageStateService {
       .subscribe(() => {
         this.chartSubject.next(null);
         this.location.back();
+      });
+  }
+
+  addSelection(selection: SelectionType): void {
+    this.chart$
+      .pipe(
+        take(1),
+        filter((chart): chart is ChartDto => !!chart && !!chart.id)
+      )
+      .subscribe((chart) => {
+        this.store.dispatch(
+          ChartsActions.createChartFilter({
+            filter: {
+              chartId: chart.id as string,
+              fieldName: selection.columnName,
+              fieldType: selection.columnType,
+              filterType: selection.filterType,
+            },
+          })
+        );
+      });
+  }
+
+  removeSelectionByIndex(index: number): void {
+    this.chart$
+      .pipe(
+        take(1),
+        filter((chart): chart is ChartDto => !!chart)
+      )
+      .subscribe((chart) => {
+        const filterToRemove = chart.selections?.[index];
+        if (filterToRemove?.id) {
+          this.store.dispatch(
+            ChartsActions.deleteChartFilter({ id: filterToRemove.id })
+          );
+        }
       });
   }
 

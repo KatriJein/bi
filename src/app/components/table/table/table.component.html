@@ -28,6 +28,9 @@
     [localeText]="localeText"
     [paginationAutoPageSize]="true"
     [pagination]="true"
+    [gridOptions]="{
+      suppressMovableColumns: true
+    }"
     (gridReady)="onGridReady($event)"
     (cellClicked)="onCellClicked($event)"
     (columnEverythingChanged)="columnEverythingChanged()"

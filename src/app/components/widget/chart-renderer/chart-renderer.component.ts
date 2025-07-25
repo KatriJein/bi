@@ -39,7 +39,7 @@ import {
 import { Column } from '../../../core/models';
 import { ChartService } from '../../../core/api/services';
 import { FilterEmitType, FilterTypeExp } from '../../../pages';
-import { DoughnutChartComponent } from "../../chart/custom-charts/doughnut-procent/doughnut-procent.component";
+import { DoughnutChartComponent } from '../../chart/custom-charts/doughnut-procent/doughnut-procent.component';
 
 @Component({
   selector: 'app-chart-renderer',
@@ -50,6 +50,7 @@ import { DoughnutChartComponent } from "../../chart/custom-charts/doughnut-proce
 export class ChartRendererComponent implements OnChanges {
   private store = inject(Store);
   private chartService = inject(ChartService);
+
   @Input() chartId!: string;
   @Input() initialFilters?: FilterTypeExp[] | null;
   @Output() chartClick = new EventEmitter<FilterEmitType>();

@@ -3,3 +3,6 @@ export * from './dataset/index';
 export * from './interface/index';
 export * from './dashboard/index';
 export * from './widget';
+export * from './chart-filter';
+export * from './dashboard-filter';
+export * from './widget-filter-binding';

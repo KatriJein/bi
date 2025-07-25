@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,8 +9,13 @@ import {
   Observable,
   startWith,
   Subscription,
+  take,
 } from 'rxjs';
-import { ChartComponent, DataSelectionComponent } from '../../components/chart';
+import {
+  ChartComponent,
+  ChartSelectionModalComponent,
+  DataSelectionComponent,
+} from '../../components/chart';
 import { Dataset } from '../../core/models';
 import { ChartPageStateService } from '../../services';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,13 +24,15 @@ import { MatInputModule } from '@angular/material/input';
 import { Location } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ChartSettingsComponent } from '../../components/chart/settings';
-import { ChartType } from '../../core/store/charts';
+import { ChartType, SelectionType } from '../../core/store/charts';
 import { MatIconModule } from '@angular/material/icon';
 import {
   CHART_TYPES,
   getChartDisplayName,
   getChartIcon,
+  getFilterOptionsByType,
 } from '../../constants';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-chart-page',
@@ -44,12 +51,14 @@ import {
     MatExpansionModule,
     ChartSettingsComponent,
     MatIconModule,
+    FormsModule,
   ],
 })
 export class ChartPageComponent implements OnInit {
   private state = inject(ChartPageStateService);
   private route = inject(ActivatedRoute);
   private location = inject(Location);
+  private dialog = inject(MatDialog);
 
   chartTypes = CHART_TYPES;
   getIcon = getChartIcon;
@@ -68,6 +77,9 @@ export class ChartPageComponent implements OnInit {
   datasets$: Observable<Dataset[]> = this.state.datasets$;
   selectedDatasetControl = new FormControl<string | null>(null);
   selectedDatasetControl$ = this.state.selectedDataset$;
+
+  allColumns$ = this.state.allColumns$;
+  chart$ = this.state.chart$;
 
   nameControl = new FormControl<string>('');
 
@@ -150,5 +162,24 @@ export class ChartPageComponent implements OnInit {
 
   onCancel(): void {
     this.location.back();
+  }
+
+  addSelection(): void {
+    const dialogRef = this.dialog.open(ChartSelectionModalComponent, {
+      width: '600px',
+      data: {
+        columns$: this.state.allColumns$,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: SelectionType) => {
+      if (result) {
+        this.state.addSelection(result);
+      }
+    });
+  }
+
+  removeSelection(index: number): void {
+    this.state.removeSelectionByIndex(index);
   }
 }

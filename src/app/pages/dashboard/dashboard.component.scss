@@ -123,3 +123,34 @@
     min-height: 0;
   }
 }
+
+.filters-container {
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+
+  .filters-list {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+
+    .filter-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+    }
+  }
+
+  .filter-info {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .delete-icon {
+    color: var(--red);
+  }
+}

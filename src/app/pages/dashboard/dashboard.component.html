@@ -65,6 +65,11 @@
                   >
                     Добавить виджет
                   </button>
+
+                  <button mat-button (click)="toggleFilters()">
+                    <mat-icon>filter_alt</mat-icon>
+                    Фильтр
+                  </button>
                 </div>
                 <mat-menu #addWidgetMenu="matMenu">
                   <button mat-menu-item (click)="openWidgetDialog('text')">
@@ -75,6 +80,40 @@
                   </button>
                 </mat-menu>
               </div>
+
+              <!-- Блок фильтров -->
+              <div class="filters-container" *ngIf="showFilters">
+                <div
+                  class="filters-list"
+                  *ngIf="(filters$ | async)?.length; else noFilters"
+                >
+                  <div
+                    *ngFor="let filter of filters$ | async"
+                    class="filter-item"
+                  >
+                    <div class="filter-info">
+                      <span class="filter-name"
+                        >Название: {{ filter.name }}</span
+                      >
+                      <span class="filter-details"
+                        >Значение: {{ filter.filterType }}</span
+                      >
+                    </div>
+                    <button mat-icon-button (click)="removeFilter(filter)">
+                      <mat-icon class="delete-icon">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <button mat-flat-button (click)="openAddFilterDialog()">
+                  Добавить фильтр
+                </button>
+
+                <ng-template #noFilters>
+                  <p class="no-filters">Нет активных фильтров</p>
+                </ng-template>
+              </div>
+
               <div #gridStackContainer class="grid-stack"></div>
               <ng-template #widgetHost></ng-template>
             </div>
@@ -97,12 +136,6 @@
                 [initialFilters]="expandedChartFilter"
                 (chartClick)="handleChartExpanded($event)"
               ></app-chart-container>
-              <!-- <app-table-renderer
-                [tableId]="expandedChartId"
-                [initialFilter]="expandedChartFilter"
-                (tableDoubleClick)="handleChartExpanded($event)"
-              >
-              </app-table-renderer> -->
             </div>
           </mat-tab>
         </mat-tab-group>

@@ -15,6 +15,7 @@ export function buildChartOptions(
   const baseOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    devicePixelRatio: window.devicePixelRatio || 1,
     plugins: {
       legend: {
         position: 'top',
@@ -124,7 +125,6 @@ export function buildChartData(
         data: rawData.map((row) => row[toCamelCase(col.columnName)]),
         backgroundColor: colors[idx % colors.length],
         borderColor: colors[idx % colors.length],
-        borderWidth: 2,
         fill: false,
         tension: 0.2,
       }));

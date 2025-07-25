@@ -7,3 +7,6 @@ export * from './dataForDataset/tables.service';
 export * from './dataset.service';
 export * from './chart.service';
 export * from './widget.service';
+export * from './filters/chart-filters.service';
+export * from './filters/dashboard-filters.service';
+export * from './filters/widget-filter-binding.service';

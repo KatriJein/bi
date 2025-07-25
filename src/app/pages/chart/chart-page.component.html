@@ -63,6 +63,32 @@
   <mat-accordion class="advanced-settings">
     <mat-expansion-panel>
       <mat-expansion-panel-header>
+        <mat-panel-title>Доступные отборы</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="selections-container" *ngIf="chart$ | async as chart">
+        <div
+          *ngFor="let selection of chart?.selections || []; let i = index"
+          class="selection-item"
+        >
+          <div class="selection-info">
+            <span class="column-name">Колонка: {{ selection.fieldName }}</span>
+            <span class="filter-type">Тип: {{ selection.filterType }}</span>
+          </div>
+          <button mat-icon-button (click)="removeSelection(i)">
+            <mat-icon class="delete-icon">delete</mat-icon>
+          </button>
+        </div>
+
+        <button mat-button (click)="addSelection()">
+          <mat-icon>add</mat-icon>
+          Добавить отбор
+        </button>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
         <mat-panel-title> Дополнительные настройки </mat-panel-title>
       </mat-expansion-panel-header>
 

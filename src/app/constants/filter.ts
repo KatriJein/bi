@@ -1,6 +1,13 @@
 import { TsType } from '../core/utils';
 
-export type FilterableColumnType = 'string' | 'number' | 'date' | 'aggregated';
+export type SelectionColumnType = 'string' | 'number' | 'date';
+export type FilterableColumnType = SelectionColumnType | 'aggregated';
+
+export const SELECTION_COLUMN_TYPES: Record<SelectionColumnType, string> = {
+  string: 'Строка',
+  number: 'Число',
+  date: 'Дата',
+};
 
 export const FILTER_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> = {
   string: [
@@ -56,6 +63,47 @@ export const FILTER_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> = {
   ],
 };
 
+export const SELECTION_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> =
+  {
+    string: [
+      'Равно',
+      'Не равно',
+      'Начинается на (без учета регистра)',
+      'Начинается на (с учетом регистра)',
+      'Заканчивается на (без учета регистра)',
+      'Заканчивается на (с учетом регистра)',
+      'Содержит (без учета регистра)',
+      'Содержит (с учетом регистра)',
+      'Не содержит (без учета регистра)',
+      'Не содержит (с учетом регистра)',
+    ],
+    number: [
+      'Равно',
+      'Не равно',
+      'Больше',
+      'Меньше',
+      'Больше или равно',
+      'Меньше или равно',
+    ],
+    date: [
+      'Принадлежит диапазону',
+      'Равно',
+      'Не равно',
+      'Больше',
+      'Меньше',
+      'Больше или равно',
+      'Меньше или равно',
+    ],
+    aggregated: [
+      'Равно',
+      'Не равно',
+      'Больше',
+      'Меньше',
+      'Больше или равно',
+      'Меньше или равно',
+    ],
+  };
+
 export function getFilterOptionsByType(
   type: string,
   aggregation?: string
@@ -63,6 +111,17 @@ export function getFilterOptionsByType(
   const normalizedType =
     aggregation && aggregation !== 'NONE' ? 'aggregated' : type;
   return FILTER_OPTIONS_BY_TYPE[normalizedType as FilterableColumnType] ?? [];
+}
+
+export function getSelectionOptionsByType(
+  type: string,
+  aggregation?: string
+): string[] {
+  const normalizedType =
+    aggregation && aggregation !== 'NONE' ? 'aggregated' : type;
+  return (
+    SELECTION_OPTIONS_BY_TYPE[normalizedType as FilterableColumnType] ?? []
+  );
 }
 
 export function getAgGridFilterType(

@@ -1,0 +1,73 @@
+<h2 mat-dialog-title>Добавить фильтр</h2>
+<div mat-dialog-content>
+  <form [formGroup]="filterForm">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Имя фильтра</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        required
+        placeholder="Введите имя фильтра"
+      />
+      <mat-error *ngIf="filterForm.get('name')?.hasError('required')">
+        Имя фильтра обязательно
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Тип фильтра</mat-label>
+      <mat-select formControlName="type" required>
+        <mat-option *ngFor="let type of filterTypes" [value]="type">
+          {{ type }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="filterForm.get('type')?.hasError('required')">
+        Выберите тип
+      </mat-error>
+    </mat-form-field>
+
+    <ng-container *ngIf="currentInputType !== 'date'; else datePicker">
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>{{ getValuePlaceholder() }}</mat-label>
+        <input
+          matInput
+          formControlName="value"
+          required
+          [type]="currentInputType"
+          [placeholder]="getValuePlaceholder()"
+        />
+        <mat-error *ngIf="filterForm.get('value')?.hasError('required')">
+          Введите значение
+        </mat-error>
+      </mat-form-field>
+    </ng-container>
+
+    <ng-template #datePicker>
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>{{ getValuePlaceholder() }}</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="dateValue"
+          required
+        />
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error *ngIf="filterForm.get('dateValue')?.hasError('required')">
+          Выберите дату
+        </mat-error>
+      </mat-form-field>
+    </ng-template>
+  </form>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Отмена</button>
+  <button
+    mat-button
+    color="primary"
+    (click)="onSave()"
+    [disabled]="filterForm.invalid"
+  >
+    Сохранить
+  </button>
+</div>

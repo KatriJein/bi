@@ -1,6 +1,7 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as DashboardsActions from './dashboards.actions';
 import { sortByOrder } from '../../utils/sort.utils';
+import { DashboardFilter } from '../../api/graphql/types';
 
 export interface DashboardDto {
   id: string | undefined;
@@ -8,6 +9,7 @@ export interface DashboardDto {
   color: string | undefined;
   name: string | undefined;
   order: number | undefined;
+  selections?: DashboardFilter[] | undefined;
 }
 
 export interface DashboardState {
@@ -162,6 +164,102 @@ export const DashboardsFeature = createFeature({
     on(DashboardsActions.setActiveDashboard, (state, { id }) => ({
       ...state,
       activeDashboardId: id,
+    })),
+
+    //Фильтры
+    // Загрузка фильтров
+    on(DashboardsActions.loadDashboardFilters, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+
+    on(DashboardsActions.loadDashboardFiltersSuccess, (state, { filters }) => ({
+      ...state,
+      dashboards: Object.fromEntries(
+        Object.entries(state.dashboards).map(([interfaceId, dashboards]) => [
+          interfaceId,
+          dashboards.map((dashboard) => ({
+            ...dashboard,
+            selections: filters.filter((f) => f.dashboardId === dashboard.id),
+          })),
+        ])
+      ),
+      isLoading: false,
+    })),
+
+    on(DashboardsActions.loadDashboardFiltersFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
+
+    // Создание фильтра
+    on(DashboardsActions.createDashboardFilterSuccess, (state, { filter }) => ({
+      ...state,
+      dashboards: Object.fromEntries(
+        Object.entries(state.dashboards).map(([interfaceId, dashboards]) => [
+          interfaceId,
+          dashboards.map((dashboard) =>
+            dashboard.id === filter.dashboardId
+              ? {
+                  ...dashboard,
+                  selections: [...(dashboard.selections ?? []), filter],
+                }
+              : dashboard
+          ),
+        ])
+      ),
+    })),
+
+    on(DashboardsActions.createDashboardFilterFailure, (state, { error }) => ({
+      ...state,
+      error,
+    })),
+
+    // Обновление фильтра
+    on(DashboardsActions.updateDashboardFilterSuccess, (state, { filter }) => ({
+      ...state,
+      dashboards: Object.fromEntries(
+        Object.entries(state.dashboards).map(([interfaceId, dashboards]) => [
+          interfaceId,
+          dashboards.map((dashboard) =>
+            dashboard.id === filter.dashboardId
+              ? {
+                  ...dashboard,
+                  selections:
+                    dashboard.selections?.map((f) =>
+                      f.id === filter.id ? filter : f
+                    ) ?? [],
+                }
+              : dashboard
+          ),
+        ])
+      ),
+    })),
+
+    on(DashboardsActions.updateDashboardFilterFailure, (state, { error }) => ({
+      ...state,
+      error,
+    })),
+
+    // Удаление фильтра
+    on(DashboardsActions.deleteDashboardFilterSuccess, (state, { id }) => ({
+      ...state,
+      dashboards: Object.fromEntries(
+        Object.entries(state.dashboards).map(([interfaceId, dashboards]) => [
+          interfaceId,
+          dashboards.map((dashboard) => ({
+            ...dashboard,
+            selections: dashboard.selections?.filter((f) => f.id !== id) ?? [],
+          })),
+        ])
+      ),
+    })),
+
+    on(DashboardsActions.deleteDashboardFilterFailure, (state, { error }) => ({
+      ...state,
+      error,
     }))
   ),
 });

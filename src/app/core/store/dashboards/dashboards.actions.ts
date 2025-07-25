@@ -1,6 +1,10 @@
 import { createAction, props } from '@ngrx/store';
 import { DashboardDto } from './dashboards.feature';
-import { DashboardPatch } from '../../api/graphql/types';
+import {
+  DashboardFilter,
+  DashboardPatch,
+  UpdateDashboardFilterVariables,
+} from '../../api/graphql/types';
 
 export const loadDashboards = createAction(
   '[Dashboards] Load Dashboards',
@@ -87,4 +91,67 @@ export const updateDashboardOrderFailure = createAction(
 export const setActiveDashboard = createAction(
   '[Dashboards] Set Active Dashboard',
   props<{ id: string | null }>()
+);
+
+// Фильтры
+// Загрузка фильтров
+export const loadDashboardFilters = createAction(
+  '[DashboardFilters] Load Filters'
+);
+export const loadDashboardFiltersSuccess = createAction(
+  '[DashboardFilters] Load Filters Success',
+  props<{ filters: DashboardFilter[] }>()
+);
+export const loadDashboardFiltersFailure = createAction(
+  '[DashboardFilters] Load Filters Failure',
+  props<{ error: string }>()
+);
+
+// Создание фильтра
+export const createDashboardFilter = createAction(
+  '[DashboardFilters] Create Filter',
+  props<{
+    filter: {
+      dashboardId: string;
+      name: string;
+      filterType: string;
+      fieldType: string;
+    };
+  }>()
+);
+export const createDashboardFilterSuccess = createAction(
+  '[DashboardFilters] Create Filter Success',
+  props<{ filter: DashboardFilter }>()
+);
+export const createDashboardFilterFailure = createAction(
+  '[DashboardFilters] Create Filter Failure',
+  props<{ error: string }>()
+);
+
+// Обновление фильтра
+export const updateDashboardFilter = createAction(
+  '[DashboardFilters] Update Filter',
+  props<{ id: string; patch: UpdateDashboardFilterVariables['patch'] }>()
+);
+export const updateDashboardFilterSuccess = createAction(
+  '[DashboardFilters] Update Filter Success',
+  props<{ filter: DashboardFilter }>()
+);
+export const updateDashboardFilterFailure = createAction(
+  '[DashboardFilters] Update Filter Failure',
+  props<{ error: string }>()
+);
+
+// Удаление фильтра
+export const deleteDashboardFilter = createAction(
+  '[DashboardFilters] Delete Filter',
+  props<{ id: string }>()
+);
+export const deleteDashboardFilterSuccess = createAction(
+  '[DashboardFilters] Delete Filter Success',
+  props<{ id: string }>()
+);
+export const deleteDashboardFilterFailure = createAction(
+  '[DashboardFilters] Delete Filter Failure',
+  props<{ error: string }>()
 );

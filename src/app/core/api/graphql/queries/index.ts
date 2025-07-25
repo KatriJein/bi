@@ -4,3 +4,5 @@ export * from './interface';
 export * from './dashboard';
 export * from './user';
 export * from './widget';
+export * from './chart-filter';
+export * from './widget-filter-binding';

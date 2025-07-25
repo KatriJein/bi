@@ -1,6 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 import { ChartDto } from './charts.feature';
 import { Chart } from '../../models';
+import { ChartFilter, CreateChartFilterVariables, UpdateChartFilterVariables } from '../../api/graphql/types';
 
 // Загрузка
 export const loadCharts = createAction('[Charts] Load Charts');
@@ -54,3 +55,67 @@ export const deleteChartFailure = createAction(
   '[Chart] Delete Chart Failure',
   props<{ error: any }>()
 );
+
+// Загрузка фильтров
+export const loadChartFilters = createAction(
+  '[Charts] Load Chart Filters'
+);
+
+export const loadChartFiltersSuccess = createAction(
+  '[Charts] Load Chart Filters Success',
+  props<{ filters: ChartFilter[] }>()
+);
+
+export const loadChartFiltersFailure = createAction(
+  '[Charts] Load Chart Filters Failure',
+  props<{ error: string }>()
+);
+
+// Добавление фильтра
+export const createChartFilter = createAction(
+  '[Charts] Create Chart Filter',
+  props<{ filter: CreateChartFilterVariables }>()
+);
+
+export const createChartFilterSuccess = createAction(
+  '[Charts] Create Chart Filter Success',
+  props<{ filter: ChartFilter }>()
+);
+
+export const createChartFilterFailure = createAction(
+  '[Charts] Create Chart Filter Failure',
+  props<{ error: string }>()
+);
+
+// Обновление фильтра
+export const updateChartFilter = createAction(
+  '[Charts] Update Chart Filter',
+  props<{ id: string; patch: UpdateChartFilterVariables['patch'] }>()
+);
+
+export const updateChartFilterSuccess = createAction(
+  '[Charts] Update Chart Filter Success',
+  props<{ filter: ChartFilter }>()
+);
+
+export const updateChartFilterFailure = createAction(
+  '[Charts] Update Chart Filter Failure',
+  props<{ error: string }>()
+);
+
+// Удаление фильтра
+export const deleteChartFilter = createAction(
+  '[Charts] Delete Chart Filter',
+  props<{ id: string }>()
+);
+
+export const deleteChartFilterSuccess = createAction(
+  '[Charts] Delete Chart Filter Success',
+  props<{ id: string }>()
+);
+
+export const deleteChartFilterFailure = createAction(
+  '[Charts] Delete Chart Filter Failure',
+  props<{ error: string }>()
+);
+

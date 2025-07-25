@@ -26,7 +26,7 @@ import {
 } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MatIcon } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -37,12 +37,21 @@ import {
   GridItemHTMLElement,
 } from 'gridstack';
 import 'gridstack/dist/gridstack.min.css';
-import { Widget, WidgetType } from '../../core/api/graphql/types';
+import {
+  DashboardFilter,
+  Widget,
+  WidgetType,
+} from '../../core/api/graphql/types';
 import { EditWidgetModalComponent } from '../../components/widget/edit-widget/edit-widget.component';
 import { CreateWidgetModalComponent } from '../../components/widget/create-widget/create-widget.component';
 import { ChartContainerComponent } from '../../components/common';
 import { DashboardDto } from '../../core/store/dashboards';
 import { WidgetComponent } from '../../components/widget';
+import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { AddSelectionModalComponent } from '../../components/dashboard';
+import { SelectionType } from '../../core/store/charts';
 
 export type FilterTypeExp = {
   field: string;
@@ -68,6 +77,10 @@ export type FilterEmitType = {
     MatIcon,
     MatTabsModule,
     ChartContainerComponent,
+    MatExpansionModule,
+    MatInputModule,
+    MatSelectModule,
+    MatDialogModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -88,6 +101,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
   expandedChartName: string | null = null;
   expandedChartFilter: FilterTypeExp[] | null = null;
   selectedTabIndex = 0;
+
+  showFilters = false;
+  filters$ = this.stateService.filters$;
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  openAddFilterDialog(): void {
+    const dialogRef = this.dialog.open(AddSelectionModalComponent, {
+      width: '600px',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe((result: SelectionType) => {
+      if (result) {
+        this.stateService.addFilter(result);
+      }
+    });
+  }
+
+  removeFilter(filter: DashboardFilter): void {
+    this.stateService.removeFilter(filter);
+  }
 
   openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
     this.expandedChartId = chartId;
