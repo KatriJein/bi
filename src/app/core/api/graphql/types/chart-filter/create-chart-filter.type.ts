@@ -6,6 +6,7 @@ export type CreateChartFilterResponse = {
 
 export type CreateChartFilterVariables = {
   chartId: string;
+  name: string;
   fieldName: string;
   filterType: string;
   fieldType: string;
@@ -13,6 +14,7 @@ export type CreateChartFilterVariables = {
 
 export type ChartFilter = {
   id: string;
+  name: string;
   chartId: string;
   fieldName: string;
   filterType: string;

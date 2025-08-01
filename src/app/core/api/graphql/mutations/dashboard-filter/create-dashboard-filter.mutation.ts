@@ -1,11 +1,12 @@
 import { gql } from 'apollo-angular';
 
 export const createDashboardFilterMutation = gql(`
- mutation CreateDashboardFilter(
+mutation CreateDashboardFilter(
   $dashboardId: UUID!
   $fieldType: String!
   $filterType: String!
   $name: String!
+  $value: JSON!
 ) {
   createDashboardFilter(
     input: {
@@ -14,6 +15,7 @@ export const createDashboardFilterMutation = gql(`
         name: $name
         fieldType: $fieldType
         filterType: $filterType
+        value: $value
       }
     }
   ) {
@@ -23,8 +25,8 @@ export const createDashboardFilterMutation = gql(`
       filterType
       id
       name
+      value
     }
   }
 }
-
   `);

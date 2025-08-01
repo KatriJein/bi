@@ -83,35 +83,36 @@
 
               <!-- Блок фильтров -->
               <div class="filters-container" *ngIf="showFilters">
-                <div
-                  class="filters-list"
-                  *ngIf="(filters$ | async)?.length; else noFilters"
+                <mat-chip-listbox
+                  aria-label="Filters list"
+                  *ngIf="(filters$ | async)?.length"
                 >
-                  <div
+                  <mat-chip-option
                     *ngFor="let filter of filters$ | async"
-                    class="filter-item"
+                    [selectable]="false"
+                    (click)="onFilterClick(filter)"
+                    [removable]="true"
+                    (removed)="removeFilter(filter)"
                   >
-                    <div class="filter-info">
-                      <span class="filter-name"
-                        >Название: {{ filter.name }}</span
-                      >
+                    <div class="filter-chip-content">
+                      <span class="filter-name">{{ filter.name }}</span>
                       <span class="filter-details"
-                        >Значение: {{ filter.filterType }}</span
+                        >{{ filter.filterType }}: {{ filter.value.value }}</span
                       >
                     </div>
-                    <button mat-icon-button (click)="removeFilter(filter)">
-                      <mat-icon class="delete-icon">delete</mat-icon>
-                    </button>
-                  </div>
-                </div>
+                    <mat-icon matChipRemove>cancel</mat-icon>
+                  </mat-chip-option>
+                </mat-chip-listbox>
 
-                <button mat-flat-button (click)="openAddFilterDialog()">
+                <button
+                  mat-flat-button
+                  color="primary"
+                  (click)="openAddFilterDialog()"
+                  class="add-filter-btn"
+                >
+                  <mat-icon>add</mat-icon>
                   Добавить фильтр
                 </button>
-
-                <ng-template #noFilters>
-                  <p class="no-filters">Нет активных фильтров</p>
-                </ng-template>
               </div>
 
               <div #gridStackContainer class="grid-stack"></div>

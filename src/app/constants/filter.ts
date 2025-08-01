@@ -9,6 +9,10 @@ export const SELECTION_COLUMN_TYPES: Record<SelectionColumnType, string> = {
   date: 'Дата',
 };
 
+export function getNameOfType(type: SelectionColumnType): string {
+  return SELECTION_COLUMN_TYPES[type];
+}
+
 export const FILTER_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> = {
   string: [
     'Принадлежит множеству',
@@ -63,7 +67,7 @@ export const FILTER_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> = {
   ],
 };
 
-export const SELECTION_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> =
+export const SELECTION_OPTIONS_BY_TYPE: Record<SelectionColumnType, string[]> =
   {
     string: [
       'Равно',
@@ -94,14 +98,6 @@ export const SELECTION_OPTIONS_BY_TYPE: Record<FilterableColumnType, string[]> =
       'Больше или равно',
       'Меньше или равно',
     ],
-    aggregated: [
-      'Равно',
-      'Не равно',
-      'Больше',
-      'Меньше',
-      'Больше или равно',
-      'Меньше или равно',
-    ],
   };
 
 export function getFilterOptionsByType(
@@ -113,15 +109,8 @@ export function getFilterOptionsByType(
   return FILTER_OPTIONS_BY_TYPE[normalizedType as FilterableColumnType] ?? [];
 }
 
-export function getSelectionOptionsByType(
-  type: string,
-  aggregation?: string
-): string[] {
-  const normalizedType =
-    aggregation && aggregation !== 'NONE' ? 'aggregated' : type;
-  return (
-    SELECTION_OPTIONS_BY_TYPE[normalizedType as FilterableColumnType] ?? []
-  );
+export function getSelectionOptionsByType(type: SelectionColumnType): string[] {
+  return SELECTION_OPTIONS_BY_TYPE[type] ?? [];
 }
 
 export function getAgGridFilterType(

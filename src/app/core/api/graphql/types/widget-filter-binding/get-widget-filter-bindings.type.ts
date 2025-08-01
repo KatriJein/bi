@@ -5,3 +5,7 @@ export type GetWidgetFilterBindingResponse = {
     nodes: WidgetFilterBinding[];
   };
 };
+
+export type GetWidgetFilterBindingVariables = {
+  widgetId: string;
+};

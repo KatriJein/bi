@@ -2,6 +2,11 @@
   min-width: 480px !important;
 }
 
+::ng-deep .mat-mdc-dialog-content {
+  height: auto !important;
+  overflow-y: auto !important;
+}
+
 .widget-form {
   display: flex;
   flex-direction: column;
@@ -48,4 +53,63 @@
 .dialog-actions {
   display: flex;
   gap: 0.1rem;
+}
+
+.section-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.new-filter-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  .filter-inputs {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    mat-form-field {
+      flex: 1;
+    }
+
+    .arrow {
+      position: relative;
+      top: -10px;
+    }
+  }
+}
+
+.filter-list {
+  width: 100%;
+  overflow-y: auto;
+  padding-top: 0;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  height: auto;
+  padding: 0.5rem 0;
+
+  .filter-binding {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .delete-icon {
+    color: var(--red);
+  }
 }

@@ -1,4 +1,4 @@
-export * from './dashboards.feature';
-export * as DashboardsActions from './dashboards.actions';
-export * as DashboardsSelectors from './dashboards.selector';
-export * from './dashboards.effects';
+export * from './widgets.feature';
+export * as WidgetsActions from './widgets.actions';
+export * as WidgetsSelectors from './widgets.selector';
+export * from './widgets.effects';

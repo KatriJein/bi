@@ -21,6 +21,7 @@
   <app-chart-container
     *ngIf="widget.chartId"
     [chartId]="widget.chartId"
+    [widgetSelectors]="widgetSelections$"
     (chartClick)="onChartExpClick?.($event)"
   ></app-chart-container>
 </div>

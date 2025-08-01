@@ -1,6 +1,7 @@
 import { gql } from 'apollo-angular';
 
-export const getChartFiltersQuery = gql(`query GetChartFilters {
+export const getChartFiltersQuery = gql(`
+query GetChartFilters {
   chartFilters {
     nodes {
       chartId
@@ -8,6 +9,7 @@ export const getChartFiltersQuery = gql(`query GetChartFilters {
       fieldType
       fieldName
       id
+      name
     }
   }
 }

@@ -13,5 +13,8 @@ export type UpdateDashboardFilterVariables = {
     name?: string;
     fieldType?: string;
     filterType?: string;
+    value?: {
+      value: any;
+    };
   };
 };

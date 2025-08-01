@@ -15,7 +15,7 @@ export function buildChartOptions(
   const baseOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
-    devicePixelRatio: window.devicePixelRatio || 1,
+    devicePixelRatio: 2,
     plugins: {
       legend: {
         position: 'top',

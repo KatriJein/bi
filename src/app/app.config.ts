@@ -24,6 +24,8 @@ import {
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { DatasetsEffects, DatasetsFeature } from './core/store/datasets';
 import { ChartsEffects, ChartsFeature } from './core/store/charts';
+import { WidgetsFeature } from './core/store/widgets/widgets.feature';
+import { WidgetsEffects } from './core/store/widgets';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -59,7 +61,8 @@ export const appConfig: ApplicationConfig = {
       [DashboardsFeature.name]: DashboardsFeature.reducer,
       [ConnectionsFeature.name]: ConnectionsFeature.reducer,
       [DatasetsFeature.name]: DatasetsFeature.reducer,
-      [ChartsFeature.name]: ChartsFeature.reducer
+      [ChartsFeature.name]: ChartsFeature.reducer,
+      [WidgetsFeature.name]: WidgetsFeature.reducer,
     }),
     provideEffects([
       InterfacesEffects,
@@ -67,7 +70,8 @@ export const appConfig: ApplicationConfig = {
       DashboardsEffects,
       ConnectionsEffects,
       DatasetsEffects,
-      ChartsEffects
+      ChartsEffects,
+      WidgetsEffects,
     ]),
     provideStoreDevtools({
       maxAge: 50,

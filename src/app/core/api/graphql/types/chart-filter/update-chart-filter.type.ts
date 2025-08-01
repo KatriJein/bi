@@ -10,6 +10,7 @@ export type UpdateChartFilterVariables = {
   id: string;
   patch: {
     chartId?: string;
+    name?: string;
     fieldName?: string;
     filterType?: string;
     fieldType?: string;

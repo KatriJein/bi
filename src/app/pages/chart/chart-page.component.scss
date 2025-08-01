@@ -115,3 +115,45 @@
     color: var(--red);
   }
 }
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+
+  mat-chip-option {
+    display: flex;
+    height: fit-content;
+    padding: 6px 4px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    background: white;
+
+    .filter-chip-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .filter-name {
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      .filter-details {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+
+    mat-icon {
+      font-size: 20px;
+      margin-left: 8px;
+      color: #666;
+    }
+  }
+}

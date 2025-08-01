@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { GraphqlService } from '../grapghql.service';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import {
   CreateWidgetFilterBindingResponse,
   CreateWidgetFilterBindingVariables,
   DeleteWidgetFilterBindingResponse,
   GetWidgetFilterBindingResponse,
+  GetWidgetFilterBindingVariables,
   UpdateWidgetFilterBindingResponse,
   UpdateWidgetFilterBindingVariables,
   WidgetFilterBinding,
@@ -23,11 +24,14 @@ import {
 export class WidgetFilterBindingService {
   private graphql = inject(GraphqlService);
 
-  getWidgetFilterBindings(): Observable<WidgetFilterBinding[]> {
+  getWidgetFilterBindings(
+    variables: GetWidgetFilterBindingVariables
+  ): Observable<WidgetFilterBinding[]> {
     return this.graphql
       .watchQuery<GetWidgetFilterBindingResponse>(
         undefined,
-        getWidgetFilterBindingQuery
+        getWidgetFilterBindingQuery,
+        variables
       )
       .pipe(
         map((res) => res.widgetFilterBindings.nodes),

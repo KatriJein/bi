@@ -24,7 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 import { Location } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { ChartSettingsComponent } from '../../components/chart/settings';
-import { ChartType, SelectionType } from '../../core/store/charts';
+import { ChartType, SelectionTypeChart } from '../../core/store/charts';
 import { MatIconModule } from '@angular/material/icon';
 import {
   CHART_TYPES,
@@ -33,6 +33,8 @@ import {
   getFilterOptionsByType,
 } from '../../constants';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatChipsModule } from '@angular/material/chips';
+import { ChartFilter } from '../../core/api/graphql/types';
 
 @Component({
   selector: 'app-chart-page',
@@ -52,6 +54,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     ChartSettingsComponent,
     MatIconModule,
     FormsModule,
+    MatIconModule,
+    MatChipsModule,
   ],
 })
 export class ChartPageComponent implements OnInit {
@@ -168,18 +172,34 @@ export class ChartPageComponent implements OnInit {
     const dialogRef = this.dialog.open(ChartSelectionModalComponent, {
       width: '600px',
       data: {
-        columns$: this.state.allColumns$,
+        columns$: this.allColumns$,
       },
     });
 
-    dialogRef.afterClosed().subscribe((result: SelectionType) => {
+    dialogRef.afterClosed().subscribe((result: SelectionTypeChart) => {
       if (result) {
         this.state.addSelection(result);
       }
     });
   }
 
-  removeSelection(index: number): void {
-    this.state.removeSelectionByIndex(index);
+  updateSelection(selection: ChartFilter): void {
+    const dialogRef = this.dialog.open(ChartSelectionModalComponent, {
+      width: '600px',
+      data: {
+        columns$: this.allColumns$,
+        selection,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result: SelectionTypeChart) => {
+      if (result) {
+        this.state.updateSelection(selection.id, result);
+      }
+    });
+  }
+
+  removeSelection(id: string): void {
+    this.state.removeSelection(id);
   }
 }

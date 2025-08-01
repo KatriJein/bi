@@ -5,6 +5,7 @@ import {
   FormControl,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -21,7 +22,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ColorPickerComponent } from '../../common';
 import { Store } from '@ngrx/store';
-import { VisualSettings, Widget } from '../../../core/api/graphql/types';
+import {
+  VisualSettings,
+  Widget,
+  WidgetFilterBinding,
+} from '../../../core/api/graphql/types';
 import { DashboardStateService } from '../../../services/dashboards-state.service';
 import {
   fontSizes,
@@ -30,7 +35,27 @@ import {
   verticalAlignOptions,
 } from '../../../constants';
 import { ChartsSelectors } from '../../../core/store/charts';
-import { combineLatest, map, startWith } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs';
+import { Actions, ofType } from '@ngrx/effects';
+import {
+  WidgetDto,
+  WidgetsActions,
+  WidgetsSelectors,
+} from '../../../core/store/widgets';
+import { DashboardsSelectors } from '../../../core/store/dashboards';
+import { MatDivider } from '@angular/material/divider';
+import { MatList, MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-edit-widget-modal',
@@ -51,14 +76,23 @@ import { combineLatest, map, startWith } from 'rxjs';
     MatIconModule,
     NgxMatSelectSearchModule,
     ColorPickerComponent,
+    MatDivider,
+    MatList,
+    MatListModule,
   ],
 })
 export class EditWidgetModalComponent implements OnInit {
   private store = inject(Store);
+  private actions$ = inject(Actions);
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<EditWidgetModalComponent>);
-  private data = inject(MAT_DIALOG_DATA) as Widget;
+  private data: { widgetId: string } = inject(MAT_DIALOG_DATA);
   private dashboardStateService = inject(DashboardStateService);
+
+  private destroy$ = new Subject<void>();
+  private readonly chartId$ = new BehaviorSubject<string>('');
+
+  private widgetData: Widget | null = null;
 
   fontSizes = fontSizes;
   textAlignOptions = textAlignOptions;
@@ -78,14 +112,6 @@ export class EditWidgetModalComponent implements OnInit {
     )
   );
 
-  get isChart() {
-    return this.data.type === 'chart';
-  }
-
-  get isText() {
-    return this.data.type === 'text';
-  }
-
   form = this.fb.group({
     name: [''],
     chartId: [''],
@@ -96,15 +122,67 @@ export class EditWidgetModalComponent implements OnInit {
     verticalAlign: ['top'],
   });
 
-  ngOnInit() {
-    if (!this.data) return;
+  newFilterForm = this.fb.group({
+    dashboardFilterId: ['', [Validators.required]],
+    chartFilterId: ['', [Validators.required]],
+  });
 
+  dashboardSelections$ = this.store.select(
+    DashboardsSelectors.selectSelectionsByActiveDashboard
+  );
+  chartSelections$ = this.chartId$.pipe(
+    distinctUntilChanged(),
+    switchMap((chartId) =>
+      this.store.select(ChartsSelectors.selectSelectionsByChartId(chartId))
+    )
+  );
+
+  widgetFilterBindings: WidgetFilterBinding[] = [];
+  showAddFilterForm = false;
+
+  get isChart(): boolean {
+    return this.widgetData?.type === 'chart';
+  }
+
+  get isText(): boolean {
+    return this.widgetData?.type === 'text';
+  }
+
+  ngOnInit(): void {
+    this.initWidgetSubscription();
+    this.initFormSubscriptions();
+    this.initActionListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initWidgetSubscription(): void {
+    this.store
+      .select(WidgetsSelectors.selectWidgetById(this.data.widgetId))
+      .pipe(
+        filter((widget): widget is WidgetDto => !!widget),
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((widget) => {
+        this.widgetData = widget;
+        this.updateForm(widget);
+        // this.updateComponentState(widget);
+      });
+  }
+
+  private updateForm(widget: WidgetDto): void {
     this.form.patchValue({
-      name: this.data.title,
-      chartId: this.data.chartId ?? '',
+      name: widget.title ?? '',
+      chartId: widget.chartId ?? '',
     });
 
-    const settings = this.data.visualSettings ?? {};
+    const settings = widget.visualSettings ?? {};
     this.form.patchValue({
       fontSize: settings.fontSizeTitle ?? 20,
       color: settings.colorTitle ?? '#000000',
@@ -119,6 +197,43 @@ export class EditWidgetModalComponent implements OnInit {
         customColor: savedColor,
       });
     }
+
+    this.chartId$.next(widget.chartId || '');
+    this.widgetFilterBindings = widget.selections || [];
+  }
+
+  private initFormSubscriptions(): void {
+    this.form
+      .get('chartId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((chartId) => {
+        this.chartId$.next(chartId || '');
+      });
+  }
+
+  private initActionListeners(): void {
+    this.actions$
+      .pipe(
+        ofType(WidgetsActions.updateWidgetSuccess),
+        filter((action) => action.widget.id === this.data.widgetId),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.dialogRef.close());
+
+    this.actions$
+      .pipe(
+        ofType(WidgetsActions.deleteWidgetSuccess),
+        filter((action) => action.widgetId === this.data.widgetId),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.dialogRef.close());
+  }
+
+  toggleAddFilterForm() {
+    this.showAddFilterForm = !this.showAddFilterForm;
+    if (!this.showAddFilterForm) {
+      this.newFilterForm.reset();
+    }
   }
 
   onTextAlignChange(align: string) {
@@ -127,16 +242,8 @@ export class EditWidgetModalComponent implements OnInit {
     });
   }
 
-  selectColor(color: string) {
-    if (color === 'custom') {
-      this.form.patchValue({
-        color,
-      });
-    } else {
-      this.form.patchValue({
-        color,
-      });
-    }
+  selectColor(color: string): void {
+    this.form.patchValue({ color });
   }
 
   onColorPicked(color: string) {
@@ -144,7 +251,7 @@ export class EditWidgetModalComponent implements OnInit {
   }
 
   onSubmit() {
-    if (!this.data) return;
+    if (!this.widgetData) return;
 
     const {
       name,
@@ -163,22 +270,65 @@ export class EditWidgetModalComponent implements OnInit {
       ...(this.isText && { verticalAlign: verticalAlign ?? 'top' }),
     };
 
-    const payload: Partial<Widget> = {
+    const payload: Partial<WidgetDto> = {
       title: name!,
       chartId: this.isChart ? chartId! : undefined,
       visualSettings,
     };
 
-    this.dashboardStateService
-      .updateWidget(this.data.id, payload)
-      .subscribe(() => this.dialogRef.close());
+    this.dashboardStateService.updateWidget(this.widgetData.id, payload);
   }
 
-  onDeleteWidget() {
-    if (!this.data) return;
+  onDeleteWidget(): void {
+    if (!this.widgetData) return;
+    this.dashboardStateService.deleteWidget(this.widgetData.id);
+  }
 
-    this.dashboardStateService.deleteWidget(this.data).subscribe(() => {
-      this.dialogRef.close();
-    });
+  onAddFilterBinding() {
+    const { dashboardFilterId, chartFilterId } = this.newFilterForm.value;
+    if (!dashboardFilterId || !chartFilterId || !this.widgetData) return;
+
+    this.store.dispatch(
+      WidgetsActions.createWidgetFilterBinding({
+        binding: {
+          widgetId: this.widgetData.id,
+          dashboardFilterId,
+          chartFilterId,
+        },
+      })
+    );
+
+    this.showAddFilterForm = false;
+    this.newFilterForm.reset();
+  }
+
+  onRemoveFilterBinding(bindingId: string) {
+    this.store.dispatch(
+      WidgetsActions.deleteWidgetFilterBinding({ id: bindingId })
+    );
+  }
+
+  onChartChange(chartId: string) {
+    this.chartSelections$ = this.store.select(
+      ChartsSelectors.selectSelectionsByChartId(chartId)
+    );
+  }
+
+  getDashboardFilterName(filterId: string) {
+    return this.dashboardSelections$.pipe(
+      map((selections) => {
+        const filter = selections.find((f) => f.id === filterId);
+        return filter?.name || 'Неизвестный фильтр дашборда';
+      })
+    );
+  }
+
+  getChartFilterName(filterId: string) {
+    return this.chartSelections$.pipe(
+      map((selections) => {
+        const filter = selections.find((f) => f.id === filterId);
+        return filter?.fieldName || 'Неизвестный фильтр графика';
+      })
+    );
   }
 }

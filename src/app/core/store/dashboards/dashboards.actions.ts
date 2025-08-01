@@ -111,12 +111,7 @@ export const loadDashboardFiltersFailure = createAction(
 export const createDashboardFilter = createAction(
   '[DashboardFilters] Create Filter',
   props<{
-    filter: {
-      dashboardId: string;
-      name: string;
-      filterType: string;
-      fieldType: string;
-    };
+    filter: Omit<DashboardFilter, 'id'>;
   }>()
 );
 export const createDashboardFilterSuccess = createAction(

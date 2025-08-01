@@ -9,6 +9,9 @@ export type CreateDashboardFilterVariables = {
   name: string;
   fieldType: string;
   filterType: string;
+  value: {
+    value: any;
+  };
 };
 
 export type DashboardFilter = {
@@ -17,4 +20,7 @@ export type DashboardFilter = {
   name: string;
   fieldType: string;
   filterType: string;
+  value: {
+    value: any;
+  };
 };

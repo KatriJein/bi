@@ -2,15 +2,14 @@
   <app-chart-renderer
     *ngIf="isChart$ | async"
     [chartId]="chartId"
-    [initialFilters]="initialFilters"
+    [initialFilters]="combinedFilters$ | async"
     (chartClick)="handleClick($event)"
   />
 
   <app-table-renderer
     *ngIf="isTable$ | async"
     [tableId]="chartId"
-    [initialFilters]="initialFilters"
+    [initialFilters]="combinedFilters$ | async"
     (tableDoubleClick)="handleClick($event)"
   />
-
 </div>

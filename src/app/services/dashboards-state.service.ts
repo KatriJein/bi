@@ -1,32 +1,31 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, of } from 'rxjs';
 import {
   distinctUntilChanged,
+  filter,
   map,
   switchMap,
   take,
-  tap,
-  withLatestFrom,
 } from 'rxjs/operators';
 import { InterfacesSelectors } from '../core/store/interfaces';
 import {
   DashboardsActions,
   DashboardsSelectors,
 } from '../core/store/dashboards';
-import { WidgetService } from '../core/api/services';
+import {
+  WidgetFilterBindingService,
+  WidgetService,
+} from '../core/api/services';
 import { DashboardFilter, Widget, WidgetType } from '../core/api/graphql/types';
-import isEqual from 'lodash-es/isEqual';
-import { ChartDto, SelectionType } from '../core/store/charts';
+import { ChartDto, SelectionTypeDashboard } from '../core/store/charts';
 import { selectChartById } from '../core/store/charts/charts.selector';
-import { SelectionColumnType } from '../constants';
+import { WidgetsActions, WidgetsSelectors } from '../core/store/widgets';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DashboardStateService {
   private store = inject(Store);
-  private widgetService = inject(WidgetService);
 
   activeInterface$ = this.store.select(
     InterfacesSelectors.selectActiveInterface
@@ -41,12 +40,6 @@ export class DashboardStateService {
     )
   );
 
-  setActiveDashboard(id: string) {
-    this.widgetsSubject.next([]);
-    this.store.dispatch(DashboardsActions.setActiveDashboard({ id }));
-    this.loadWidgets(id);
-  }
-
   activeDashboard$ = this.store.select(
     DashboardsSelectors.selectActiveDashboard
   );
@@ -56,53 +49,54 @@ export class DashboardStateService {
     distinctUntilChanged()
   );
 
-  private widgetsSubject = new BehaviorSubject<Widget[]>([]);
-  widgets$ = this.widgetsSubject
-    .asObservable()
-    .pipe(distinctUntilChanged((a, b) => isEqual(a, b)));
+  widgets$ = this.activeDashboard$.pipe(
+    filter((dashboard) => !!dashboard?.id),
+    switchMap((dashboard) =>
+      this.store.select(
+        WidgetsSelectors.selectWidgetsByDashboard(dashboard?.id || '')
+      )
+    ),
+    distinctUntilChanged()
+  );
 
-  loadWidgets(dashboardId: string) {
-    this.widgetService.loadWidgets(dashboardId).subscribe((widgets) => {
-      this.widgetsSubject.next(widgets);
+  setActiveDashboard(id: string) {
+    this.store.dispatch(DashboardsActions.setActiveDashboard({ id }));
+    this.store.dispatch(WidgetsActions.loadWidgets({ dashboardId: id }));
+  }
+
+  refreshWidgets() {
+    this.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
+      if (dashboard?.id) {
+        this.store.dispatch(
+          WidgetsActions.loadWidgets({ dashboardId: dashboard.id })
+        );
+      }
     });
   }
 
-  createWidget(widget: Partial<Widget>) {
-    return of(widget).pipe(
-      withLatestFrom(this.activeDashboard$),
-      switchMap(([widget, activeDashboard]) => {
-        const dashboardId = widget.dashboardId || activeDashboard?.id || '';
-        const newWidget: Omit<Widget, 'id'> = {
-          dashboardId,
-          title: '',
-          type: 'text',
-          position: { width: 8, height: 4, x: 0, y: 0 },
-          ...widget,
-        };
-
-        return this.widgetService
-          .createWidget(newWidget)
-          .pipe(tap(() => this.loadWidgets(dashboardId)));
-      })
-    );
+  createWidget(widgetData: Omit<Widget, 'id'>) {
+    this.store.dispatch(WidgetsActions.createWidget({ widget: widgetData }));
   }
 
-  updateWidget(widgetId: string, widget: Partial<Widget>) {
-    return of(widget).pipe(
-      withLatestFrom(this.activeDashboard$),
-      switchMap(([widget, activeDashboard]) => {
-        const dashboardId = widget.dashboardId || activeDashboard?.id || '';
-        return this.widgetService
-          .updateWidget(widgetId, widget)
-          .pipe(tap(() => this.loadWidgets(dashboardId)));
-      })
-    );
+  updateWidget(widgetId: string, patch: Partial<Widget>) {
+    this.store.dispatch(WidgetsActions.updateWidget({ widgetId, patch }));
+  }
+
+  deleteWidget(widgetId: string) {
+    this.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
+      if (!dashboard?.id) return;
+
+      this.store.dispatch(
+        WidgetsActions.deleteWidget({
+          dashboardId: dashboard.id,
+          widgetId,
+        })
+      );
+    });
   }
 
   getWidgetType(chartId: string | null): WidgetType {
-    if (chartId === null) {
-      return 'text';
-    }
+    if (!chartId) return 'text';
 
     let chart: ChartDto | undefined;
     this.store
@@ -110,23 +104,14 @@ export class DashboardStateService {
       .pipe(take(1))
       .subscribe((c) => (chart = c));
 
-    if (!chart) {
-      return 'text';
-    }
+    if (!chart) return 'text';
 
-    const chartType = chart.settings?.chartType;
-
-    if (chartType === 'table') {
-      return 'table';
-    }
-
-    return 'chart';
+    return chart?.settings?.chartType === 'table' ? 'table' : 'chart';
   }
 
   getTableName(id: string | null): string {
-    if (id === null) {
-      return '';
-    }
+    if (!id) return '';
+
     let name: string = '';
 
     this.store
@@ -137,23 +122,7 @@ export class DashboardStateService {
     return name;
   }
 
-  removeWidget(id: string) {
-    const current = this.widgetsSubject.getValue();
-    this.widgetsSubject.next(current.filter((w) => w.id !== id));
-  }
-
-  addWidget(widget: Widget) {
-    const current = this.widgetsSubject.getValue();
-    this.widgetsSubject.next([...current, widget]);
-  }
-
-  deleteWidget(widget: Widget) {
-    return this.widgetService
-      .deleteWidget(widget.id)
-      .pipe(tap(() => this.loadWidgets(widget.dashboardId)));
-  }
-
-  addFilter(selection: SelectionType): void {
+  addFilter(selection: SelectionTypeDashboard): void {
     this.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
       if (!dashboard) return;
 
@@ -161,13 +130,32 @@ export class DashboardStateService {
         DashboardsActions.createDashboardFilter({
           filter: {
             dashboardId: dashboard.id as string,
-            name: selection.columnName,
+            name: selection.name,
             fieldType: selection.columnType,
             filterType: selection.filterType,
+            value: {
+              value: selection.value,
+            },
           },
         })
       );
     });
+  }
+
+  updateFilter(selectionId: string, selection: SelectionTypeDashboard): void {
+    this.store.dispatch(
+      DashboardsActions.updateDashboardFilter({
+        id: selectionId,
+        patch: {
+          name: selection.name,
+          fieldType: selection.columnType,
+          filterType: selection.filterType,
+          value: {
+            value: selection.value,
+          },
+        },
+      })
+    );
   }
 
   removeFilter(selection: DashboardFilter): void {

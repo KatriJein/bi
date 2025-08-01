@@ -1,21 +1,33 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { WidgetState } from './widgets.feature';
+import { WidgetsFeature } from './widgets.feature';
 
-export const selectWidgetFeature =
-  createFeatureSelector<WidgetState>('widgets');
+export const {
+  selectWidgets,
+  selectError,
+  selectIsLoading,
+  selectWidgetsState,
+} = WidgetsFeature;
 
 export const selectWidgetsByDashboard = (dashboardId: string) =>
   createSelector(
-    selectWidgetFeature,
+    selectWidgetsState,
     (state) => state.widgets[dashboardId] || []
   );
 
-export const selectWidgetsLoading = createSelector(
-  selectWidgetFeature,
-  (state) => state.isLoading
-);
+export const selectSelectionsByWidgetId = (widgetId: string) =>
+  createSelector(selectWidgets, (widgets) => {
+    for (const dashboardId in widgets) {
+      const widget = widgets[dashboardId].find((w) => w.id === widgetId);
+      if (widget) return widget.selections || [];
+    }
+    return [];
+  });
 
-export const selectWidgetsError = createSelector(
-  selectWidgetFeature,
-  (state) => state.error
-);
+export const selectWidgetById = (widgetId: string) =>
+  createSelector(selectWidgets, (widgets) => {
+    for (const dashboardId in widgets) {
+      const widget = widgets[dashboardId].find((w) => w.id === widgetId);
+      if (widget) return widget || null;
+    }
+    return null;
+  });

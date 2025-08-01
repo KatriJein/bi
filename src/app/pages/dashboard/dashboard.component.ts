@@ -19,6 +19,7 @@ import {
   combineLatest,
   filter,
   map,
+  of,
   Subject,
   Subscription,
   switchMap,
@@ -28,7 +29,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
-import { MatIcon } from '@angular/material/icon';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   GridStack,
@@ -50,11 +51,13 @@ import { WidgetComponent } from '../../components/widget';
 import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { AddSelectionModalComponent } from '../../components/dashboard';
-import { SelectionType } from '../../core/store/charts';
+import { DashboardSelectionModalComponent } from '../../components/dashboard';
+import { SelectionTypeDashboard } from '../../core/store/charts';
+import { MatChipsModule } from '@angular/material/chips';
 
 export type FilterTypeExp = {
   field: string;
+  operator?: string;
   value: any;
 };
 
@@ -81,6 +84,8 @@ export type FilterEmitType = {
     MatInputModule,
     MatSelectModule,
     MatDialogModule,
+    MatIconModule,
+    MatChipsModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -104,46 +109,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   showFilters = false;
   filters$ = this.stateService.filters$;
-
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
-  }
-
-  openAddFilterDialog(): void {
-    const dialogRef = this.dialog.open(AddSelectionModalComponent, {
-      width: '600px',
-      data: {},
-    });
-
-    dialogRef.afterClosed().subscribe((result: SelectionType) => {
-      if (result) {
-        this.stateService.addFilter(result);
-      }
-    });
-  }
-
-  removeFilter(filter: DashboardFilter): void {
-    this.stateService.removeFilter(filter);
-  }
-
-  openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
-    this.expandedChartId = chartId;
-    this.expandedChartFilter = filters;
-    this.selectedTabIndex = 1;
-    this.expandedChartName = this.stateService.getTableName(chartId);
-  }
-
   activeInterface$ = this.stateService.activeInterface$;
   dashboards$ = this.stateService.dashboards$;
   widgets$ = this.stateService.widgets$;
+  activeDashboard$ = this.stateService.activeDashboard$;
 
   activeDashboardId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
     filter((id): id is string => !!id),
     tap((id) => this.stateService.setActiveDashboard(id))
   );
-
-  activeDashboard$ = this.stateService.activeDashboard$;
 
   private grid?: GridStack;
   private widgetsSub?: Subscription;
@@ -213,20 +188,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 pos.width !== item.w ||
                 pos.height !== item.h
               ) {
-                this.stateService
-                  .updateWidget(item.id.toString(), {
-                    dashboardId,
-                    position: {
-                      x: item.x ?? 0,
-                      y: item.y ?? 0,
-                      width: item.w ?? 1,
-                      height: item.h ?? 1,
-                    },
-                  })
-                  .subscribe({
-                    error: (err) =>
-                      console.error('Error updating widget position', err),
-                  });
+                this.stateService.updateWidget(item.id.toString(), {
+                  dashboardId,
+                  position: {
+                    x: item.x ?? 0,
+                    y: item.y ?? 0,
+                    width: item.w ?? 1,
+                    height: item.h ?? 1,
+                  },
+                });
               }
             });
           });
@@ -322,11 +292,56 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     const componentRef = this.widgetHost.createComponent(WidgetComponent);
     componentRef.instance.widget = widget;
-    componentRef.instance.onEditWidget = (w) => this.openEditWidgetDialog(w);
+    componentRef.instance.onEditWidget = (w) => this.openEditWidgetDialog(w.id);
     componentRef.instance.onChartExpClick = (event) =>
       this.handleChartExpanded(event);
     content.appendChild(componentRef.location.nativeElement);
     this.widgetComponentRefs.set(widget.id, componentRef);
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  openAddFilterDialog(): void {
+    const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
+      width: '600px',
+      data: {},
+    });
+
+    dialogRef.afterClosed().subscribe((result: SelectionTypeDashboard) => {
+      if (result) {
+        this.stateService.addFilter(result);
+      }
+    });
+  }
+
+  onFilterClick(filter: DashboardFilter): void {
+    const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
+      width: '600px',
+      data: {
+        filter: filter,
+      },
+    });
+
+    dialogRef
+      .afterClosed()
+      .subscribe((result: SelectionTypeDashboard | undefined) => {
+        if (result) {
+          this.stateService.updateFilter(filter.id, result);
+        }
+      });
+  }
+
+  removeFilter(filter: DashboardFilter): void {
+    this.stateService.removeFilter(filter);
+  }
+
+  openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
+    this.expandedChartId = chartId;
+    this.expandedChartFilter = filters;
+    this.selectedTabIndex = 1;
+    this.expandedChartName = this.stateService.getTableName(chartId);
   }
 
   handleChartExpanded(event: FilterEmitType): void {
@@ -341,9 +356,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  openEditWidgetDialog(widget: Widget) {
+  openEditWidgetDialog(widgetId: string) {
     this.dialog.open(EditWidgetModalComponent, {
-      data: widget,
+      data: { widgetId },
       width: '600px',
     });
   }
@@ -371,14 +386,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
             ),
             this.widgets$.pipe(take(1)),
           ]).pipe(
-            map(([dashboard, widgets]) => {
+            switchMap(([dashboard, widgets]) => {
               const maxBottom = widgets.reduce((max, w) => {
                 const bottom = (w.position.y ?? 0) + (w.position.height ?? 1);
                 return Math.max(max, bottom);
               }, 0);
 
-              const base = {
-                dashboardId: dashboard.id,
+              const widgetData: Omit<Widget, 'id'> = {
+                dashboardId: dashboard.id as string,
                 title: formValue.name,
                 position: {
                   width: 8,
@@ -387,15 +402,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
                   y: maxBottom,
                 },
                 type: widgetType,
+                ...(widgetType === 'chart' || widgetType === 'table'
+                  ? { chartId: formValue.chartId }
+                  : {}),
               };
 
-              return widgetType === 'chart' || widgetType === 'table'
-                ? { ...base, chartId: formValue.chartId }
-                : base;
-            }),
-            switchMap((widgetData) =>
-              this.stateService.createWidget(widgetData)
-            )
+              this.stateService.createWidget(widgetData);
+              return of(null);
+            })
           );
         })
       )
@@ -403,11 +417,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onRefreshWidgets() {
-    this.activeDashboardId$.pipe(take(1)).subscribe((dashboardId) => {
-      if (dashboardId) {
-        this.stateService.loadWidgets(dashboardId);
-      }
-    });
+    this.stateService.refreshWidgets();
   }
 
   constructor() {}

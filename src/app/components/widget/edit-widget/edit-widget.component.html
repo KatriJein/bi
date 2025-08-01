@@ -95,6 +95,82 @@
     (customColorChange)="onColorPicked($event)"
     label="Цвет заголовка"
   ></app-color-picker>
+
+  <!-- Секция отборов -->
+  <mat-divider></mat-divider>
+
+  <div class="form-section">
+    <div class="section-header">
+      <h3>Отборы</h3>
+      <button mat-button color="primary" (click)="toggleAddFilterForm()">
+        <mat-icon>{{ showAddFilterForm ? "close" : "add" }}</mat-icon>
+        {{ showAddFilterForm ? "Отменить" : "Добавить отбор" }}
+      </button>
+    </div>
+
+    <!-- Форма добавления нового отбора (показывается только при showAddFilterForm) -->
+    <div
+      class="new-filter-form"
+      *ngIf="showAddFilterForm"
+      [formGroup]="newFilterForm"
+    >
+      <div class="filter-inputs">
+        <mat-form-field appearance="outline">
+          <mat-label>Отбор дашборда</mat-label>
+          <mat-select formControlName="dashboardFilterId">
+            <mat-option
+              *ngFor="let filter of dashboardSelections$ | async"
+              [value]="filter.id"
+            >
+              {{ filter.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-icon class="arrow">arrow_forward</mat-icon>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Отбор графика</mat-label>
+          <mat-select formControlName="chartFilterId">
+            <mat-option
+              *ngFor="let filter of chartSelections$ | async"
+              [value]="filter.id"
+            >
+              {{ filter.fieldName }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onAddFilterBinding()"
+        [disabled]="newFilterForm.invalid"
+      >
+        Сохранить
+      </button>
+    </div>
+
+    <!-- Список текущих привязок -->
+    <mat-list *ngIf="widgetFilterBindings?.length" class="filter-list">
+      <mat-list-item *ngFor="let binding of widgetFilterBindings">
+        <div class="filter-item">
+          <div class="filter-binding">
+            <span>{{
+              getDashboardFilterName(binding.dashboardFilterId) | async
+            }}</span>
+            <mat-icon>arrow_forward</mat-icon>
+            <span>{{ getChartFilterName(binding.chartFilterId) | async }}</span>
+          </div>
+
+          <button mat-icon-button (click)="onRemoveFilterBinding(binding.id)">
+            <mat-icon class="delete-icon">delete</mat-icon>
+          </button>
+        </div>
+      </mat-list-item>
+    </mat-list>
+  </div>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end" class="widget-actions">

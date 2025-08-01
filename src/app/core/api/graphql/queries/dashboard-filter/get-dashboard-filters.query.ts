@@ -1,6 +1,7 @@
 import { gql } from 'apollo-angular';
 
-export const getDashboardFiltersQuery = gql(`query GetDashboardFilters {
+export const getDashboardFiltersQuery = gql(`
+query GetDashboardFilters {
   dashboardFilters {
     nodes {
       dashboardId
@@ -8,6 +9,7 @@ export const getDashboardFiltersQuery = gql(`query GetDashboardFilters {
       filterType
       id
       name
+      value
     }
   }
 }

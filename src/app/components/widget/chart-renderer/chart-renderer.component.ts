@@ -66,112 +66,108 @@ export class ChartRendererComponent implements OnChanges {
   chartType: ChartConfiguration['type'] = 'line';
 
   private sub?: Subscription;
+  private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
 
-  chartData$: Observable<any> = this.chart$.pipe(
-    filter((chart): chart is ChartDto => !!chart),
-    switchMap((chart) =>
-      combineLatest([
-        this.dataset$.pipe(filter((d): d is DatasetDto => d !== null)),
-        of(chart),
-      ]).pipe(
-        switchMap(([dataset, chart]) => {
-          const xAxisColumn = chart.xAxis
-            ? findColumnByName(chart.xAxis, dataset)
+  chartData$: Observable<any> = combineLatest([
+    this.chart$.pipe(filter((chart): chart is ChartDto => chart !== null)),
+    this.dataset$.pipe(filter((d): d is DatasetDto => d !== null)),
+    this.filtersSubject,
+  ]).pipe(
+    switchMap(([chart, dataset, filters]) => {
+      const xAxisColumn = chart.xAxis
+        ? findColumnByName(chart.xAxis, dataset)
+        : null;
+
+      const yAxisColumns = Array.isArray(chart.yAxis)
+        ? findColumnsByNames(chart.yAxis, dataset)
+        : [];
+
+      const combinedFilters = this.combineFilters(chart.filters || [], filters);
+
+      const filtersColumns: FilterColumn[] = combinedFilters
+        .map((f) => {
+          const baseCol = findColumnByName(f.columnName, dataset);
+          return baseCol
+            ? {
+                ...baseCol,
+                filterType: f.filterType,
+                value: f.value,
+              }
             : null;
+        })
+        .filter((x): x is FilterColumn => x !== null);
 
-          const yAxisColumns = Array.isArray(chart.yAxis)
-            ? findColumnsByNames(chart.yAxis, dataset)
-            : [];
-
-          const combinedFilters = this.combineFilters(
-            chart.filters || [],
-            this.initialFilters || []
-          );
-
-          const filtersColumns: FilterColumn[] =
-            combinedFilters
-              ?.map((f) => {
-                const baseCol = findColumnByName(f.columnName, dataset);
-                if (!baseCol) return null;
-                return {
-                  ...baseCol,
-                  filterType: f.filterType,
-                  value: f.value,
-                };
-              })
-              .filter((x): x is FilterColumn => x !== null) ?? [];
-
-          const sortingColumns = Array.isArray(chart.sorting)
-            ? findColumnsByNames(
-                chart.sorting.map((s) => s.columnName),
-                dataset
-              )
-                .map((col) => {
-                  const sortingItem = chart.sorting!.find(
-                    (s) => s.columnName === col.columnName
-                  );
-                  if (!sortingItem) return null;
-                  return {
+      const sortingColumns = Array.isArray(chart.sorting)
+        ? findColumnsByNames(
+            chart.sorting.map((s) => s.columnName),
+            dataset
+          )
+            .map((col) => {
+              const sortingItem = chart.sorting!.find(
+                (s) => s.columnName === col.columnName
+              );
+              return sortingItem
+                ? {
                     ...col,
                     direction: sortingItem.direction,
-                  };
-                })
-                .filter(
-                  (col): col is Column & { direction: 'asc' | 'desc' } =>
-                    col !== null
-                )
-            : [];
+                  }
+                : null;
+            })
+            .filter(
+              (col): col is Column & { direction: 'asc' | 'desc' } =>
+                col !== null
+            )
+        : [];
 
-          const allCols = collectAllColumns(
-            xAxisColumn,
-            yAxisColumns,
-            filtersColumns,
-            sortingColumns
-          );
+      const allCols = collectAllColumns(
+        xAxisColumn,
+        yAxisColumns,
+        filtersColumns,
+        sortingColumns
+      );
 
-          const colsByTable = groupColumnsByTable(allCols);
+      const colsByTable = groupColumnsByTable(allCols);
 
-          const requests = createChartDataRequests(
-            colsByTable,
-            this.chartService
-          );
+      const requests = createChartDataRequests(colsByTable, this.chartService);
 
-          if (requests.length === 0) {
-            return of([]);
-          }
+      if (requests.length === 0) {
+        return of([]);
+      }
 
-          return requests.length === 1
-            ? requests[0].pipe(
-                map(({ data }) =>
-                  processChartData(
-                    data,
-                    chart.xAxis as string,
-                    yAxisColumns,
-                    sortingColumns,
-                    filtersColumns
-                  )
-                )
+      return requests.length === 1
+        ? requests[0].pipe(
+            map(({ data }) =>
+              processChartData(
+                data,
+                chart.xAxis as string,
+                yAxisColumns,
+                sortingColumns,
+                filtersColumns
               )
-            : combineLatest(requests).pipe(
-                map((results) => {
-                  const merged = results.flatMap((r) => r.data);
-                  return processChartData(
-                    merged,
-                    chart.xAxis as string,
-                    yAxisColumns,
-                    sortingColumns,
-                    filtersColumns
-                  );
-                })
+            )
+          )
+        : combineLatest(requests).pipe(
+            map((results) => {
+              const merged = results.flatMap((r) => r.data);
+              return processChartData(
+                merged,
+                chart.xAxis as string,
+                yAxisColumns,
+                sortingColumns,
+                filtersColumns
               );
-        })
-      )
-    )
+            })
+          );
+    })
   );
 
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialFilters']) {
+      this.filtersSubject.next(this.initialFilters || []);
+    }
+
     if ('chartId' in changes && this.chartId) {
       this.store
         .pipe(select(ChartsSelectors.selectChartById(this.chartId)), take(1))
@@ -245,7 +241,7 @@ export class ChartRendererComponent implements OnChanges {
   ): FilterColumn[] {
     const initialAsFilterColumns = initialFilters.map((filter) => ({
       columnName: filter.field,
-      filterType: 'Равно',
+      filterType: filter.operator ? filter.operator : 'Равно',
       value: filter.value,
     }));
 

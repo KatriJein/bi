@@ -1,17 +1,26 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as WidgetsActions from './widgets.actions';
-import { sortByOrder } from '../../utils/sort.utils';
-import { WidgetFilterBinding } from '../../api/graphql/types';
+import {
+  VisualSettings,
+  WidgetFilterBinding,
+  WidgetType,
+} from '../../api/graphql/types';
 import { mapToWidgetDto } from '../../utils';
 
 export interface WidgetDto {
-  id: string | undefined;
-  chartId: string | null | undefined;
-  position: any | undefined;
-  title: string | undefined;
-  type: string | undefined;
-  visualSettings?: any | undefined;
-  selections?: WidgetFilterBinding[] | undefined;
+  id: string;
+  dashboardId: string;
+  title: string;
+  type: WidgetType;
+  chartId?: string | null;
+  position: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  visualSettings?: VisualSettings;
+  selections?: WidgetFilterBinding[];
 }
 
 export interface WidgetState {
@@ -27,7 +36,7 @@ export const initialState: WidgetState = {
 };
 
 export const WidgetsFeature = createFeature({
-  name: 'Widgets',
+  name: 'widgets',
   reducer: createReducer(
     initialState,
     on(WidgetsActions.loadWidgets, (state) => ({ ...state, isLoading: true })),
@@ -36,7 +45,10 @@ export const WidgetsFeature = createFeature({
       (state, { dashboardId, widgets }) => ({
         ...state,
         isLoading: false,
-        [dashboardId]: widgets.map(mapToWidgetDto),
+        widgets: {
+          ...state.widgets,
+          [dashboardId]: widgets.map(mapToWidgetDto),
+        },
         error: null,
       })
     ),
@@ -67,7 +79,12 @@ export const WidgetsFeature = createFeature({
         widgets: {
           ...state.widgets,
           [dashboardId]: (state.widgets[dashboardId] || []).map((w) =>
-            w.id === widget.id ? mapToWidgetDto(widget) : w
+            w.id === widget.id
+              ? {
+                  ...mapToWidgetDto(widget),
+                  selections: w.selections,
+                }
+              : w
           ),
         },
       })
@@ -87,24 +104,40 @@ export const WidgetsFeature = createFeature({
     ),
 
     // Widget Filter Bindings
-
     on(
       WidgetsActions.loadWidgetFilterBindingsSuccess,
       (state, { bindings }) => {
         const updatedWidgets = { ...state.widgets };
 
+        const widgetBindingsMap = new Map<string, WidgetFilterBinding[]>();
         bindings.forEach((binding) => {
-          for (const [dashboardId, widgets] of Object.entries(updatedWidgets)) {
-            updatedWidgets[dashboardId] = widgets.map((widget) =>
-              widget.id === binding.widgetId
-                ? {
-                    ...widget,
-                    selections: [...(widget.selections || []), binding],
-                  }
-                : widget
-            );
+          if (!widgetBindingsMap.has(binding.widgetId)) {
+            widgetBindingsMap.set(binding.widgetId, []);
           }
+          widgetBindingsMap.get(binding.widgetId)!.push(binding);
         });
+
+        for (const [dashboardId, widgets] of Object.entries(updatedWidgets)) {
+          updatedWidgets[dashboardId] = widgets.map((widget) => {
+            const widgetBindings = widgetBindingsMap.get(widget.id) || [];
+
+            if (widgetBindings.length === 0) {
+              return widget;
+            }
+
+            const existingIds = new Set(
+              (widget.selections || []).map((b) => b.id)
+            );
+            const newBindings = widgetBindings.filter(
+              (b) => !existingIds.has(b.id)
+            );
+
+            return {
+              ...widget,
+              selections: [...(widget.selections || []), ...newBindings],
+            };
+          });
+        }
 
         return {
           ...state,

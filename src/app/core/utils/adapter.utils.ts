@@ -31,6 +31,7 @@ export function toChartCreateRequest(dto: ChartDto): {
 export function mapToWidgetDto(widget: Widget): WidgetDto {
   return {
     id: widget.id,
+    dashboardId: widget.dashboardId,
     chartId: widget.chartId,
     position: widget.position,
     title: widget.title,

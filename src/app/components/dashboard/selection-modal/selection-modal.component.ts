@@ -1,8 +1,7 @@
 import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
-  Inject,
+  inject,
   OnInit,
 } from '@angular/core';
 import {
@@ -14,13 +13,17 @@ import {
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { SelectionColumnType } from '../../../constants';
+import {
+  getNameOfType,
+  getSelectionOptionsByType,
+  SelectionColumnType,
+} from '../../../constants';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { SelectionType } from '../../../core/store/charts';
+import { SelectionTypeDashboard } from '../../../core/store/charts';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,9 +33,9 @@ import {
   MAT_DATE_LOCALE,
   MatNativeDateModule,
   NativeDateAdapter,
-  provideNativeDateAdapter,
 } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { DashboardFilter } from '../../../core/api/graphql/types';
 
 @Component({
   selector: 'dashboard-selection-modal',
@@ -73,31 +76,47 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     },
   ],
 })
-export class AddSelectionModalComponent implements OnInit {
+export class DashboardSelectionModalComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
+  private data = inject<{ filter?: DashboardFilter }>(MAT_DIALOG_DATA);
+  private dialogRef = inject(MatDialogRef<DashboardSelectionModalComponent>);
+  
   filterForm: FormGroup;
-  filterTypes: SelectionColumnType[] = ['string', 'number', 'date'];
+  columnTypes: SelectionColumnType[] = ['string', 'number', 'date'];
   currentInputType: string = 'text';
+  filterTypes: string[] = [];
+
+  getNameOfType = getNameOfType;
+  getSelectionOptionsByType = getSelectionOptionsByType;
+
+  get isEditMode(): boolean {
+    return !!this.data.filter;
+  }
 
   ngOnInit(): void {
-    this.updateValueInputType(this.filterForm.get('type')?.value);
+    if (this.isEditMode) {
+      this.initFormWithExistingFilter(this.data.filter!);
+    } else {
+      this.updateValueInputType(this.filterForm.get('type')?.value);
+    }
 
     this.filterForm.get('type')?.valueChanges.subscribe((type) => {
       this.updateValueInputType(type);
+      this.filterTypes = getSelectionOptionsByType(type);
+      this.filterForm.get('filterType')?.setValue('');
       this.cdr.detectChanges();
     });
   }
 
-  constructor(
-    private fb: FormBuilder,
-    public dialogRef: MatDialogRef<AddSelectionModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { availableColumns: string[] },
-    private cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.filterForm = this.fb.group({
       name: ['', Validators.required],
       type: ['', Validators.required],
+      filterType: ['', Validators.required],
       value: ['', Validators.required],
       dateValue: [null],
+      secondValue: [''],
     });
   }
 
@@ -113,6 +132,31 @@ export class AddSelectionModalComponent implements OnInit {
     }
   }
 
+  private initFormWithExistingFilter(filter: DashboardFilter): void {
+    this.filterForm.patchValue({
+      name: filter.name,
+      type: filter.fieldType,
+      filterType: filter.filterType,
+    });
+
+    if (filter.fieldType === 'date') {
+      const [day, month, year] = filter.value.value.split('.');
+      const date = new Date(+year, +month - 1, +day);
+      this.filterForm.patchValue({
+        dateValue: date,
+      });
+    } else {
+      this.filterForm.patchValue({
+        value: filter.value.value,
+      });
+    }
+
+    this.updateValueInputType(filter.fieldType as SelectionColumnType);
+    this.filterTypes = getSelectionOptionsByType(
+      filter.fieldType as SelectionColumnType
+    );
+  }
+
   onSave(): void {
     if (this.filterForm.valid) {
       const formValue = this.filterForm.value;
@@ -126,10 +170,11 @@ export class AddSelectionModalComponent implements OnInit {
         value = formValue.value;
       }
 
-      const newFilter: SelectionType = {
-        columnName: formValue.name,
+      const newFilter: SelectionTypeDashboard = {
+        name: formValue.name,
         columnType: formValue.type,
-        filterType: value,
+        filterType: formValue.filterType,
+        value,
       };
       this.dialogRef.close(newFilter);
     }

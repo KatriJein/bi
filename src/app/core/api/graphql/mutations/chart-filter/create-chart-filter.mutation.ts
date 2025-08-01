@@ -6,6 +6,7 @@ mutation CreateChartFilter(
   $fieldName: String!
   $fieldType: String!
   $filterType: String!
+  $name: String!
 ) {
   createChartFilter(
     input: {
@@ -14,6 +15,7 @@ mutation CreateChartFilter(
         fieldName: $fieldName
         filterType: $filterType
         fieldType: $fieldType
+        name: $name
       }
     }
   ) {
@@ -23,8 +25,8 @@ mutation CreateChartFilter(
       fieldType
       filterType
       id
+      name
     }
   }
 }
-
   `);

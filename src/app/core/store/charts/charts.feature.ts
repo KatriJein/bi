@@ -13,10 +13,18 @@ export type FilterType = {
   value: any;
 };
 
-export type SelectionType = {
+export type SelectionTypeChart = {
+  name: string;
   columnName: string;
   columnType: string;
   filterType: string;
+};
+
+export type SelectionTypeDashboard = {
+  name: string;
+  columnType: string;
+  filterType: string;
+  value: any;
 };
 
 export type ChartType =

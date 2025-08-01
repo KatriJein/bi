@@ -1,13 +1,26 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
-
+import { combineLatest, forkJoin, from, of } from 'rxjs';
+import {
+  catchError,
+  defaultIfEmpty,
+  filter,
+  last,
+  map,
+  mergeMap,
+  reduce,
+  scan,
+  startWith,
+  take,
+  tap,
+  toArray,
+} from 'rxjs/operators';
 import { WidgetFilterBindingService, WidgetService } from '../../api/services';
 import * as WidgetsActions from './widgets.actions';
+import { WidgetFilterBinding } from '../../api/graphql/types';
 
 @Injectable()
-export class DashboardsEffects {
+export class WidgetsEffects {
   private actions$ = inject(Actions);
   private widgetService = inject(WidgetService);
   private widgetFilterBindingService = inject(WidgetFilterBindingService);
@@ -85,18 +98,25 @@ export class DashboardsEffects {
   loadWidgetFilterBindings$ = createEffect(() =>
     this.actions$.pipe(
       ofType(WidgetsActions.loadWidgetsSuccess),
-      mergeMap(() =>
-        this.widgetFilterBindingService.getWidgetFilterBindings().pipe(
+      mergeMap(({ widgets }) =>
+        combineLatest(
+          widgets.map((widget) =>
+            this.widgetFilterBindingService
+              .getWidgetFilterBindings({ widgetId: widget.id })
+              .pipe(catchError(() => of([] as WidgetFilterBinding[])))
+          )
+        ).pipe(
+          map((bindingsArrays) => bindingsArrays.flat()),
           map((bindings) =>
             WidgetsActions.loadWidgetFilterBindingsSuccess({ bindings })
-          ),
-          catchError((error) =>
-            of(
-              WidgetsActions.loadWidgetFilterBindingsFailure({
-                error: error.message,
-              })
-            )
           )
+        )
+      ),
+      catchError((error) =>
+        of(
+          WidgetsActions.loadWidgetFilterBindingsFailure({
+            error: error.message,
+          })
         )
       )
     )

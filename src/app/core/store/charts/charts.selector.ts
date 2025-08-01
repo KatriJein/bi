@@ -9,3 +9,6 @@ export const selectChartById = (id: string) =>
 export const selectTableCharts = createSelector(selectCharts, (charts) =>
   charts.filter((chart) => chart.settings?.chartType === 'table')
 );
+
+export const selectSelectionsByChartId = (chartId: string) =>
+  createSelector(selectChartById(chartId), (chart) => chart?.selections || []);

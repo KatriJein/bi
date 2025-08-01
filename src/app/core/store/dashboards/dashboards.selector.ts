@@ -28,3 +28,7 @@ export const selectDashboardsByInterfaceId = (interfaceId: string) =>
 export const selectDashboardById = (id: string) =>
   createSelector(selectDashboards, (dashboards) => dashboards[id] || []);
 
+export const selectSelectionsByActiveDashboard = createSelector(
+  selectActiveDashboard,
+  (dashboard) => dashboard?.selections || []
+);

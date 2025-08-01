@@ -1,6 +1,6 @@
 <ng-container *ngIf="chart$ | async as chart">
   <ng-container *ngIf="dataset$ | async as dataset">
-    <div class="chart-container">
+    <div class="chart-container" [class.has-filters]="initialFilters?.length">
       <div *ngIf="initialFilters?.length" class="filter-indicator">
         Применены фильтры:
         <span *ngFor="let filter of initialFilters; let last = last">
@@ -19,7 +19,6 @@
           [options]="chartOptions"
           [type]="chartType"
           class="chart"
-          style="width: 100%; height: 100%"
           (chartClick)="onChartClick($event)"
         ></canvas>
       </div>

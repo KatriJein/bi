@@ -1,7 +1,10 @@
-import { Component, inject, Inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Component, inject, Inject, OnInit } from '@angular/core';
+import { Observable, take } from 'rxjs';
 import { Column } from '../../../core/models';
-import { getSelectionOptionsByType } from '../../../constants';
+import {
+  getSelectionOptionsByType,
+  SelectionColumnType,
+} from '../../../constants';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -20,8 +23,10 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { TsType } from '../../../core/utils';
+import { ChartFilter } from '../../../core/api/graphql/types';
 
 interface FormValue {
+  name: string;
   column: Column;
   filterType: string;
 }
@@ -42,22 +47,36 @@ interface FormValue {
   templateUrl: './selection-modal.component.html',
   styleUrl: './selection-modal.component.scss',
 })
-export class ChartSelectionModalComponent {
+export class ChartSelectionModalComponent implements OnInit {
+  private dialogRef = inject(MatDialogRef<ChartSelectionModalComponent>);
+  private data = inject<{
+    columns$: Observable<Column[]>;
+    selection: ChartFilter;
+  }>(MAT_DIALOG_DATA);
+  private fb = inject(FormBuilder);
+
   form: FormGroup;
   filterOptions: string[] = [];
 
-  private dialogRef = inject(MatDialogRef<ChartSelectionModalComponent>);
-  private data = inject<{ columns$: Observable<Column[]> }>(MAT_DIALOG_DATA);
-  private fb = inject(FormBuilder);
+  get isEditMode(): boolean {
+    return !!this.data.selection;
+  }
 
-  constructor() {
-    this.form = this.fb.group({
-      column: [null, Validators.required],
-      filterType: [{ value: null, disabled: true }, Validators.required],
-    });
+  ngOnInit(): void {
+    if (this.isEditMode && this.data.selection) {
+      this.initFormWithSelection(this.data.selection);
+    }
 
     this.form.get('column')?.valueChanges.subscribe((column: Column) => {
       this.updateFilterOptions(column);
+    });
+  }
+
+  constructor() {
+    this.form = this.fb.group({
+      name: ['', Validators.required],
+      column: [null, Validators.required],
+      filterType: [{ value: '', disabled: true }, Validators.required],
     });
   }
 
@@ -68,8 +87,7 @@ export class ChartSelectionModalComponent {
   private updateFilterOptions(column: Column): void {
     if (column) {
       this.filterOptions = getSelectionOptionsByType(
-        column.dataType,
-        column.aggregate
+        column.dataType as SelectionColumnType
       );
       const filterTypeControl = this.form.get('filterType');
       filterTypeControl?.enable();
@@ -80,10 +98,28 @@ export class ChartSelectionModalComponent {
     }
   }
 
+  private initFormWithSelection(selection: ChartFilter): void {
+    this.columns$.pipe(take(1)).subscribe((columns) => {
+      const matchingColumn = columns.find(
+        (c) => c.columnName === selection.fieldName
+      );
+      if (matchingColumn) {
+        this.updateFilterOptions(matchingColumn);
+
+        this.form.patchValue({
+          name: selection.name,
+          column: matchingColumn,
+          filterType: selection.filterType,
+        });
+      }
+    });
+  }
+
   onSave(): void {
     if (this.form.valid) {
-      const { column, filterType } = this.form.value as FormValue;
+      const { column, filterType, name } = this.form.value as FormValue;
       this.dialogRef.close({
+        name,
         columnName: column.columnName,
         columnType: column.dataType,
         filterType: filterType,
