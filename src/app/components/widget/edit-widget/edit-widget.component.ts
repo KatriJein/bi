@@ -1,6 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs';
+import {
   FormBuilder,
   FormControl,
   FormsModule,
@@ -20,14 +34,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
-import { ColorPickerComponent } from '../../common';
+import { MatDivider } from '@angular/material/divider';
+import { MatList, MatListModule } from '@angular/material/list';
 import { Store } from '@ngrx/store';
+import { Actions, ofType } from '@ngrx/effects';
 import {
+  ChartFilter,
+  DashboardFilter,
   UpdateWidgetFilterBindingVariables,
   VisualSettings,
   Widget,
   WidgetFilterBinding,
 } from '../../../core/api/graphql/types';
+import { ColorPickerComponent } from '../../common';
 import { DashboardStateService } from '../../../services/dashboards-state.service';
 import {
   fontSizes,
@@ -37,25 +56,11 @@ import {
 } from '../../../constants';
 import { ChartsSelectors } from '../../../core/store/charts';
 import {
-  BehaviorSubject,
-  combineLatest,
-  distinctUntilChanged,
-  filter,
-  map,
-  startWith,
-  Subject,
-  switchMap,
-  takeUntil,
-} from 'rxjs';
-import { Actions, ofType } from '@ngrx/effects';
-import {
   WidgetDto,
   WidgetsActions,
   WidgetsSelectors,
 } from '../../../core/store/widgets';
 import { DashboardsSelectors } from '../../../core/store/dashboards';
-import { MatDivider } from '@angular/material/divider';
-import { MatList, MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-edit-widget-modal',
@@ -89,10 +94,13 @@ export class EditWidgetModalComponent implements OnInit {
   private data: { widgetId: string } = inject(MAT_DIALOG_DATA);
   private dashboardStateService = inject(DashboardStateService);
 
-  private destroy$ = new Subject<void>();
-  private readonly chartId$ = new BehaviorSubject<string>('');
+  private destroy = new Subject<void>();
+  private chartId = new BehaviorSubject<string>('');
 
   private widgetData: Widget | null = null;
+  bindingFormMode: 'none' | 'add' | 'edit' = 'none';
+  currentBindingId: string | null = null;
+  widgetFilterBindings: WidgetFilterBinding[] = [];
 
   fontSizes = fontSizes;
   textAlignOptions = textAlignOptions;
@@ -100,6 +108,20 @@ export class EditWidgetModalComponent implements OnInit {
   predefinedColors = predefinedColors;
 
   chartSearchCtrl = new FormControl('');
+  form = this.fb.group({
+    name: [''],
+    chartId: [''],
+    fontSize: [20],
+    color: ['#000000'],
+    customColor: ['#000000'],
+    textAlign: ['left'],
+    verticalAlign: ['top'],
+  });
+  bindingForm = this.fb.group({
+    dashboardFilterId: [null as string | null, [Validators.required]],
+    chartFilterId: [null as string | null, [Validators.required]],
+  });
+
   charts$ = this.store.select(ChartsSelectors.selectCharts);
   filteredCharts$ = combineLatest([
     this.charts$,
@@ -112,35 +134,67 @@ export class EditWidgetModalComponent implements OnInit {
     )
   );
 
-  form = this.fb.group({
-    name: [''],
-    chartId: [''],
-    fontSize: [20],
-    color: ['#000000'],
-    customColor: ['#000000'],
-    textAlign: ['left'],
-    verticalAlign: ['top'],
-  });
-
-  bindingFormMode: 'none' | 'add' | 'edit' = 'none';
-  currentBindingId: string | null = null;
-
-  bindingForm = this.fb.group({
-    dashboardFilterId: ['', [Validators.required]],
-    chartFilterId: ['', [Validators.required]],
-  });
-
   dashboardSelections$ = this.store.select(
     DashboardsSelectors.selectSelectionsByActiveDashboard
   );
-  chartSelections$ = this.chartId$.pipe(
+  chartSelections$ = this.chartId.pipe(
     distinctUntilChanged(),
     switchMap((chartId) =>
       this.store.select(ChartsSelectors.selectSelectionsByChartId(chartId))
     )
   );
 
-  widgetFilterBindings: WidgetFilterBinding[] = [];
+  filteredDashboardSelections$ = combineLatest([
+    this.dashboardSelections$,
+    this.bindingForm
+      .get('chartFilterId')!
+      .valueChanges.pipe(
+        startWith(this.bindingForm.value.chartFilterId),
+        distinctUntilChanged()
+      ),
+    this.chartSelections$,
+  ]).pipe(
+    map(([dashboardSelections, chartFilterId, chartSelections]) => {
+      if (!chartFilterId) return dashboardSelections;
+
+      const chartSelection = chartSelections.find(
+        (s) => s.id === chartFilterId
+      );
+      if (!chartSelection) return dashboardSelections;
+
+      return dashboardSelections.filter(
+        (s) =>
+          s.fieldType === chartSelection.fieldType &&
+          s.filterType === chartSelection.filterType
+      );
+    })
+  );
+
+  filteredChartSelections$ = combineLatest([
+    this.chartSelections$,
+    this.bindingForm
+      .get('dashboardFilterId')!
+      .valueChanges.pipe(
+        startWith(this.bindingForm.value.dashboardFilterId),
+        distinctUntilChanged()
+      ),
+    this.dashboardSelections$,
+  ]).pipe(
+    map(([chartSelections, dashboardFilterId, dashboardSelections]) => {
+      if (!dashboardFilterId) return chartSelections;
+
+      const dashboardSelection = dashboardSelections.find(
+        (s) => s.id === dashboardFilterId
+      );
+      if (!dashboardSelection) return chartSelections;
+
+      return chartSelections.filter(
+        (s) =>
+          s.fieldType === dashboardSelection.fieldType &&
+          s.filterType === dashboardSelection.filterType
+      );
+    })
+  );
 
   get isChart(): boolean {
     return this.widgetData?.type === 'chart';
@@ -157,8 +211,8 @@ export class EditWidgetModalComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.destroy.next();
+    this.destroy.complete();
   }
 
   private initWidgetSubscription(): void {
@@ -169,12 +223,39 @@ export class EditWidgetModalComponent implements OnInit {
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
         ),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy)
       )
       .subscribe((widget) => {
         this.widgetData = widget;
         this.updateForm(widget);
       });
+  }
+
+  private initFormSubscriptions(): void {
+    this.form
+      .get('chartId')!
+      .valueChanges.pipe(takeUntil(this.destroy))
+      .subscribe((chartId) => {
+        this.chartId.next(chartId || '');
+      });
+  }
+
+  private initActionListeners(): void {
+    this.actions$
+      .pipe(
+        ofType(WidgetsActions.updateWidgetSuccess),
+        filter((action) => action.widget.id === this.data.widgetId),
+        takeUntil(this.destroy)
+      )
+      .subscribe(() => this.dialogRef.close());
+
+    this.actions$
+      .pipe(
+        ofType(WidgetsActions.deleteWidgetSuccess),
+        filter((action) => action.widgetId === this.data.widgetId),
+        takeUntil(this.destroy)
+      )
+      .subscribe(() => this.dialogRef.close());
   }
 
   private updateForm(widget: WidgetDto): void {
@@ -199,44 +280,17 @@ export class EditWidgetModalComponent implements OnInit {
       });
     }
 
-    this.chartId$.next(widget.chartId || '');
+    this.chartId.next(widget.chartId || '');
     this.widgetFilterBindings = widget.selections || [];
   }
 
-  private initFormSubscriptions(): void {
-    this.form
-      .get('chartId')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((chartId) => {
-        this.chartId$.next(chartId || '');
-      });
-  }
-
-  private initActionListeners(): void {
-    this.actions$
-      .pipe(
-        ofType(WidgetsActions.updateWidgetSuccess),
-        filter((action) => action.widget.id === this.data.widgetId),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.dialogRef.close());
-
-    this.actions$
-      .pipe(
-        ofType(WidgetsActions.deleteWidgetSuccess),
-        filter((action) => action.widgetId === this.data.widgetId),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => this.dialogRef.close());
-  }
-
-  openAddBindingForm() {
+  openAddBindingForm(): void {
     this.bindingFormMode = 'add';
     this.currentBindingId = null;
     this.bindingForm.reset();
   }
 
-  startEditBinding(binding: WidgetFilterBinding) {
+  startEditBinding(binding: WidgetFilterBinding): void {
     this.bindingFormMode = 'edit';
     this.currentBindingId = binding.id;
     this.bindingForm.patchValue({
@@ -245,13 +299,13 @@ export class EditWidgetModalComponent implements OnInit {
     });
   }
 
-  cancelBindingForm() {
+  cancelBindingForm(): void {
     this.bindingFormMode = 'none';
     this.currentBindingId = null;
     this.bindingForm.reset();
   }
 
-  submitBindingForm() {
+  submitBindingForm(): void {
     if (this.bindingForm.invalid || !this.widgetData) return;
 
     const { dashboardFilterId, chartFilterId } = this.bindingForm.value;
@@ -281,7 +335,7 @@ export class EditWidgetModalComponent implements OnInit {
     this.cancelBindingForm();
   }
 
-  onRemoveFilterBinding(bindingId: string) {
+  onRemoveFilterBinding(bindingId: string): void {
     if (
       this.bindingFormMode === 'edit' &&
       this.currentBindingId === bindingId
@@ -293,21 +347,19 @@ export class EditWidgetModalComponent implements OnInit {
     );
   }
 
-  onTextAlignChange(align: string) {
-    this.form.patchValue({
-      textAlign: align,
-    });
+  onTextAlignChange(align: string): void {
+    this.form.patchValue({ textAlign: align });
   }
 
   selectColor(color: string): void {
     this.form.patchValue({ color });
   }
 
-  onColorPicked(color: string) {
+  onColorPicked(color: string): void {
     this.form.patchValue({ customColor: color });
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (!this.widgetData) return;
 
     const {
@@ -344,19 +396,13 @@ export class EditWidgetModalComponent implements OnInit {
   onUpdateFilterBinding(
     bindingId: string,
     patch: UpdateWidgetFilterBindingVariables['patch']
-  ) {
+  ): void {
     this.store.dispatch(
       WidgetsActions.updateWidgetFilterBinding({ id: bindingId, patch })
     );
   }
 
-  onChartChange(chartId: string) {
-    this.chartSelections$ = this.store.select(
-      ChartsSelectors.selectSelectionsByChartId(chartId)
-    );
-  }
-
-  getDashboardFilterName(filterId: string) {
+  getDashboardFilterName(filterId: string): Observable<string> {
     return this.dashboardSelections$.pipe(
       map((selections) => {
         const filter = selections.find((f) => f.id === filterId);
@@ -365,12 +411,48 @@ export class EditWidgetModalComponent implements OnInit {
     );
   }
 
-  getChartFilterName(filterId: string) {
+  getChartFilterName(filterId: string): Observable<string> {
     return this.chartSelections$.pipe(
       map((selections) => {
         const filter = selections.find((f) => f.id === filterId);
         return filter?.fieldName || 'Неизвестный фильтр графика';
       })
     );
+  }
+
+  isFilterCompatible(
+    filter: DashboardFilter | ChartFilter,
+    otherFilterId: string | null,
+    type: 'dashboard' | 'chart'
+  ): Observable<boolean> {
+    if (!otherFilterId) return of(true);
+
+    if (type === 'dashboard') {
+      return this.chartSelections$.pipe(
+        take(1),
+        map((chartSelections) => {
+          const chartFilter = chartSelections.find(
+            (f) => f.id === otherFilterId
+          );
+          return chartFilter
+            ? filter.fieldType === chartFilter.fieldType &&
+                filter.filterType === chartFilter.filterType
+            : true;
+        })
+      );
+    } else {
+      return this.dashboardSelections$.pipe(
+        take(1),
+        map((dashboardSelections) => {
+          const dashboardFilter = dashboardSelections.find(
+            (f) => f.id === otherFilterId
+          );
+          return dashboardFilter
+            ? filter.fieldType === dashboardFilter.fieldType &&
+                filter.filterType === dashboardFilter.filterType
+            : true;
+        })
+      );
+    }
   }
 }

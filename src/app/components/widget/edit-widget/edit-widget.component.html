@@ -109,52 +109,11 @@
     </div>
 
     <!-- Форма добавления нового отбора -->
-    <div
-      class="edit-binding-form"
-      *ngIf="bindingFormMode === 'add'"
-      [formGroup]="bindingForm"
-    >
-      <div class="filter-inputs">
-        <mat-form-field appearance="outline">
-          <mat-label>Отбор дашборда</mat-label>
-          <mat-select formControlName="dashboardFilterId">
-            <mat-option
-              *ngFor="let filter of dashboardSelections$ | async"
-              [value]="filter.id"
-            >
-              {{ filter.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-icon class="arrow">arrow_forward</mat-icon>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Отбор графика</mat-label>
-          <mat-select formControlName="chartFilterId">
-            <mat-option
-              *ngFor="let filter of chartSelections$ | async"
-              [value]="filter.id"
-            >
-              {{ filter.fieldName }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-
-      <div class="edit-actions">
-        <button mat-button (click)="cancelBindingForm()">Отменить</button>
-        <button
-          mat-raised-button
-          color="primary"
-          (click)="submitBindingForm()"
-          [disabled]="bindingForm.invalid"
-        >
-          Добавить
-        </button>
-      </div>
+    <div *ngIf="bindingFormMode === 'add'">
+      <ng-container *ngTemplateOutlet="bindingFormTemplate"></ng-container>
     </div>
 
+    <!-- Список всех отборов -->
     <mat-list *ngIf="widgetFilterBindings?.length" class="filter-list">
       <ng-container *ngFor="let binding of widgetFilterBindings">
         <mat-list-item
@@ -177,52 +136,12 @@
           </div>
         </mat-list-item>
 
-        <!-- Форма редактирования (отдельный элемент списка) -->
+        <!-- Форма редактирования отбора -->
         <mat-list-item
           *ngIf="bindingFormMode === 'edit' && currentBindingId === binding.id"
           class="edit-form-container"
         >
-          <div class="edit-binding-form" [formGroup]="bindingForm">
-            <div class="filter-inputs">
-              <mat-form-field appearance="outline">
-                <mat-label>Отбор дашборда</mat-label>
-                <mat-select formControlName="dashboardFilterId">
-                  <mat-option
-                    *ngFor="let filter of dashboardSelections$ | async"
-                    [value]="filter.id"
-                  >
-                    {{ filter.name }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-icon class="arrow">arrow_forward</mat-icon>
-
-              <mat-form-field appearance="outline">
-                <mat-label>Отбор графика</mat-label>
-                <mat-select formControlName="chartFilterId">
-                  <mat-option
-                    *ngFor="let filter of chartSelections$ | async"
-                    [value]="filter.id"
-                  >
-                    {{ filter.fieldName }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <div class="edit-actions">
-              <button mat-button (click)="cancelBindingForm()">Отменить</button>
-              <button
-                mat-raised-button
-                color="primary"
-                (click)="submitBindingForm()"
-                [disabled]="bindingForm.invalid"
-              >
-                Сохранить
-              </button>
-            </div>
-          </div>
+          <ng-container *ngTemplateOutlet="bindingFormTemplate"></ng-container>
         </mat-list-item>
       </ng-container>
     </mat-list>
@@ -250,3 +169,63 @@
     </button>
   </div>
 </mat-dialog-actions>
+
+<ng-template #bindingFormTemplate>
+  <div class="edit-binding-form" [formGroup]="bindingForm">
+    <div class="filter-inputs">
+      <mat-form-field appearance="outline">
+        <mat-label>Отбор дашборда</mat-label>
+        <mat-select formControlName="dashboardFilterId">
+          <mat-option [value]="null">Не выбрано</mat-option>
+          <mat-option
+            *ngFor="let filter of filteredDashboardSelections$ | async"
+            [value]="filter.id"
+            [disabled]="
+              (isFilterCompatible(
+                filter,
+                bindingForm.value.chartFilterId || null,
+                'dashboard'
+              ) | async) === false
+            "
+          >
+            {{ filter.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-icon class="arrow">arrow_forward</mat-icon>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Отбор графика</mat-label>
+        <mat-select formControlName="chartFilterId">
+          <mat-option [value]="null">Не выбрано</mat-option>
+          <mat-option
+            *ngFor="let filter of filteredChartSelections$ | async"
+            [value]="filter.id"
+            [disabled]="
+              (isFilterCompatible(
+                filter,
+                bindingForm.value.dashboardFilterId || null,
+                'chart'
+              ) | async) === false
+            "
+          >
+            {{ filter.fieldName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="edit-actions">
+      <button mat-button (click)="cancelBindingForm()">Отменить</button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="submitBindingForm()"
+        [disabled]="bindingForm.invalid"
+      >
+        {{ bindingFormMode === "add" ? "Добавить" : "Сохранить" }}
+      </button>
+    </div>
+  </div>
+</ng-template>
