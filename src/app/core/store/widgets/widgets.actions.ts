@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Widget, WidgetFilterBinding } from '../../api/graphql/types';
+import { UpdateWidgetFilterBindingVariables, Widget, WidgetFilterBinding } from '../../api/graphql/types';
 
 // Загрузка
 export const loadWidgets = createAction(
@@ -100,7 +100,7 @@ export const createWidgetFilterBindingFailure = createAction(
 // Обновление
 export const updateWidgetFilterBinding = createAction(
   '[Widgets] Update Widget Filter Binding',
-  props<{ id: string; patch: Partial<WidgetFilterBinding> }>()
+  props<{ id: string; patch: UpdateWidgetFilterBindingVariables['patch'] }>()
 );
 
 export const updateWidgetFilterBindingSuccess = createAction(

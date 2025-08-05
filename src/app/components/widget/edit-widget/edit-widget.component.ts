@@ -23,6 +23,7 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ColorPickerComponent } from '../../common';
 import { Store } from '@ngrx/store';
 import {
+  UpdateWidgetFilterBindingVariables,
   VisualSettings,
   Widget,
   WidgetFilterBinding,
@@ -45,7 +46,6 @@ import {
   Subject,
   switchMap,
   takeUntil,
-  tap,
 } from 'rxjs';
 import { Actions, ofType } from '@ngrx/effects';
 import {
@@ -122,7 +122,10 @@ export class EditWidgetModalComponent implements OnInit {
     verticalAlign: ['top'],
   });
 
-  newFilterForm = this.fb.group({
+  bindingFormMode: 'none' | 'add' | 'edit' = 'none';
+  currentBindingId: string | null = null;
+
+  bindingForm = this.fb.group({
     dashboardFilterId: ['', [Validators.required]],
     chartFilterId: ['', [Validators.required]],
   });
@@ -138,7 +141,6 @@ export class EditWidgetModalComponent implements OnInit {
   );
 
   widgetFilterBindings: WidgetFilterBinding[] = [];
-  showAddFilterForm = false;
 
   get isChart(): boolean {
     return this.widgetData?.type === 'chart';
@@ -172,7 +174,6 @@ export class EditWidgetModalComponent implements OnInit {
       .subscribe((widget) => {
         this.widgetData = widget;
         this.updateForm(widget);
-        // this.updateComponentState(widget);
       });
   }
 
@@ -229,11 +230,67 @@ export class EditWidgetModalComponent implements OnInit {
       .subscribe(() => this.dialogRef.close());
   }
 
-  toggleAddFilterForm() {
-    this.showAddFilterForm = !this.showAddFilterForm;
-    if (!this.showAddFilterForm) {
-      this.newFilterForm.reset();
+  openAddBindingForm() {
+    this.bindingFormMode = 'add';
+    this.currentBindingId = null;
+    this.bindingForm.reset();
+  }
+
+  startEditBinding(binding: WidgetFilterBinding) {
+    this.bindingFormMode = 'edit';
+    this.currentBindingId = binding.id;
+    this.bindingForm.patchValue({
+      dashboardFilterId: binding.dashboardFilterId,
+      chartFilterId: binding.chartFilterId,
+    });
+  }
+
+  cancelBindingForm() {
+    this.bindingFormMode = 'none';
+    this.currentBindingId = null;
+    this.bindingForm.reset();
+  }
+
+  submitBindingForm() {
+    if (this.bindingForm.invalid || !this.widgetData) return;
+
+    const { dashboardFilterId, chartFilterId } = this.bindingForm.value;
+
+    if (this.bindingFormMode === 'add') {
+      this.store.dispatch(
+        WidgetsActions.createWidgetFilterBinding({
+          binding: {
+            widgetId: this.widgetData.id,
+            dashboardFilterId: dashboardFilterId!,
+            chartFilterId: chartFilterId!,
+          },
+        })
+      );
+    } else if (this.bindingFormMode === 'edit' && this.currentBindingId) {
+      this.store.dispatch(
+        WidgetsActions.updateWidgetFilterBinding({
+          id: this.currentBindingId,
+          patch: {
+            dashboardFilterId: dashboardFilterId!,
+            chartFilterId: chartFilterId!,
+          },
+        })
+      );
     }
+
+    this.cancelBindingForm();
+  }
+
+  onRemoveFilterBinding(bindingId: string) {
+    if (
+      this.bindingFormMode === 'edit' &&
+      this.currentBindingId === bindingId
+    ) {
+      this.cancelBindingForm();
+    }
+    this.store.dispatch(
+      WidgetsActions.deleteWidgetFilterBinding({ id: bindingId })
+    );
   }
 
   onTextAlignChange(align: string) {
@@ -284,27 +341,12 @@ export class EditWidgetModalComponent implements OnInit {
     this.dashboardStateService.deleteWidget(this.widgetData.id);
   }
 
-  onAddFilterBinding() {
-    const { dashboardFilterId, chartFilterId } = this.newFilterForm.value;
-    if (!dashboardFilterId || !chartFilterId || !this.widgetData) return;
-
+  onUpdateFilterBinding(
+    bindingId: string,
+    patch: UpdateWidgetFilterBindingVariables['patch']
+  ) {
     this.store.dispatch(
-      WidgetsActions.createWidgetFilterBinding({
-        binding: {
-          widgetId: this.widgetData.id,
-          dashboardFilterId,
-          chartFilterId,
-        },
-      })
-    );
-
-    this.showAddFilterForm = false;
-    this.newFilterForm.reset();
-  }
-
-  onRemoveFilterBinding(bindingId: string) {
-    this.store.dispatch(
-      WidgetsActions.deleteWidgetFilterBinding({ id: bindingId })
+      WidgetsActions.updateWidgetFilterBinding({ id: bindingId, patch })
     );
   }
 

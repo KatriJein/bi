@@ -25,13 +25,8 @@
   position: relative;
 }
 
-// .chart {
-//   width: 100% !important;
-//   height: 100% !important;
-// }
-
 canvas {
-  display: block; /* Важно! */
+  display: block;
   width: 100% !important;
   height: auto !important;
   max-height: 100%;
