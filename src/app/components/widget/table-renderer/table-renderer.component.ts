@@ -28,7 +28,9 @@ import {
   createChartDataRequests,
   findColumnByName,
   findColumnsByNames,
+  formatDate,
   groupColumnsByTable,
+  parseDateFromAnyFormat,
   processChartData,
 } from '../../../utils';
 import { FilterColumn } from '../../../services';

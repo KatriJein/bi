@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { from, escape, ColumnTable } from 'arquero';
 import { toCamelCase } from '../../core/utils';
 import { FilterType } from '../../core/store/charts';
@@ -120,4 +121,78 @@ export function applyFilters(
   }
 
   return aqTable;
+}
+
+export function parseDateFromAnyFormat(
+  dateString: any,
+  format?: string | string[]
+): Date | null {
+  if (!dateString) return null;
+
+  if (dateString instanceof Date) {
+    return dateString;
+  }
+
+  if (format) {
+    const formats = Array.isArray(format) ? format : [format];
+    for (const fmt of formats) {
+      const parsed = moment(dateString, fmt, true);
+      if (parsed.isValid()) {
+        return parsed.toDate();
+      }
+    }
+  }
+
+  const defaultFormats = [
+    'YYYY-MM-DD',
+    'DD.MM.YYYY',
+    'MM/DD/YYYY',
+    'DD-MM-YYYY',
+    'YYYY-MM-DDTHH:mm:ss',
+    'YYYY-MM-DD HH:mm:ss',
+    'x',
+  ];
+
+  const isoDate = new Date(dateString);
+  if (!isNaN(isoDate.getTime())) {
+    return isoDate;
+  }
+
+  for (const fmt of defaultFormats) {
+    const parsed = moment(dateString, fmt, true);
+    if (parsed.isValid()) {
+      return parsed.toDate();
+    }
+  }
+
+  const parts = dateString.split(/[-./]/);
+  if (parts.length === 3) {
+    const variants = [
+      { format: 'DD.MM.YYYY', value: `${parts[0]}.${parts[1]}.${parts[2]}` },
+      { format: 'DD.MM.YYYY', value: `${parts[1]}.${parts[0]}.${parts[2]}` },
+      { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[1]}-${parts[0]}` },
+      { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[0]}-${parts[1]}` },
+    ];
+
+    for (const variant of variants) {
+      const parsed = moment(variant.value, variant.format, true);
+      if (parsed.isValid()) {
+        return parsed.toDate();
+      }
+    }
+  }
+
+  console.warn(`Не удалось распарсить дату: ${dateString}`);
+  return null;
+}
+
+export function formatDate(date: Date, format: string): string {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+
+  return format
+    .replace('dd', day)
+    .replace('MM', month)
+    .replace('yyyy', year.toString());
 }

@@ -13,6 +13,7 @@ import {
   themeQuartz,
   iconSetMaterial,
   ColDef,
+  DateFilterModule,
 } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,8 +23,9 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { FilterTypeExp } from '../../../pages';
 import { toCamelCase } from '../../../core/utils';
+import { parseDateFromAnyFormat } from '../../../utils';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([AllCommunityModule, DateFilterModule]);
 
 @Component({
   selector: 'app-table',
@@ -113,7 +115,25 @@ export class TableComponent implements OnChanges {
 
     if (!columnField || cellValue === undefined || cellValue === null) return;
 
-    this.clickSubject.next({ field: columnField, value: cellValue });
+    const colDef = this.gridApi.getColumnDef(columnField);
+    const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+    let filterValue = cellValue;
+
+    if (isDateColumn) {
+      const parsedDate = parseDateFromAnyFormat(cellValue);
+      if (parsedDate) {
+        filterValue = parsedDate.getTime();
+      } else {
+        console.warn(`Не удалось распарсить дату: ${cellValue}`);
+        return;
+      }
+    }
+
+    this.clickSubject.next({
+      field: columnField,
+      value: filterValue,
+    });
   }
 
   onCellDoubleClicked(event: any): void {
@@ -184,10 +204,23 @@ export class TableComponent implements OnChanges {
     try {
       const filterInstance = await this.gridApi.getColumnFilterInstance(field);
       if (filterInstance?.setModel) {
-        filterInstance.setModel({
-          type: 'equals',
-          filter: value,
-        });
+        const colDef = this.gridApi.getColumnDef(field);
+        const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+        if (isDateColumn) {
+          const date = new Date(value);
+          filterInstance.setModel({
+            type: 'equals',
+            dateFrom: date.toISOString(),
+            dateTo: date.toISOString(),
+          });
+        } else {
+          filterInstance.setModel({
+            type: 'equals',
+            filter: value,
+          });
+        }
+
         this.gridApi.onFilterChanged();
         this.updateActiveFilters();
       }
@@ -215,10 +248,22 @@ export class TableComponent implements OnChanges {
 
   private updateActiveFilters() {
     const model = this.gridApi.getFilterModel();
-    this.activeFilters = Object.entries(model).map(([colId, filter]) => ({
-      colId,
-      value: filter?.filter ?? '',
-    }));
+    this.activeFilters = Object.entries(model).map(([colId, filter]) => {
+      const colDef = this.gridApi.getColumnDef(colId);
+      const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+      let displayValue = filter?.filter ?? '';
+
+      if (isDateColumn && filter?.dateFrom) {
+        const date = new Date(filter.dateFrom);
+        displayValue = date.toLocaleDateString('ru-RU');
+      }
+
+      return {
+        colId,
+        value: displayValue,
+      };
+    });
   }
 
   private syncFiltersWithColumns(): void {

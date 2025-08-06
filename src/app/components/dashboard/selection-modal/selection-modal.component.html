@@ -1,4 +1,5 @@
 <h2 mat-dialog-title>{{ isEditMode ? 'Редактировать фильтр' : 'Добавить фильтр' }}</h2>
+
 <div mat-dialog-content>
   <form [formGroup]="filterForm">
     <mat-form-field appearance="fill" class="full-width">
@@ -56,22 +57,39 @@
 
     <ng-template #datePicker>
       <mat-form-field appearance="fill" class="full-width">
-        <mat-label>{{ getValuePlaceholder() }}</mat-label>
+        <mat-label>{{ filterForm.get('filterType')?.value === DATE_RANGE_FILTER ? 'Дата от' : 'Дата' }}</mat-label>
         <input
           matInput
-          [matDatepicker]="picker"
+          [matDatepicker]="pickerFrom"
           formControlName="dateValue"
           required
         />
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
+        <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFrom></mat-datepicker>
         <mat-error *ngIf="filterForm.get('dateValue')?.hasError('required')">
+          Выберите дату
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
+                     appearance="fill" class="full-width">
+        <mat-label>Дата до</mat-label>
+        <input
+          matInput
+          [matDatepicker]="pickerTo"
+          formControlName="secondDateValue"
+          required
+        />
+        <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
+        <mat-datepicker #pickerTo></mat-datepicker>
+        <mat-error *ngIf="filterForm.get('secondDateValue')?.hasError('required')">
           Выберите дату
         </mat-error>
       </mat-form-field>
     </ng-template>
   </form>
 </div>
+
 <div mat-dialog-actions>
   <button mat-button (click)="onCancel()">Отмена</button>
   <button

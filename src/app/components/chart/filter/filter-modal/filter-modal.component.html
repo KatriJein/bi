@@ -66,14 +66,40 @@
       *ngIf="selectedFilterType === 'Принадлежит диапазону'"
       class="date-range"
     >
+      <!-- Дата "от" -->
       <mat-form-field appearance="outline" class="half-width">
         <mat-label>Дата от</mat-label>
-        <input matInput [(ngModel)]="filterValueDateRange[0]" type="date" />
+        <input
+          matInput
+          [matDatepicker]="startDatePicker"
+          [(ngModel)]="filterValueDateRange[0]"
+          (dateChange)="onDatePickerChange(0, $event)"
+          (change)="onDateInputChange(0, $event)"
+          placeholder="ДД.ММ.ГГГГ или выберите из календаря"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="startDatePicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #startDatePicker></mat-datepicker>
       </mat-form-field>
 
+      <!-- Дата "до" -->
       <mat-form-field appearance="outline" class="half-width">
         <mat-label>Дата до</mat-label>
-        <input matInput [(ngModel)]="filterValueDateRange[1]" type="date" />
+        <input
+          matInput
+          [matDatepicker]="endDatePicker"
+          [(ngModel)]="filterValueDateRange[1]"
+          (dateChange)="onDatePickerChange(1, $event)"
+          (change)="onDateInputChange(1, $event)"
+          placeholder="ДД.ММ.ГГГГ или выберите из календаря"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="endDatePicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #endDatePicker></mat-datepicker>
       </mat-form-field>
     </div>
 
@@ -88,7 +114,22 @@
       class="full-width"
     >
       <mat-label>Значение</mat-label>
-      <input matInput [(ngModel)]="filterValueSingle" />
+      <input *ngIf="!isDateColumn()" matInput [(ngModel)]="filterValueSingle" />
+      <input
+        *ngIf="isDateColumn()"
+        matInput
+        [matDatepicker]="singleDatePicker"
+        [(ngModel)]="filterValueSingle"
+        (dateChange)="onSingleDatePickerChange($event)"
+        (change)="onSingleDateInputChange($event)"
+        placeholder="ДД.ММ.ГГГГ или выберите из календаря"
+      />
+      <mat-datepicker-toggle
+        *ngIf="isDateColumn()"
+        matSuffix
+        [for]="singleDatePicker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #singleDatePicker></mat-datepicker>
     </mat-form-field>
   </ng-container>
 </div>

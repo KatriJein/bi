@@ -117,7 +117,6 @@ export class ChartContainerComponent implements OnInit, OnChanges {
         const chartSelections$ = this.store.select(
           ChartsSelectors.selectSelectionsByChartId(this.chartId)
         );
-        console.log(widgetSelections);
 
         const dashboardSelections$ = this.store.select(
           DashboardsSelectors.selectSelectionsByActiveDashboard
@@ -132,10 +131,7 @@ export class ChartContainerComponent implements OnInit, OnChanges {
         return combineLatest([
           convertedFilters$,
           of(this.initialFilters || []),
-        ]).pipe(
-          map(([converted, initial]) => [...initial, ...converted]),
-          tap((res) => console.log(res, 'tap'))
-        );
+        ]).pipe(map(([converted, initial]) => [...initial, ...converted]));
       })
     );
   }

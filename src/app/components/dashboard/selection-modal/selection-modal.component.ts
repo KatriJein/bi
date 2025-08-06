@@ -1,9 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -36,6 +31,8 @@ import {
 } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DashboardFilter } from '../../../core/api/graphql/types';
+
+const DATE_RANGE_FILTER = 'Принадлежит диапазону';
 
 @Component({
   selector: 'dashboard-selection-modal',
@@ -77,15 +74,17 @@ import { DashboardFilter } from '../../../core/api/graphql/types';
   ],
 })
 export class DashboardSelectionModalComponent implements OnInit {
+  readonly DATE_RANGE_FILTER = DATE_RANGE_FILTER;
+
   private fb = inject(FormBuilder);
-  private cdr = inject(ChangeDetectorRef);
   private data = inject<{ filter?: DashboardFilter }>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<DashboardSelectionModalComponent>);
-  
+
   filterForm: FormGroup;
   columnTypes: SelectionColumnType[] = ['string', 'number', 'date'];
   currentInputType: string = 'text';
   filterTypes: string[] = [];
+  showSecondDateInput = false;
 
   getNameOfType = getNameOfType;
   getSelectionOptionsByType = getSelectionOptionsByType;
@@ -94,30 +93,38 @@ export class DashboardSelectionModalComponent implements OnInit {
     return !!this.data.filter;
   }
 
-  ngOnInit(): void {
-    if (this.isEditMode) {
-      this.initFormWithExistingFilter(this.data.filter!);
-    } else {
-      this.updateValueInputType(this.filterForm.get('type')?.value);
-    }
-
-    this.filterForm.get('type')?.valueChanges.subscribe((type) => {
-      this.updateValueInputType(type);
-      this.filterTypes = getSelectionOptionsByType(type);
-      this.filterForm.get('filterType')?.setValue('');
-      this.cdr.detectChanges();
-    });
-  }
-
   constructor() {
     this.filterForm = this.fb.group({
       name: ['', Validators.required],
       type: ['', Validators.required],
       filterType: ['', Validators.required],
-      value: ['', Validators.required],
+      value: [''],
       dateValue: [null],
-      secondValue: [''],
+      secondDateValue: [null],
     });
+  }
+
+  ngOnInit(): void {
+    if (this.isEditMode) {
+      this.initFormWithExistingFilter(this.data.filter!);
+    }
+
+    this.filterForm.get('type')?.valueChanges.subscribe((type) => {
+      this.updateValueInputType(type);
+      this.updateFilterTypes(type);
+    });
+
+    this.filterForm.get('filterType')?.valueChanges.subscribe((filterType) => {
+      this.showSecondDateInput =
+        filterType === DATE_RANGE_FILTER &&
+        this.filterForm.get('type')?.value === 'date';
+      this.updateValidators();
+    });
+  }
+
+  private updateFilterTypes(type: SelectionColumnType): void {
+    this.filterTypes = this.getSelectionOptionsByType(type);
+    this.filterForm.get('filterType')?.setValue('');
   }
 
   private updateValueInputType(type: SelectionColumnType): void {
@@ -129,10 +136,32 @@ export class DashboardSelectionModalComponent implements OnInit {
       this.currentInputType = type === 'number' ? 'number' : 'text';
       this.filterForm.get('value')?.enable();
       this.filterForm.get('dateValue')?.disable();
+      this.filterForm.get('secondDateValue')?.disable();
+      this.showSecondDateInput = false;
     }
   }
 
+  private updateValidators(): void {
+    const dateValueControl = this.filterForm.get('dateValue');
+    const secondDateValueControl = this.filterForm.get('secondDateValue');
+
+    if (this.showSecondDateInput) {
+      dateValueControl?.setValidators([Validators.required]);
+      secondDateValueControl?.setValidators([Validators.required]);
+    } else {
+      dateValueControl?.setValidators([Validators.required]);
+      secondDateValueControl?.clearValidators();
+    }
+
+    dateValueControl?.updateValueAndValidity();
+    secondDateValueControl?.updateValueAndValidity();
+  }
+
   private initFormWithExistingFilter(filter: DashboardFilter): void {
+    this.filterTypes = this.getSelectionOptionsByType(
+      filter.fieldType as SelectionColumnType
+    );
+
     this.filterForm.patchValue({
       name: filter.name,
       type: filter.fieldType,
@@ -140,11 +169,21 @@ export class DashboardSelectionModalComponent implements OnInit {
     });
 
     if (filter.fieldType === 'date') {
-      const [day, month, year] = filter.value.value.split('.');
-      const date = new Date(+year, +month - 1, +day);
-      this.filterForm.patchValue({
-        dateValue: date,
-      });
+      if (
+        filter.filterType === DATE_RANGE_FILTER &&
+        Array.isArray(filter.value.value)
+      ) {
+        const [startDate, endDate] = filter.value.value;
+        this.filterForm.patchValue({
+          dateValue: this.parseDate(startDate),
+          secondDateValue: this.parseDate(endDate),
+        });
+        this.showSecondDateInput = true;
+      } else {
+        this.filterForm.patchValue({
+          dateValue: this.parseDate(filter.value.value as string),
+        });
+      }
     } else {
       this.filterForm.patchValue({
         value: filter.value.value,
@@ -152,20 +191,27 @@ export class DashboardSelectionModalComponent implements OnInit {
     }
 
     this.updateValueInputType(filter.fieldType as SelectionColumnType);
-    this.filterTypes = getSelectionOptionsByType(
-      filter.fieldType as SelectionColumnType
-    );
+  }
+
+  private parseDate(dateString: string): Date {
+    const [day, month, year] = dateString.split('.');
+    return new Date(+year, +month - 1, +day);
   }
 
   onSave(): void {
     if (this.filterForm.valid) {
       const formValue = this.filterForm.value;
-      let value: any;
+      let value: string | string[];
 
       if (formValue.type === 'date') {
-        const date = new Date(formValue.dateValue);
-        date.setHours(0, 0, 0, 0);
-        value = this.formatDate(date);
+        if (formValue.filterType === DATE_RANGE_FILTER) {
+          value = [
+            this.formatDate(formValue.dateValue),
+            this.formatDate(formValue.secondDateValue),
+          ];
+        } else {
+          value = this.formatDate(formValue.dateValue);
+        }
       } else {
         value = formValue.value;
       }
