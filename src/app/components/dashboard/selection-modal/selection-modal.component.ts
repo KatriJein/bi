@@ -31,6 +31,7 @@ import {
 } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DashboardFilter } from '../../../core/api/graphql/types';
+import { formatDate, parseDateFromAnyFormat } from '../../../utils';
 
 const DATE_RANGE_FILTER = 'Принадлежит диапазону';
 
@@ -56,7 +57,7 @@ const DATE_RANGE_FILTER = 'Принадлежит диапазону';
       provide: MAT_DATE_FORMATS,
       useValue: {
         parse: {
-          dateInput: 'DD.MM.YYYY',
+          dateInput: ['DD.MM.YYYY', 'YYYY-MM-DD'],
         },
         display: {
           dateInput: 'DD.MM.YYYY',
@@ -175,13 +176,13 @@ export class DashboardSelectionModalComponent implements OnInit {
       ) {
         const [startDate, endDate] = filter.value.value;
         this.filterForm.patchValue({
-          dateValue: this.parseDate(startDate),
-          secondDateValue: this.parseDate(endDate),
+          dateValue: parseDateFromAnyFormat(startDate, 'YYYY-MM-DD'),
+          secondDateValue: parseDateFromAnyFormat(endDate, 'YYYY-MM-DD'),
         });
         this.showSecondDateInput = true;
       } else {
         this.filterForm.patchValue({
-          dateValue: this.parseDate(filter.value.value as string),
+          dateValue: parseDateFromAnyFormat(filter.value.value as string, 'YYYY-MM-DD'),
         });
       }
     } else {
@@ -193,11 +194,6 @@ export class DashboardSelectionModalComponent implements OnInit {
     this.updateValueInputType(filter.fieldType as SelectionColumnType);
   }
 
-  private parseDate(dateString: string): Date {
-    const [day, month, year] = dateString.split('.');
-    return new Date(+year, +month - 1, +day);
-  }
-
   onSave(): void {
     if (this.filterForm.valid) {
       const formValue = this.filterForm.value;
@@ -206,11 +202,11 @@ export class DashboardSelectionModalComponent implements OnInit {
       if (formValue.type === 'date') {
         if (formValue.filterType === DATE_RANGE_FILTER) {
           value = [
-            this.formatDate(formValue.dateValue),
-            this.formatDate(formValue.secondDateValue),
+            formatDate(formValue.dateValue, 'yyyy-MM-dd'),
+            formatDate(formValue.secondDateValue, 'yyyy-MM-dd'),
           ];
         } else {
-          value = this.formatDate(formValue.dateValue);
+          value = formatDate(formValue.dateValue, 'yyyy-MM-dd');
         }
       } else {
         value = formValue.value;
@@ -224,13 +220,6 @@ export class DashboardSelectionModalComponent implements OnInit {
       };
       this.dialogRef.close(newFilter);
     }
-  }
-
-  private formatDate(date: Date): string {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
   }
 
   onCancel(): void {

@@ -125,7 +125,6 @@ export class TableComponent implements OnChanges {
       if (parsedDate) {
         filterValue = parsedDate.getTime();
       } else {
-        console.warn(`Не удалось распарсить дату: ${cellValue}`);
         return;
       }
     }
@@ -164,24 +163,57 @@ export class TableComponent implements OnChanges {
     }
 
     if (!this.gridApi) {
-      console.warn('Grid API not ready');
       this.pendingFilters = [...filters];
       return;
     }
 
     try {
       this.clearAllFilters();
+      const availableColumns = this.gridApi.getColumnDefs() as ColDef[];
+      const availableFields = new Set(
+        availableColumns.map((col) => col.field).filter(Boolean)
+      );
 
       const filterPromises = filters.map(async (filter) => {
-        const filterInstance = await this.gridApi.getColumnFilterInstance(
-          toCamelCase(filter.field)
-        );
+        const camelCaseField = toCamelCase(filter.field);
 
-        if (filterInstance?.setModel) {
-          filterInstance.setModel({
-            type: 'equals',
-            filter: filter.value,
-          });
+        if (!availableFields.has(camelCaseField)) {
+          return;
+        }
+
+        try {
+          const filterInstance = await this.gridApi.getColumnFilterInstance(
+            camelCaseField
+          );
+          if (!filterInstance?.setModel) return;
+
+          const colDef = this.gridApi.getColumnDef(camelCaseField);
+          const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+          if (isDateColumn) {
+            const date = parseDateFromAnyFormat(filter.value);
+            if (!date) return;
+
+            const utcDate = new Date(
+              Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+            );
+
+            filterInstance.setModel({
+              type: 'equals',
+              dateFrom: utcDate.toISOString(),
+              dateTo: new Date(utcDate.getTime() + 86400000 - 1).toISOString(),
+            });
+          } else {
+            filterInstance.setModel({
+              type: 'equals',
+              filter: filter.value,
+            });
+          }
+        } catch (error) {
+          console.error(
+            `Ошибка при установке фильтра для ${camelCaseField}:`,
+            error
+          );
         }
       });
 
@@ -189,14 +221,13 @@ export class TableComponent implements OnChanges {
       this.gridApi.onFilterChanged();
       this.updateActiveFilters();
     } catch (error) {
-      console.error('Error applying filters (replacing):', error);
+      console.error('Error applying filters:', error);
       this.pendingFilters = [...filters];
     }
   }
 
   private async applyFilterAppending(field: string, value: any): Promise<void> {
     if (!this.gridApi) {
-      console.warn('Grid API not ready');
       this.pendingFilters = [{ field, value }];
       return;
     }
@@ -247,16 +278,28 @@ export class TableComponent implements OnChanges {
   }
 
   private updateActiveFilters() {
+    if (!this.gridApi) return;
+
     const model = this.gridApi.getFilterModel();
-    this.activeFilters = Object.entries(model).map(([colId, filter]) => {
+
+    this.activeFilters = Object.keys(model).map((colId) => {
+      const filter = model[colId];
       const colDef = this.gridApi.getColumnDef(colId);
       const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
-      let displayValue = filter?.filter ?? '';
+      let displayValue = '';
 
-      if (isDateColumn && filter?.dateFrom) {
-        const date = new Date(filter.dateFrom);
-        displayValue = date.toLocaleDateString('ru-RU');
+      if (isDateColumn) {
+        const dateStr = filter.dateFrom || filter.filter;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          const day = date.getUTCDate().toString().padStart(2, '0');
+          const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+          const year = date.getUTCFullYear();
+          displayValue = `${day}.${month}.${year}`;
+        }
+      } else {
+        displayValue = filter.filter?.toString() || '';
       }
 
       return {
