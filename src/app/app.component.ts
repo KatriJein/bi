@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { ApolloClientsService } from './core/api/services';
-import { Connection, Dataset } from './core/models';
+import { Connection } from './core/models';
 import { Store } from '@ngrx/store';
 import { UserActions } from './core/store/user';
 import { DatasetsActions } from './core/store/datasets';

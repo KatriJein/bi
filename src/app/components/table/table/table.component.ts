@@ -239,11 +239,17 @@ export class TableComponent implements OnChanges {
         const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
         if (isDateColumn) {
-          const date = new Date(value);
+          const date = parseDateFromAnyFormat(value);
+          if (!date) return;
+
+          const utcDate = new Date(
+            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+          );
+
           filterInstance.setModel({
             type: 'equals',
-            dateFrom: date.toISOString(),
-            dateTo: date.toISOString(),
+            dateFrom: utcDate.toISOString(),
+            dateTo: new Date(utcDate.getTime() + 86400000 - 1).toISOString(),
           });
         } else {
           filterInstance.setModel({

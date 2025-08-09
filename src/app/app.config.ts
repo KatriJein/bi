@@ -3,10 +3,10 @@ import {
   provideZoneChangeDetection,
   inject,
   isDevMode,
+  APP_INITIALIZER,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client/core';
@@ -26,20 +26,29 @@ import { DatasetsEffects, DatasetsFeature } from './core/store/datasets';
 import { ChartsEffects, ChartsFeature } from './core/store/charts';
 import { WidgetsFeature } from './core/store/widgets/widgets.feature';
 import { WidgetsEffects } from './core/store/widgets';
+import { ConfigService } from './core/utils';
+import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    InterfaceService,
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    ConfigService,
     provideHttpClient(),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (config: ConfigService) => () => config.initialize(),
+      deps: [ConfigService],
+      multi: true,
+    },
     provideApollo(() => {
+      const config = inject(ConfigService);
       const httpLink = inject(HttpLink);
+
+      const uri = config.getApiUrl();
+      console.log('Using Apollo URL:', uri);
+
       return {
         cache: new InMemoryCache(),
-        link: httpLink.create({
-          uri: 'http://localhost:5000/graphql',
-        }),
+        link: httpLink.create({ uri }),
         defaultOptions: {
           watchQuery: {
             fetchPolicy: 'cache-and-network',
@@ -54,7 +63,9 @@ export const appConfig: ApplicationConfig = {
         },
       };
     }),
-
+    InterfaceService,
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
     provideStore({
       [InterfacesFeature.name]: InterfacesFeature.reducer,
       [UserFeature.name]: UserFeature.reducer,

@@ -1,5 +1,11 @@
-import moment from 'moment';
 import { from, escape, ColumnTable } from 'arquero';
+import {
+  parse,
+  parseISO,
+  isValid,
+  format as formatDateFns,
+  toDate,
+} from 'date-fns';
 import { toCamelCase } from '../../core/utils';
 import { FilterType } from '../../core/store/charts';
 
@@ -123,61 +129,184 @@ export function applyFilters(
   return aqTable;
 }
 
+// export function parseDateFromAnyFormat(
+//   dateString: any,
+//   format?: string | string[]
+// ): Date | null {
+//   if (!dateString) return null;
+
+//   if (dateString instanceof Date) {
+//     return dateString;
+//   }
+
+//   if (format) {
+//     const formats = Array.isArray(format) ? format : [format];
+//     for (const fmt of formats) {
+//       const parsed = moment(dateString, fmt, true);
+//       if (parsed.isValid()) {
+//         return parsed.toDate();
+//       }
+//     }
+//   }
+
+//   const defaultFormats = [
+//     'YYYY-MM-DD',
+//     'DD.MM.YYYY',
+//     'MM/DD/YYYY',
+//     'DD-MM-YYYY',
+//     'YYYY-MM-DDTHH:mm:ss',
+//     'YYYY-MM-DD HH:mm:ss',
+//     'x',
+//   ];
+
+//   const isoDate = new Date(dateString);
+//   if (!isNaN(isoDate.getTime())) {
+//     return isoDate;
+//   }
+
+//   for (const fmt of defaultFormats) {
+//     const parsed = moment(dateString, fmt, true);
+//     if (parsed.isValid()) {
+//       return parsed.toDate();
+//     }
+//   }
+
+//   const parts = dateString.split(/[-./]/);
+//   if (parts.length === 3) {
+//     const variants = [
+//       { format: 'DD.MM.YYYY', value: `${parts[0]}.${parts[1]}.${parts[2]}` },
+//       { format: 'DD.MM.YYYY', value: `${parts[1]}.${parts[0]}.${parts[2]}` },
+//       { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[1]}-${parts[0]}` },
+//       { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[0]}-${parts[1]}` },
+//     ];
+
+//     for (const variant of variants) {
+//       const parsed = moment(variant.value, variant.format, true);
+//       if (parsed.isValid()) {
+//         return parsed.toDate();
+//       }
+//     }
+//   }
+
+//   console.warn(`Не удалось распарсить дату: ${dateString}`);
+//   return null;
+// }
+
+// export function formatDate(date: Date, format: string): string {
+//   const day = date.getDate().toString().padStart(2, '0');
+//   const month = (date.getMonth() + 1).toString().padStart(2, '0');
+//   const year = date.getFullYear();
+
+//   return format
+//     .replace('dd', day)
+//     .replace('MM', month)
+//     .replace('yyyy', year.toString());
+// }
+
 export function parseDateFromAnyFormat(
   dateString: any,
   format?: string | string[]
 ): Date | null {
-  if (!dateString) return null;
+  if (dateString === null || dateString === undefined || dateString === '') {
+    return null;
+  }
 
   if (dateString instanceof Date) {
     return dateString;
   }
 
+  if (typeof dateString === 'number') {
+    const date = new Date(dateString);
+    return isValid(date) ? date : null;
+  }
+
+  dateString = String(dateString).trim();
+
+  try {
+    const isoDate = parseISO(dateString);
+    if (isValid(isoDate)) {
+      return isoDate;
+    }
+  } catch {}
+
+  try {
+    const jsDate = new Date(dateString);
+    if (isValid(jsDate)) {
+      return jsDate;
+    }
+  } catch {}
+
   if (format) {
     const formats = Array.isArray(format) ? format : [format];
+    const referenceDate = new Date(2000, 0, 1);
+
     for (const fmt of formats) {
-      const parsed = moment(dateString, fmt, true);
-      if (parsed.isValid()) {
-        return parsed.toDate();
+      try {
+        const convertedFormat = fmt
+          .replace(/YYYY/g, 'yyyy')
+          .replace(/YY/g, 'yy')
+          .replace(/DD/g, 'dd')
+          .replace(/D/g, 'd')
+          .replace(/MM/g, 'MM')
+          .replace(/M/g, 'M')
+          .replace(/HH/g, 'HH')
+          .replace(/H/g, 'H')
+          .replace(/mm/g, 'mm')
+          .replace(/m/g, 'm')
+          .replace(/ss/g, 'ss')
+          .replace(/s/g, 's')
+          .replace(/x/g, 'T');
+
+        const parsed = parse(dateString, convertedFormat, referenceDate);
+        if (isValid(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        continue;
       }
     }
   }
 
   const defaultFormats = [
-    'YYYY-MM-DD',
-    'DD.MM.YYYY',
-    'MM/DD/YYYY',
-    'DD-MM-YYYY',
-    'YYYY-MM-DDTHH:mm:ss',
-    'YYYY-MM-DD HH:mm:ss',
-    'x',
+    'yyyy-MM-dd',
+    'dd.MM.yyyy',
+    'MM/dd/yyyy',
+    'dd-MM-yyyy',
+    "yyyy-MM-dd'T'HH:mm:ss",
+    'yyyy-MM-dd HH:mm:ss',
+    'T',
   ];
 
-  const isoDate = new Date(dateString);
-  if (!isNaN(isoDate.getTime())) {
-    return isoDate;
-  }
-
+  const referenceDate = new Date(2000, 0, 1);
   for (const fmt of defaultFormats) {
-    const parsed = moment(dateString, fmt, true);
-    if (parsed.isValid()) {
-      return parsed.toDate();
+    try {
+      const parsed = parse(dateString, fmt, referenceDate);
+      if (isValid(parsed)) {
+        return parsed;
+      }
+    } catch (e) {
+      continue;
     }
   }
 
-  const parts = dateString.split(/[-./]/);
+  const parts = String(dateString).split(/[-./]/);
+
   if (parts.length === 3) {
     const variants = [
-      { format: 'DD.MM.YYYY', value: `${parts[0]}.${parts[1]}.${parts[2]}` },
-      { format: 'DD.MM.YYYY', value: `${parts[1]}.${parts[0]}.${parts[2]}` },
-      { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[1]}-${parts[0]}` },
-      { format: 'YYYY-MM-DD', value: `${parts[2]}-${parts[0]}-${parts[1]}` },
+      { format: 'dd.MM.yyyy', value: `${parts[0]}.${parts[1]}.${parts[2]}` },
+      { format: 'dd.MM.yyyy', value: `${parts[1]}.${parts[0]}.${parts[2]}` },
+      { format: 'yyyy-MM-dd', value: `${parts[2]}-${parts[1]}-${parts[0]}` },
+      { format: 'yyyy-MM-dd', value: `${parts[2]}-${parts[0]}-${parts[1]}` },
     ];
 
     for (const variant of variants) {
-      const parsed = moment(variant.value, variant.format, true);
-      if (parsed.isValid()) {
-        return parsed.toDate();
+      try {
+        const parsed = parse(variant.value, variant.format, referenceDate);
+        if (isValid(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        continue;
       }
     }
   }
@@ -187,12 +316,10 @@ export function parseDateFromAnyFormat(
 }
 
 export function formatDate(date: Date, format: string): string {
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const year = date.getFullYear();
+  const convertedFormat = format
+    .replace(/dd/g, 'dd')
+    .replace(/MM/g, 'MM')
+    .replace(/yyyy/g, 'yyyy');
 
-  return format
-    .replace('dd', day)
-    .replace('MM', month)
-    .replace('yyyy', year.toString());
+  return formatDateFns(date, convertedFormat);
 }
