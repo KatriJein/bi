@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { Column, Dataset } from '../core/models';
 import { Table } from '../core/api/graphql/types';
 import { TableSchemaService, TablesService } from '../core/api/services';
+import { pluralizeTableName } from '../core/utils';
 
 @Injectable({ providedIn: 'root' })
 export class DatasetStateService {

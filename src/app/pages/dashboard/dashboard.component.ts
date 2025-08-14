@@ -54,6 +54,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { DashboardSelectionModalComponent } from '../../components/dashboard';
 import { SelectionTypeDashboard } from '../../core/store/charts';
 import { MatChipsModule } from '@angular/material/chips';
+import { formatFilterValue } from '../../utils';
 
 export type FilterTypeExp = {
   field: string;
@@ -127,6 +128,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updatePositions$ = new Subject<GridStackNode[]>();
   private updatePositionsSub?: Subscription;
   private isUpdatingWidgets = false;
+
+  formatFilterValue=formatFilterValue;
 
   ngOnInit() {
     this.ngZone.runOutsideAngular(() => {

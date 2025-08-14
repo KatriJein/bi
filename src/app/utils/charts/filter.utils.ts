@@ -8,6 +8,7 @@ import {
 } from 'date-fns';
 import { toCamelCase } from '../../core/utils';
 import { FilterType } from '../../core/store/charts';
+import { DashboardFilter } from '../../core/api/graphql/types';
 
 export function applyFilters(
   data: Record<string, any>[],
@@ -229,13 +230,6 @@ export function parseDateFromAnyFormat(
     }
   } catch {}
 
-  try {
-    const jsDate = new Date(dateString);
-    if (isValid(jsDate)) {
-      return jsDate;
-    }
-  } catch {}
-
   if (format) {
     const formats = Array.isArray(format) ? format : [format];
     const referenceDate = new Date(2000, 0, 1);
@@ -322,4 +316,28 @@ export function formatDate(date: Date, format: string): string {
     .replace(/yyyy/g, 'yyyy');
 
   return formatDateFns(date, convertedFormat);
+}
+
+export function formatFilterValue(filter: DashboardFilter): string {
+  const value = filter.value.value;
+
+  if (filter.fieldType === 'date') {
+    if (Array.isArray(value)) {
+      return value
+        .map((date) =>
+          formatDate(
+            parseDateFromAnyFormat(date, 'yyyy-MM-dd') as Date,
+            'dd.MM.yyyy'
+          )
+        )
+        .join(' - ');
+    } else {
+      return formatDate(
+        parseDateFromAnyFormat(value, 'yyyy-MM-dd') as Date,
+        'dd.MM.yyyy'
+      );
+    }
+  }
+
+  return String(value);
 }

@@ -22,16 +22,11 @@ import { SelectionTypeDashboard } from '../../../core/store/charts';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-  MatNativeDateModule,
-  NativeDateAdapter,
-} from '@angular/material/core';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DashboardFilter } from '../../../core/api/graphql/types';
-import { formatDate, parseDateFromAnyFormat } from '../../../utils';
+import { parseDateFromAnyFormat } from '../../../utils';
+import { DateInputComponent } from '../../common';
 
 const DATE_RANGE_FILTER = 'Принадлежит диапазону';
 
@@ -48,31 +43,10 @@ const DATE_RANGE_FILTER = 'Принадлежит диапазону';
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
+    DateInputComponent,
   ],
   templateUrl: './selection-modal.component.html',
   styleUrl: './selection-modal.component.scss',
-  providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: ['DD.MM.YYYY', 'YYYY-MM-DD'],
-        },
-        display: {
-          dateInput: 'DD.MM.YYYY',
-          monthYearLabel: 'MMMM YYYY',
-          dateA11yLabel: 'LL',
-          monthYearA11yLabel: 'MMMM YYYY',
-        },
-      },
-    },
-    {
-      provide: DateAdapter,
-      useClass: NativeDateAdapter,
-      deps: [MAT_DATE_LOCALE],
-    },
-  ],
 })
 export class DashboardSelectionModalComponent implements OnInit {
   readonly DATE_RANGE_FILTER = DATE_RANGE_FILTER;
@@ -87,6 +61,9 @@ export class DashboardSelectionModalComponent implements OnInit {
   filterTypes: string[] = [];
   showSecondDateInput = false;
 
+  filterValueDateRange: [string | null, string | null] = [null, null];
+  dateRange: [Date | null, Date | null] = [null, null];
+
   getNameOfType = getNameOfType;
   getSelectionOptionsByType = getSelectionOptionsByType;
 
@@ -100,9 +77,14 @@ export class DashboardSelectionModalComponent implements OnInit {
       type: ['', Validators.required],
       filterType: ['', Validators.required],
       value: [''],
-      dateValue: [null],
-      secondDateValue: [null],
     });
+  }
+
+  onDateRangeChange(index: number, value: string | null): void {
+    this.filterValueDateRange[index] = value;
+    this.dateRange[index] = value
+      ? parseDateFromAnyFormat(value, 'yyyy-MM-dd')
+      : null;
   }
 
   ngOnInit(): void {
@@ -175,15 +157,18 @@ export class DashboardSelectionModalComponent implements OnInit {
         Array.isArray(filter.value.value)
       ) {
         const [startDate, endDate] = filter.value.value;
-        this.filterForm.patchValue({
-          dateValue: parseDateFromAnyFormat(startDate, 'YYYY-MM-DD'),
-          secondDateValue: parseDateFromAnyFormat(endDate, 'YYYY-MM-DD'),
-        });
+        this.filterValueDateRange = [startDate, endDate];
+        this.dateRange = [
+          parseDateFromAnyFormat(startDate, 'yyyy-MM-dd'),
+          parseDateFromAnyFormat(endDate, 'yyyy-MM-dd'),
+        ];
         this.showSecondDateInput = true;
       } else {
-        this.filterForm.patchValue({
-          dateValue: parseDateFromAnyFormat(filter.value.value as string, 'YYYY-MM-DD'),
-        });
+        this.filterValueDateRange = [filter.value.value as string, null];
+        this.dateRange[0] = parseDateFromAnyFormat(
+          filter.value.value as string,
+          'yyyy-MM-dd'
+        );
       }
     } else {
       this.filterForm.patchValue({
@@ -202,11 +187,11 @@ export class DashboardSelectionModalComponent implements OnInit {
       if (formValue.type === 'date') {
         if (formValue.filterType === DATE_RANGE_FILTER) {
           value = [
-            formatDate(formValue.dateValue, 'yyyy-MM-dd'),
-            formatDate(formValue.secondDateValue, 'yyyy-MM-dd'),
+            this.filterValueDateRange[0] || '',
+            this.filterValueDateRange[1] || '',
           ];
         } else {
-          value = formatDate(formValue.dateValue, 'yyyy-MM-dd');
+          value = this.filterValueDateRange[0] || '';
         }
       } else {
         value = formValue.value;
@@ -218,6 +203,7 @@ export class DashboardSelectionModalComponent implements OnInit {
         filterType: formValue.filterType,
         value,
       };
+
       this.dialogRef.close(newFilter);
     }
   }

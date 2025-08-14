@@ -30,7 +30,7 @@
     "apollo-angular": "10.0.3",
     "arquero": "8.0.1",
     "chart.js": "4.4.9",
-    "date-fns": "^4.1.0",
+    "date-fns": "4.1.0",
     "graphql": "15.8.0",
     "gridstack": "12.2.1",
     "lodash-es": "^4.17.21",

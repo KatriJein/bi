@@ -1,8 +1,10 @@
-<h2 mat-dialog-title>{{ isEditMode ? 'Редактировать фильтр' : 'Добавить фильтр' }}</h2>
+<h2 mat-dialog-title>
+  {{ isEditMode ? "Редактировать фильтр" : "Добавить фильтр" }}
+</h2>
 
 <div mat-dialog-content>
   <form [formGroup]="filterForm">
-    <mat-form-field appearance="fill" class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Имя фильтра</mat-label>
       <input
         matInput
@@ -15,7 +17,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Тип колонки</mat-label>
       <mat-select formControlName="type" required>
         <mat-option *ngFor="let type of columnTypes" [value]="type">
@@ -27,7 +29,7 @@
       </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Тип фильтра</mat-label>
       <mat-select formControlName="filterType" required>
         <mat-option *ngFor="let type of filterTypes" [value]="type">
@@ -39,8 +41,8 @@
       </mat-error>
     </mat-form-field>
 
-    <ng-container *ngIf="currentInputType !== 'date'; else datePicker">
-      <mat-form-field appearance="fill" class="full-width">
+    <ng-container *ngIf="currentInputType !== 'date'; else dateInputs">
+      <mat-form-field appearance="outline" class="full-width">
         <mat-label>{{ getValuePlaceholder() }}</mat-label>
         <input
           matInput
@@ -55,37 +57,25 @@
       </mat-form-field>
     </ng-container>
 
-    <ng-template #datePicker>
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>{{ filterForm.get('filterType')?.value === DATE_RANGE_FILTER ? 'Дата от' : 'Дата' }}</mat-label>
-        <input
-          matInput
-          [matDatepicker]="pickerFrom"
-          formControlName="dateValue"
-          required
-        />
-        <mat-datepicker-toggle matSuffix [for]="pickerFrom"></mat-datepicker-toggle>
-        <mat-datepicker #pickerFrom></mat-datepicker>
-        <mat-error *ngIf="filterForm.get('dateValue')?.hasError('required')">
-          Выберите дату
-        </mat-error>
-      </mat-form-field>
+    <ng-template #dateInputs class="date-inputs">
+      <app-date-input
+        class="selection-date-input"
+        label="{{
+          filterForm.get('filterType')?.value === DATE_RANGE_FILTER
+            ? 'Дата от'
+            : 'Дата'
+        }}"
+        [(dateValue)]="filterValueDateRange[0]"
+        (dateValueChange)="onDateRangeChange(0, $event)"
+      ></app-date-input>
 
-      <mat-form-field *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
-                     appearance="fill" class="full-width">
-        <mat-label>Дата до</mat-label>
-        <input
-          matInput
-          [matDatepicker]="pickerTo"
-          formControlName="secondDateValue"
-          required
-        />
-        <mat-datepicker-toggle matSuffix [for]="pickerTo"></mat-datepicker-toggle>
-        <mat-datepicker #pickerTo></mat-datepicker>
-        <mat-error *ngIf="filterForm.get('secondDateValue')?.hasError('required')">
-          Выберите дату
-        </mat-error>
-      </mat-form-field>
+      <app-date-input
+        *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
+        class="selection-date-input"
+        label="Дата до"
+        [(dateValue)]="filterValueDateRange[1]"
+        (dateValueChange)="onDateRangeChange(1, $event)"
+      ></app-date-input>
     </ng-template>
   </form>
 </div>

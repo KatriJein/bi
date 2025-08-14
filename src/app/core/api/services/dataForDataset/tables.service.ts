@@ -25,7 +25,7 @@ export class TablesService {
   }
 
   private transformResponse(data: GetTablesType): Table[] {
-    return data.dbtablesBookings.nodes.map((table) => ({
+    return data.dbtables.nodes.map((table) => ({
       tableName: table.tableName,
     }));
   }

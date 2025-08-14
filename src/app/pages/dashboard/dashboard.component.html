@@ -1,7 +1,6 @@
 <div class="dashboard-page">
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav mode="side" opened class="sidebar">
-      <!-- Ваш сайдбар остается без изменений -->
       <div>
         <div
           class="active-interface"
@@ -97,7 +96,8 @@
                     <div class="filter-chip-content">
                       <span class="filter-name">{{ filter.name }}</span>
                       <span class="filter-details"
-                        >{{ filter.filterType }}: {{ filter.value.value }}</span
+                        >{{ filter.filterType }}:
+                        {{ formatFilterValue(filter) }}</span
                       >
                     </div>
                     <mat-icon matChipRemove>cancel</mat-icon>

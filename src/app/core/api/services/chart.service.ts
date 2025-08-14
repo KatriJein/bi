@@ -18,6 +18,7 @@ import {
 } from '../graphql/mutations';
 import { GetChartByIdType } from '../graphql/types/chart/getChartById.type';
 import { getChartByIdQuery } from '../graphql/queries/chart/getChartById.query';
+import { toCamelCase } from '../../utils';
 
 @Injectable({ providedIn: 'root' })
 export class ChartService {

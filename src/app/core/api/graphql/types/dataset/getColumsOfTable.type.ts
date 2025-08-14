@@ -1,7 +1,7 @@
 import { TsType } from '../../../../utils';
 
 export type GetTableColumnsType = {
-  dbfieldsBookings: {
+  dbfields: {
     nodes: TableColumn[];
   };
 };

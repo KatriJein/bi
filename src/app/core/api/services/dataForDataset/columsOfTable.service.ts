@@ -27,7 +27,7 @@ export class TableSchemaService {
   }
 
   private transformResponse(data: GetTableColumnsType): TableColumn[] {
-    return data.dbfieldsBookings.nodes.map((column) => ({
+    return data.dbfields.nodes.map((column) => ({
       tableName: column.tableName,
       columnName: column.columnName,
       dataType: mapPostgresTypeToTs(column.dataType),

@@ -1,5 +1,5 @@
 export type GetTablesType = {
-  dbtablesBookings: {
+  dbtables: {
     nodes: Table[];
   };
 };

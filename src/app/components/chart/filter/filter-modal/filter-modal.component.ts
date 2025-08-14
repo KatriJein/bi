@@ -13,24 +13,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatInputModule } from '@angular/material/input';
-import {
-  MatDatepickerModule,
-  MatDatepickerInputEvent,
-} from '@angular/material/datepicker';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-  MatNativeDateModule,
-  NativeDateAdapter,
-} from '@angular/material/core';
 
 import { Column } from '../../../../core/models';
 import { getFilterOptionsByType } from '../../../../constants';
 import { ChartService } from '../../../../core/api/services';
-import { toCamelCase } from '../../../../core/utils';
+import { pluralizeTableName, toCamelCase } from '../../../../core/utils';
 import { FilterColumn } from '../../../../services/chart-state.service';
 import { formatDate, parseDateFromAnyFormat } from '../../../../utils';
+import { DateInputComponent } from '../../../common';
 
 export interface AddFilterModalData {
   columns: Column[];
@@ -50,33 +40,14 @@ export interface AddFilterModalData {
     MatCardModule,
     MatListModule,
     MatDividerModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
+    DateInputComponent,
   ],
   templateUrl: './filter-modal.component.html',
   styleUrl: './filter-modal.component.scss',
-  providers: [
-    { provide: DateAdapter, useClass: NativeDateAdapter },
-    { provide: MAT_DATE_LOCALE, useValue: 'ru-RU' },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: {
-        parse: {
-          dateInput: ['DD.MM.YYYY', 'YYYY-MM-DD'],
-        },
-        display: {
-          dateInput: 'DD.MM.YYYY',
-          monthYearLabel: 'MMM YYYY',
-          dateA11yLabel: 'LL',
-          monthYearA11yLabel: 'MMMM YYYY',
-        },
-      },
-    },
-  ],
 })
 export class FilterModalComponent implements OnInit {
   private chartService = inject(ChartService);
-  private dateAdapter = inject(DateAdapter);
+  private dialogRef = inject(MatDialogRef<FilterModalComponent>);
 
   selectedColumn: Column | null = null;
   selectedFilterType: string | null = null;
@@ -88,12 +59,7 @@ export class FilterModalComponent implements OnInit {
   filterTypes: string[] = [];
   availableValues: string[] = [];
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: AddFilterModalData,
-    private dialogRef: MatDialogRef<FilterModalComponent>
-  ) {
-    this.dateAdapter.setLocale('ru');
-  }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: AddFilterModalData) {}
 
   ngOnInit(): void {
     this.initializeEditMode();
@@ -174,6 +140,8 @@ export class FilterModalComponent implements OnInit {
 
     const { dataType, aggregate } = this.selectedColumn;
     this.filterTypes = getFilterOptionsByType(dataType, aggregate);
+    this.resetFilterValues();
+
     this.selectedFilterType = null;
     this.filterValueSingle = null;
     this.filterValueMulti = [];
@@ -186,44 +154,15 @@ export class FilterModalComponent implements OnInit {
     }
   }
 
-  onDateInputChange(index: number, event: any): void {
-    const inputValue = event.target.value;
-    const parsedDate = parseDateFromAnyFormat(inputValue, 'DD.MM.YYYY');
-
-    if (parsedDate) {
-      this.dateRange[index] = parsedDate;
-      this.filterValueDateRange[index] = formatDate(parsedDate, 'yyyy-MM-dd');
-    } else {
-      this.filterValueDateRange[index] = inputValue;
-      this.dateRange[index] = null;
-    }
-  }
-
-  onDatePickerChange(
-    index: number,
-    event: MatDatepickerInputEvent<Date>
-  ): void {
-    if (event.value) {
-      this.dateRange[index] = event.value;
-      this.filterValueDateRange[index] = formatDate(event.value, 'yyyy-MM-dd');
-    } else {
-      this.dateRange[index] = null;
-      this.filterValueDateRange[index] = null;
-    }
-  }
-
-  onSingleDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
-    this.filterValueSingle = event.value
-      ? formatDate(event.value, 'yyyy-MM-dd')
+  onDateRangeChange(index: number, value: string | null): void {
+    this.filterValueDateRange[index] = value;
+    this.dateRange[index] = value
+      ? parseDateFromAnyFormat(value, 'yyyy-MM-dd')
       : null;
   }
 
-  onSingleDateInputChange(event: any): void {
-    const inputValue = event.target.value;
-    const parsedDate = parseDateFromAnyFormat(inputValue, 'DD.MM.YYYY');
-    this.filterValueSingle = parsedDate
-      ? formatDate(parsedDate, 'yyyy-MM-dd')
-      : inputValue;
+  onSingleDateChange(value: string | null): void {
+    this.filterValueSingle = value;
   }
 
   private prepareFilterValue(): any {
@@ -255,14 +194,21 @@ export class FilterModalComponent implements OnInit {
     return this.filterValueSingle;
   }
 
+  private resetFilterValues(): void {
+    this.selectedFilterType = null;
+    this.filterValueSingle = null;
+    this.filterValueMulti = [];
+    this.availableValues = [];
+  }
+
   private loadAvailableValues(): void {
+    const table = pluralizeTableName(this.selectedColumn!.tableName);
+    const column = toCamelCase(this.selectedColumn!.columnName);
+
     this.chartService
-      .getData(toCamelCase(this.selectedColumn!.tableName), [
-        toCamelCase(this.selectedColumn!.columnName),
-      ])
+      .getData(toCamelCase(table), [column])
       .subscribe((data) => {
-        const colName = toCamelCase(this.selectedColumn!.columnName);
-        const values = data.map((row) => row[colName]);
+        const values = data.map((row) => row[column]);
         this.availableValues = Array.from(new Set(values)).filter(
           (v) => v !== null && v !== undefined
         );

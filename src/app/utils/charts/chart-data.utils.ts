@@ -1,6 +1,6 @@
 import { map, Observable } from 'rxjs';
 import { Column } from '../../core/models';
-import { toCamelCase } from '../../core/utils';
+import { pluralizeTableName, toCamelCase } from '../../core/utils';
 import { FilterColumn } from '../../services/chart-state.service';
 import { ChartDto, ChartType } from '../../core/store/charts';
 import { ChartService } from '../../core/api/services';
@@ -26,7 +26,7 @@ export function groupColumnsByTable(
   columns: Column[]
 ): Record<string, Column[]> {
   return columns.reduce<Record<string, Column[]>>((acc, col) => {
-    const table = toCamelCase(col.tableName || '');
+    const table = toCamelCase(pluralizeTableName(col.tableName || ''));
     if (!acc[table]) acc[table] = [];
     acc[table].push(col);
     return acc;
