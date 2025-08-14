@@ -1,4 +1,3 @@
-// date-input.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -13,7 +12,6 @@ import {
 import { FormsModule } from '@angular/forms';
 import { formatDate, parseDateFromAnyFormat } from '../../../utils';
 
-// Настройки формата даты для русской локали
 export const MY_DATE_FORMATS = {
   parse: {
     dateInput: ['DD.MM.YYYY', 'YYYY-MM-DD'],

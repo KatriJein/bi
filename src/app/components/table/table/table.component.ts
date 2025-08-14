@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
@@ -40,6 +41,19 @@ export class TableComponent implements OnChanges {
   @Input() initialFilters?: FilterTypeExp[] | null;
 
   @Output() cellDoubleClicked = new EventEmitter<FilterTypeExp>();
+
+  @HostListener('document:contextmenu', ['$event'])
+  onDocumentContextMenu(event: MouseEvent): void {
+    if (!this.isEventInsideGrid(event)) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  private isEventInsideGrid(event: MouseEvent): boolean {
+    const gridElement = document.querySelector('ag-grid-angular');
+    return gridElement?.contains(event.target as Node) ?? false;
+  }
 
   gridApi!: GridApi;
   private isGridReady = false;
@@ -141,6 +155,34 @@ export class TableComponent implements OnChanges {
     this.cellDoubleClicked.emit({
       field: event.colDef.field,
       value: event.value,
+    });
+  }
+
+  async onCellContextMenu(event: any): Promise<void> {
+    event.event.preventDefault();
+
+    const columnField = event.colDef.field;
+    const cellValue = event.value;
+
+    if (!columnField || cellValue === undefined || cellValue === null) return;
+
+    const colDef = this.gridApi.getColumnDef(columnField);
+    const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+    let filterValue = cellValue;
+
+    if (isDateColumn) {
+      const parsedDate = parseDateFromAnyFormat(cellValue);
+      if (parsedDate) {
+        filterValue = parsedDate.getTime();
+      } else {
+        return;
+      }
+    }
+
+    this.clickSubject.next({
+      field: columnField,
+      value: filterValue,
     });
   }
 
