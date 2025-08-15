@@ -1,3 +1,25 @@
+.grid-stack {
+  &.grid-stack-static {
+    .grid-stack-item {
+      cursor: default !important;
+
+      &:hover {
+        outline: none !important;
+      }
+    }
+  }
+
+  &.grid-stack-edit-mode {
+    .grid-stack-item {
+      cursor: move;
+
+      &:hover {
+        outline: 2px dashed rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
 .dashboard-page {
   height: calc(100vh - 104px);
   background-color: white;

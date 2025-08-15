@@ -56,12 +56,20 @@
                     <mat-icon>refresh</mat-icon>
                     Обновить
                   </button>
+
+                  <button mat-button (click)="toggleEditMode()">
+                    <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
+                    {{ isEditMode() ? "Заблокировать" : "Редактировать" }}
+                  </button>
+
                   <button
                     mat-flat-button
+                    *ngIf="isEditMode()"
                     [matMenuTriggerFor]="addWidgetMenu"
                     color="primary"
                     class="add-widget-button"
                   >
+                    <mat-icon>add</mat-icon>
                     Добавить виджет
                   </button>
 
