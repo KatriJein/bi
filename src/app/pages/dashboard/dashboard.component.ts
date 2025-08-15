@@ -135,7 +135,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initGridStack();
-    // this.initSubscriptions();
 
     this.updatePositionsSub = this.updatePositions$.subscribe((items) => {
       this.stateService.activeDashboard$
@@ -275,6 +274,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         cellHeight: 60,
         minRow: 10,
         float: true,
+
         resizable: {
           handles: '',
         },
@@ -296,20 +296,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (this.isUpdatingWidgets) return;
         this.ngZone.run(() => this.updatePositions$.next(items));
       });
-    });
-  }
-
-  private initSubscriptions(): void {
-    this.updatePositionsSub = this.updatePositions$.subscribe((items) => {
-      this.handlePositionUpdates(items);
-    });
-
-    this.widgetsSub = this.widgets$.subscribe((widgets) => {
-      this.updateWidgets(widgets);
-    });
-
-    this.activeDashboardId$.subscribe(() => {
-      this.resetDashboard();
     });
   }
 
@@ -342,115 +328,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.handleChartExpanded(event);
     content.appendChild(componentRef.location.nativeElement);
     this.widgetComponentRefs.set(widget.id, componentRef);
-  }
-
-  private updateWidgets(widgets: Widget[]): void {
-    if (!this.grid) return;
-
-    this.isUpdatingWidgets = true;
-    const existingIds = new Set(
-      this.grid.engine.nodes?.map((n) => n.id?.toString()) ?? []
-    );
-    const incomingIds = new Set(widgets.map((w) => w.id));
-
-    // Remove deleted widgets
-    [...existingIds]
-      .filter((id) => !incomingIds.has(id as string))
-      .forEach((id) => this.removeWidget(id as string));
-
-    // Update existing widgets
-    widgets
-      .filter((w) => existingIds.has(w.id))
-      .forEach((widget) => this.updateExistingWidget(widget));
-
-    // Add new widgets
-    widgets
-      .filter((w) => !existingIds.has(w.id))
-      .forEach((widget) => this.createWidget(widget));
-
-    this.isUpdatingWidgets = false;
-  }
-
-  private removeWidget(id: string): void {
-    const el = this.grid!.el.querySelector(`.grid-stack-item[gs-id="${id}"]`);
-    if (el) {
-      this.grid?.removeWidget(el as GridItemHTMLElement);
-    }
-
-    const compRef = this.widgetComponentRefs.get(id);
-    if (compRef) {
-      compRef.destroy();
-      this.widgetComponentRefs.delete(id);
-    }
-  }
-
-  private updateExistingWidget(widget: Widget): void {
-    const el = this.grid!.el.querySelector(
-      `.grid-stack-item[gs-id="${widget.id}"]`
-    );
-    if (el) {
-      this.grid!.update(el as GridItemHTMLElement, {
-        x: widget.position?.x ?? 0,
-        y: widget.position?.y ?? 0,
-        w: widget.position?.width ?? 1,
-        h: widget.position?.height ?? 1,
-      });
-    }
-
-    const compRef = this.widgetComponentRefs.get(widget.id);
-    if (compRef) {
-      compRef.instance.widget = widget;
-      compRef.changeDetectorRef.detectChanges();
-    }
-  }
-
-  private handlePositionUpdates(items: GridStackNode[]): void {
-    this.stateService.activeDashboard$.pipe(take(1)).subscribe((dashboard) => {
-      const dashboardId = dashboard?.id;
-      if (!dashboardId) return;
-
-      this.widgets$.pipe(take(1)).subscribe((widgets) => {
-        const widgetMap = new Map(widgets.map((w) => [w.id, w]));
-
-        items.forEach((item) => {
-          if (!item.id) return;
-
-          const widget = widgetMap.get(item.id.toString());
-          if (!widget) return;
-
-          const pos = widget.position ?? { x: 0, y: 0, width: 1, height: 1 };
-
-          if (
-            pos.x !== item.x ||
-            pos.y !== item.y ||
-            pos.width !== item.w ||
-            pos.height !== item.h
-          ) {
-            this.stateService.updateWidget(item.id.toString(), {
-              dashboardId,
-              position: {
-                x: item.x ?? 0,
-                y: item.y ?? 0,
-                width: item.w ?? 1,
-                height: item.h ?? 1,
-              },
-            });
-          }
-        });
-      });
-    });
-  }
-
-  private resetDashboard(): void {
-    if (!this.grid) return;
-
-    this.grid.removeAll(false);
-    this.widgetComponentRefs.forEach((compRef) => compRef.destroy());
-    this.widgetComponentRefs.clear();
-
-    while (this.grid.el.firstChild) {
-      this.grid.el.removeChild(this.grid.el.firstChild);
-    }
   }
 
   toggleEditMode(): void {
