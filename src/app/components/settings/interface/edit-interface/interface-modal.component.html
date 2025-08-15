@@ -1,28 +1,31 @@
 <h2 mat-dialog-title>{{ title }}</h2>
 
-<mat-dialog-content [formGroup]="form" class="dialog-content">
-  <mat-form-field appearance="outline" class="full-width input">
-    <mat-label>Название интерфейса</mat-label>
-    <input
-      matInput
-      placeholder="Введите название"
-      formControlName="name"
-      maxlength="25"
-    />
-    <mat-hint align="end"
-      >{{ form.get("name")?.value?.length || 0 }}/25</mat-hint
-    >
-  </mat-form-field>
-</mat-dialog-content>
+<form [formGroup]="form" (ngSubmit)="onSave($event)" class="dialog-form">
+  <mat-dialog-content class="dialog-content">
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Название интерфейса</mat-label>
+      <input
+        matInput
+        placeholder="Введите название"
+        formControlName="name"
+        maxlength="25"
+        autofocus
+      />
+      <mat-hint align="end"
+        >{{ form.get("name")?.value?.length || 0 }}/25</mat-hint
+      >
+    </mat-form-field>
+  </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Отмена</button>
-  <button
-    mat-flat-button
-    color="primary"
-    (click)="onSave($event)"
-    [disabled]="form.invalid"
-  >
-    {{ saveButtonText }}
-  </button>
-</mat-dialog-actions>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="onCancel()">Отмена</button>
+    <button
+      mat-flat-button
+      color="primary"
+      type="submit"
+      [disabled]="form.invalid"
+    >
+      {{ saveButtonText }}
+    </button>
+  </mat-dialog-actions>
+</form>

@@ -166,7 +166,7 @@ export const DashboardsFeature = createFeature({
       activeDashboardId: id,
     })),
 
-    //Фильтры
+    // Фильтры
     // Загрузка фильтров
     on(DashboardsActions.loadDashboardFilters, (state) => ({
       ...state,

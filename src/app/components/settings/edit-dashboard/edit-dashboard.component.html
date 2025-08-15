@@ -1,61 +1,67 @@
 <h2 mat-dialog-title class="title">Редактирование дашборда</h2>
 
-<mat-dialog-content
-  class="edit-icon-modal"
-  *ngIf="form.get('selectedColor')?.value"
->
-  <!-- Поле для ввода названия -->
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Название дашборда</mat-label>
-    <input
-      matInput
-      [formControl]="nameControl"
-      maxlength="52"
-      placeholder="Введите название"
-    />
-    <mat-hint align="end"
-      >{{ form.get("name")?.value?.length || 0 }}/52</mat-hint
-    >
-  </mat-form-field>
+<form [formGroup]="form" (keydown.enter)="onSave()" class="dashboard-form">
+  <mat-dialog-content
+    class="edit-icon-modal"
+    *ngIf="form.get('selectedColor')?.value"
+  >
+    <!-- Поле для ввода названия -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Название дашборда</mat-label>
+      <input
+        matInput
+        [formControl]="nameControl"
+        maxlength="52"
+        placeholder="Введите название"
+        autofocus
+      />
+      <mat-hint align="end">
+        {{ form.get("name")?.value?.length || 0 }}/52
+      </mat-hint>
+    </mat-form-field>
 
-  <!-- Просмотр текущей иконки -->
-  <div class="preview">
-    <mat-icon
-      [svgIcon]="form.get('icon')?.value"
-      [ngStyle]="{ color: currentColor }"
-      class="icon-preview"
-    ></mat-icon>
-  </div>
-
-  <!-- Сетка иконок -->
-  <div class="icon-grid">
-    <button
-      *ngFor="let icon of icons"
-      mat-icon-button
-      class="icon-option"
-      (click)="selectIcon(icon)"
-      [class.selected]="icon === form.get('icon')?.value"
-    >
+    <!-- Просмотр текущей иконки -->
+    <div class="preview">
       <mat-icon
-        [svgIcon]="icon"
-        [ngStyle]="{ color: '#000000' }"
-        style="font-size: 64px; width: 64px; height: 64px"
-        class="icon"
+        [svgIcon]="form.get('icon')?.value"
+        [ngStyle]="{ color: currentColor }"
+        class="icon-preview"
       ></mat-icon>
+    </div>
+
+    <!-- Сетка иконок -->
+    <div class="icon-grid">
+      <button
+        *ngFor="let icon of icons"
+        mat-icon-button
+        class="icon-option"
+        (click)="selectIcon(icon)"
+        [class.selected]="icon === form.get('icon')?.value"
+        type="button"
+      >
+        <mat-icon
+          [svgIcon]="icon"
+          [ngStyle]="{ color: '#000000' }"
+          style="font-size: 64px; width: 64px; height: 64px"
+          class="icon"
+        ></mat-icon>
+      </button>
+    </div>
+
+    <!-- Выбор цвета -->
+    <app-color-picker
+      [selectedColor]="form.get('selectedColor')?.value"
+      [customColor]="form.get('customColor')?.value"
+      (selectedColorChange)="onSelectedColorChange($event)"
+      (customColorChange)="onCustomColorChange($event)"
+      label="Цвет иконки:"
+    ></app-color-picker>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close type="button">Отмена</button>
+    <button mat-flat-button color="primary" (click)="onSave()" type="button">
+      Сохранить
     </button>
-  </div>
-
-  <!-- Выбор цвета -->
-  <app-color-picker
-    [selectedColor]="form.get('selectedColor')?.value"
-    [customColor]="form.get('customColor')?.value"
-    (selectedColorChange)="onSelectedColorChange($event)"
-    (customColorChange)="onCustomColorChange($event)"
-    label="Цвет иконки:"
-  ></app-color-picker>
-</mat-dialog-content>
-
-<mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>Отмена</button>
-  <button mat-button color="primary" (click)="save()">Сохранить</button>
-</mat-dialog-actions>
+  </mat-dialog-actions>
+</form>

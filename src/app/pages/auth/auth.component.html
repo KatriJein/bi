@@ -2,27 +2,33 @@
   <app-logo class="logo"></app-logo>
   <h1 class="title">Вход в систему</h1>
   <form class="form" [formGroup]="authForm" (ngSubmit)="onSubmit()">
-    <div class="inputs">
-      <label class="label border"
-        >Имя пользователя
-        <input type="text" formControlName="login" />
-      </label>
+    <div class="inputs-container">
+      <div class="inputs">
+        <label class="label border"
+          >Имя пользователя
+          <input type="text" formControlName="login" />
+        </label>
 
-      <label class="label"
-        >Пароль
-        <input
-          [type]="isShowPassword ? 'text' : 'password'"
-          formControlName="password"
-        />
-        <img
-          class="eye"
-          [src]="
+        <label class="label"
+          >Пароль
+          <input
+            [type]="isShowPassword ? 'text' : 'password'"
+            formControlName="password"
+          />
+          <img
+            class="eye"
+            [src]="
           `assets/svg/${isShowPassword ? 'eye-off' : 'eye'}.svg`
           "
-          alt="show password"
-          (click)="toggleShowPassword()"
-        />
-      </label>
+            alt="show password"
+            (click)="toggleShowPassword()"
+          />
+        </label>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
     </div>
 
     <button class="button-submit" type="submit">Войти</button>

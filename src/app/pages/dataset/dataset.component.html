@@ -10,7 +10,6 @@
         />
       </mat-form-field>
     </div>
-    <button mat-raised-button class="warn-button" (click)="onDelete()">Удалить</button>
   </div>
   <mat-tab-group class="tabs" (selectedTabChange)="handleTabChange($event)">
     <mat-tab label="Источники">
@@ -22,9 +21,14 @@
   </mat-tab-group>
 
   <div class="button-bar">
-    <button mat-raised-button color="primary" (click)="onSave()">
-      Сохранить
+    <button mat-raised-button class="warn-button" (click)="onDelete()">
+      Удалить
     </button>
-    <button mat-button (click)="onCancel()">Отменить</button>
+    <div class="buttons-container">
+      <button mat-flat-button color="primary" (click)="onSave()">
+        Сохранить
+      </button>
+      <button mat-button (click)="onCancel()">Отменить</button>
+    </div>
   </div>
 </div>

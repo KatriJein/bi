@@ -50,9 +50,14 @@ mat-icon {
 
 .button-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
-  padding: 16px;
+  padding: 1rem 4rem;
   border-top: 1px solid #ddd;
   background: #fff;
+
+  .buttons-container {
+    display: flex;
+    gap: 1rem;
+  }
 }

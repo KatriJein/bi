@@ -90,7 +90,7 @@ export class EditDashboardModalComponent implements OnInit {
     this.form.patchValue({ customColor: color });
   }
 
-  save() {
+  onSave() {
     const value = this.form.value;
 
     this.dialogRef.close({

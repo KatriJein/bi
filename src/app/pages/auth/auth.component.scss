@@ -29,6 +29,14 @@
   }
 }
 
+.inputs-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
 .container {
   display: flex;
   align-items: center;
@@ -69,11 +77,11 @@
   flex-direction: column;
   gap: 2rem;
   font-size: 1.5rem;
-  width: 100%;
+  width: 80%;
   align-items: center;
 
   .inputs {
-    width: 80%;
+    width: 100%;
     border: 0.1rem solid var(--grey);
     border-radius: 0.5rem;
   }
@@ -121,7 +129,7 @@
   }
 
   .button-submit {
-    width: 80%;
+    width: 100%;
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     background-color: var(--blue);
@@ -136,4 +144,13 @@
       background-color: var(--blue-hover);
     }
   }
+}
+
+.error-message {
+  width: 100%;
+  font-size: 1rem;
+  color: red;
+  display: flex;
+  justify-content: flex-start;
+  text-align: left;
 }

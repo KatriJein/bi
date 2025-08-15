@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "postgraphile": "postgraphile --connection postgres://postgres:postgres@localhost/rubi --schema public,bi,bookings --subscriptions --live --watch --dynamic-json --no-setof-functions-contain-nulls --no-ignore-rbac --show-error-stack=json --extended-errors hint,detail,errcode --append-plugins @graphile/subscriptions-lds,@graphile-contrib/pg-simplify-inflector --graphiql / --enhance-graphiql --allow-explain --enable-query-batching --legacy-relations omit --cors --jwt-token-identifier public.jwt_token --jwt-secret 'topSecretRandomString' --default-role postgres"
+    "postgraphile": "postgraphile --connection postgres://postgres:postgres@localhost/test_bi --schema public,bi,bookings --subscriptions --live --watch --dynamic-json --no-setof-functions-contain-nulls --no-ignore-rbac --show-error-stack=json --extended-errors hint,detail,errcode --append-plugins @graphile/subscriptions-lds,@graphile-contrib/pg-simplify-inflector --graphiql / --enhance-graphiql --allow-explain --enable-query-batching --legacy-relations omit --cors --jwt-token-identifier public.jwt_token --jwt-secret 'topSecretRandomString' --default-role postgres"
   },
   "private": true,
   "dependencies": {
@@ -33,7 +33,7 @@
     "date-fns": "4.1.0",
     "graphql": "15.8.0",
     "gridstack": "12.2.1",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "4.17.21",
     "ng2-charts": "8.0.0",
     "ngx-mat-select-search": "8.0.1",
     "postgraphile": "4.14.0",
@@ -47,7 +47,7 @@
     "@angular/compiler-cli": "19.2.7",
     "@types/gridstack": "0.5.0",
     "@types/jasmine": "5.1.0",
-    "@types/lodash-es": "^4.17.12",
+    "@types/lodash-es": "4.17.12",
     "@types/node": "22.14.0",
     "jasmine-core": "5.6.0",
     "karma": "6.4.0",
