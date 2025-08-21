@@ -1,9 +1,7 @@
 import { gql } from 'apollo-angular';
 
 export const getUserDashboardsQuery = gql(`query GetUserDashboards($id: UUID!) {
-  interfaceDashboards(
-    condition: {interfaceId: $id}
-  ) {
+  interfaceDashboards(condition: {interfaceId: $id}) {
     nodes {
       order
       dashboard {
@@ -11,6 +9,7 @@ export const getUserDashboardsQuery = gql(`query GetUserDashboards($id: UUID!) {
         iconId
         id
         name
+        parentId
       }
     }
   }

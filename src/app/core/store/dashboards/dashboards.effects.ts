@@ -1,15 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import {
-  catchError,
-  delay,
-  map,
-  mergeMap,
-  skip,
-  switchMap,
-  tap,
-} from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { DashboardsActions } from './index';
 import { DashboardFiltersService, DashboardService } from '../../api/services';
 
@@ -38,38 +30,27 @@ export class DashboardsEffects {
   addDashboard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(DashboardsActions.addDashboard),
-      switchMap(({ name, interfaceId, order }) =>
-        this.dashboardService.createDashboard(name, interfaceId, order).pipe(
-          switchMap((response) => {
-            if (!response) {
-              throw new Error('Failed to create dashboard');
-            }
-            const { id } = response;
-
-            return this.dashboardService.loadUserDashboards(interfaceId).pipe(
-              skip(1),
-
-              map((dashboards) => {
-                const dashboard = dashboards.find((d) => d.id === id);
-                if (!dashboard) throw new Error('Created dashboard not found');
-                return DashboardsActions.addDashboardSuccess({
-                  interfaceId,
-                  dashboard,
-                });
-              }),
-              catchError((error) =>
-                of(
-                  DashboardsActions.addDashboardFailure({
-                    error: error.message,
-                  })
-                )
+      switchMap(({ name, parentId, interfaceId, order }) =>
+        this.dashboardService
+          .createDashboard(name, parentId, interfaceId, order)
+          .pipe(
+            map((dashboard) => {
+              if (!dashboard) {
+                throw new Error('Failed to create dashboard');
+              }
+              return DashboardsActions.addDashboardSuccess({
+                interfaceId,
+                dashboard,
+              });
+            }),
+            catchError((error) =>
+              of(
+                DashboardsActions.addDashboardFailure({
+                  error: error.message,
+                })
               )
-            );
-          }),
-          catchError((error) =>
-            of(DashboardsActions.addDashboardFailure({ error: error.message }))
+            )
           )
-        )
       )
     )
   );

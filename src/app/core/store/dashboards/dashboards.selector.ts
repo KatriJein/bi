@@ -1,5 +1,6 @@
 import { createSelector } from '@ngrx/store';
 import { DashboardsFeature } from './dashboards.feature';
+import { buildDashboardHierarchy } from '../../../utils';
 
 export const {
   selectDashboards,
@@ -23,6 +24,19 @@ export const selectDashboardsByInterfaceId = (interfaceId: string) =>
   createSelector(
     selectDashboards,
     (dashboards) => dashboards[interfaceId] || []
+  );
+
+export const selectRootDashboardsByInterfaceId = (interfaceId: string) =>
+  createSelector(
+    selectDashboardsByInterfaceId(interfaceId),
+    (interfaceDashboards) =>
+      interfaceDashboards.filter((dashboard) => dashboard.parentId === null)
+  );
+
+export const selectDashboardHierarchyByInterfaceId = (interfaceId: string) =>
+  createSelector(
+    selectDashboardsByInterfaceId(interfaceId),
+    (interfaceDashboards) => buildDashboardHierarchy(interfaceDashboards)
   );
 
 export const selectDashboardById = (id: string) =>

@@ -30,6 +30,8 @@ import { CreateDashboardModalComponent } from '../../../components/settings/crea
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { DashboardListItemComponent } from '../../../components/settings';
+import { buildDashboardHierarchy } from '../../../utils';
 
 @Component({
   selector: 'app-settings-dashboards',
@@ -44,6 +46,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
     MatButtonModule,
     FormsModule,
     MatInputModule,
+    DashboardListItemComponent,
   ],
   templateUrl: './dashboards.component.html',
   styleUrl: '../settings.component.scss',
@@ -67,6 +70,7 @@ export class DashboardsSettingsComponent implements OnInit {
       );
     })
   );
+  expandedDashboards = signal<Set<string>>(new Set());
 
   interfaces$ = this.store.select(InterfacesSelectors.selectAllInterfaces);
 
@@ -91,6 +95,21 @@ export class DashboardsSettingsComponent implements OnInit {
     })
   );
 
+  hierarchicalDashboards$ = combineLatest([
+    this.dashboards$,
+    toObservable(this.searchQuery),
+  ]).pipe(
+    map(([dashboards, query]) => {
+      const filteredDashboards = query.trim()
+        ? dashboards.filter((d) =>
+            d.name?.toLowerCase().includes(query.toLowerCase().trim())
+          )
+        : dashboards;
+
+      return buildDashboardHierarchy(filteredDashboards);
+    })
+  );
+
   ngOnInit() {
     combineLatest([
       this.route.params.pipe(map((params) => params['interfaceId'])),
@@ -109,26 +128,36 @@ export class DashboardsSettingsComponent implements OnInit {
     this.router.navigate(['/settings/dashboards', newInterfaceId]);
   }
 
-  async openCreateDashboardModal(): Promise<void> {
+  async openCreateDashboardModal(
+    parentId: string | null = null
+  ): Promise<void> {
     const dashboards = await firstValueFrom(this.dashboards$);
 
-    const maxOrder = dashboards.reduce(
-      (max, dashboard) => Math.max(max, dashboard.order || 0),
-      0
-    );
+    let order = 0;
+    if (!parentId) {
+      order = dashboards.reduce((max, d) => Math.max(max, d.order || 0), 0) + 1;
+    } else {
+      const children = dashboards.filter((d) => d.parentId === parentId);
+      if (children.length > 0) {
+        order = Math.max(...children.map((d) => d.order || 0)) + 1;
+      }
+    }
 
     this.dialog.open(CreateDashboardModalComponent, {
       width: '600px',
       data: {
-        order: maxOrder + 1,
+        order,
+        parentId,
+        interfaceId: this.selectedInterfaceId$.value,
       },
     });
   }
 
-  openEditDashboardModal(dashboard: DashboardDto, event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
+  async createSubDashboard(parentDashboard: DashboardDto): Promise<void> {
+    await this.openCreateDashboardModal(parentDashboard.id!);
+  }
 
+  openEditDashboardModal(dashboard: DashboardDto) {
     this.dialog
       .open(EditDashboardModalComponent, {
         width: '600px',
@@ -159,10 +188,7 @@ export class DashboardsSettingsComponent implements OnInit {
       });
   }
 
-  async moveDashboardUp(dashboard: DashboardDto, event: Event): Promise<void> {
-    event.stopPropagation();
-    event.preventDefault();
-
+  async moveDashboardUp(dashboard: DashboardDto): Promise<void> {
     const interfaceId = this.selectedInterfaceId$.value;
     if (!interfaceId) return;
 
@@ -194,13 +220,7 @@ export class DashboardsSettingsComponent implements OnInit {
     }
   }
 
-  async moveDashboardDown(
-    dashboard: DashboardDto,
-    event: Event
-  ): Promise<void> {
-    event.stopPropagation();
-    event.preventDefault();
-
+  async moveDashboardDown(dashboard: DashboardDto): Promise<void> {
     const interfaceId = this.selectedInterfaceId$.value;
     if (!interfaceId) return;
 
@@ -232,10 +252,7 @@ export class DashboardsSettingsComponent implements OnInit {
     }
   }
 
-  onDelete(dashboardId: string, order: number, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
-
+  onDeleteDashboard(dashboard: DashboardDto): void {
     if (confirm('Удалить этот дашборд?')) {
       const interfaceId = this.selectedInterfaceId$.value;
       if (!interfaceId) {
@@ -244,12 +261,26 @@ export class DashboardsSettingsComponent implements OnInit {
       }
 
       this.store.dispatch(
-        DashboardsActions.removeDashboard({ dashboardId, interfaceId, order })
+        DashboardsActions.removeDashboard({
+          dashboardId: dashboard.id!,
+          interfaceId,
+          order: dashboard.order || 0,
+        })
       );
     }
   }
 
   trackById(index: number, item: DashboardDto): string {
     return item.id || '';
+  }
+
+  toggleDashboardExpansion(dashboardId: string): void {
+    const expanded = new Set(this.expandedDashboards());
+    if (expanded.has(dashboardId)) {
+      expanded.delete(dashboardId);
+    } else {
+      expanded.add(dashboardId);
+    }
+    this.expandedDashboards.set(expanded);
   }
 }

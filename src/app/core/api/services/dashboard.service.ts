@@ -47,15 +47,17 @@ export class DashboardService {
 
   createDashboard(
     name: string,
+    parentId: string | null,
     interfaceId: string,
     order?: number
-  ): Observable<{ order: number; id: string; name: string } | null> {
+  ): Observable<DashboardDto | null> {
     return this.grapghql
       .mutate<CreateDashboardResponse, CreateDashboardVariables>(
         undefined,
         createDashboardMutation,
         {
           name,
+          parentId,
         }
       )
       .pipe(
@@ -85,7 +87,10 @@ export class DashboardService {
                   order: interfaceDashboard.order,
                   id: interfaceDashboard.dashboard.id,
                   name: interfaceDashboard.dashboard.name,
-                };
+                  parentId: interfaceDashboard.dashboard.parentId,
+                  color: interfaceDashboard.dashboard.color,
+                  iconId: interfaceDashboard.dashboard.iconId,
+                } as DashboardDto;
               })
             );
         }),
@@ -152,6 +157,7 @@ export class DashboardService {
             name: string;
             color: string;
             iconId: string;
+            parentId: string;
           };
         } => !!node?.dashboard
       )
@@ -162,6 +168,7 @@ export class DashboardService {
           order: node.order,
           color: node.dashboard.color,
           iconId: node.dashboard.iconId,
+          parentId: node.dashboard.parentId,
         };
       });
   }
@@ -187,6 +194,7 @@ export class DashboardService {
             name: dashboard.name,
             color: dashboard.color,
             iconId: dashboard.iconId,
+            parentId: dashboard.parentId,
           };
         }),
         catchError((error) => {

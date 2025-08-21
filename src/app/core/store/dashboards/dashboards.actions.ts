@@ -22,7 +22,12 @@ export const loadDashboardsFailure = createAction(
 // Добавление
 export const addDashboard = createAction(
   '[Dashboards] Add Dashboard',
-  props<{ name: string; interfaceId: string; order?: number }>()
+  props<{
+    name: string;
+    parentId: string | null;
+    interfaceId: string;
+    order?: number;
+  }>()
 );
 
 export const addDashboardSuccess = createAction(

@@ -135,7 +135,103 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.initGridStack();
+    this.setupPositionUpdates();
+    this.setupWidgetsSubscription();
+    this.setupDashboardChanges();
+  }
 
+  ngOnDestroy() {
+    this.cleanupSubscriptions();
+    this.destroyGridStack();
+  }
+
+  private cleanupSubscriptions() {
+    this.widgetsSub?.unsubscribe();
+    this.updatePositionsSub?.unsubscribe();
+  }
+
+  private destroyGridStack(removeElements = true) {
+    if (this.grid) {
+      this.grid.off('change');
+      this.grid.destroy(removeElements);
+      this.grid = undefined;
+    }
+  }
+
+  private initGridStack() {
+    const currentNodes = this.grid?.engine.nodes || [];
+    const currentPositions = currentNodes.map((node) => ({
+      id: node.id,
+      x: node.x,
+      y: node.y,
+      width: node.w,
+      height: node.h,
+    }));
+
+    this.destroyGridStack(false);
+
+    this.ngZone.runOutsideAngular(() => {
+      const options: GridStackOptions = {
+        column: 20,
+        cellHeight: 60,
+        minRow: 10,
+        float: true,
+        resizable: {
+          handles: '',
+        },
+        draggable: {
+          handle: '.grid-stack-item-content',
+        },
+        margin: 5,
+        staticGrid: !this.isEditMode(),
+        disableDrag: !this.isEditMode(),
+        disableResize: !this.isEditMode(),
+      };
+
+      this.grid = GridStack.init(
+        options,
+        this.gridStackContainer.nativeElement
+      );
+
+      this.restoreGridPositions(currentPositions);
+      this.setupGridChangeHandler();
+    });
+  }
+
+  private restoreGridPositions(
+    positions: Array<{
+      id: string | number | undefined;
+      x?: number;
+      y?: number;
+      width?: number;
+      height?: number;
+    }>
+  ) {
+    if (positions.length > 0) {
+      positions.forEach((pos) => {
+        const el = this.gridStackContainer.nativeElement.querySelector(
+          `[gs-id="${pos.id}"]`
+        );
+        if (el) {
+          this.grid?.update(el as GridItemHTMLElement, {
+            x: pos.x,
+            y: pos.y,
+            w: pos.width,
+            h: pos.height,
+          });
+        }
+      });
+    }
+  }
+
+  private setupGridChangeHandler() {
+    this.grid?.on('change', (event, items: GridStackNode[]) => {
+      if (this.isUpdatingWidgets) return;
+      this.ngZone.run(() => this.updatePositions$.next(items));
+    });
+  }
+
+  private setupPositionUpdates() {
     this.updatePositionsSub = this.updatePositions$.subscribe((items) => {
       this.stateService.activeDashboard$
         .pipe(take(1))
@@ -179,7 +275,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
           });
         });
     });
+  }
 
+  private setupWidgetsSubscription() {
     this.widgetsSub = this.widgets$.subscribe((widgets) => {
       if (!this.grid) return;
 
@@ -237,7 +335,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.isUpdatingWidgets = false;
     });
+  }
 
+  private setupDashboardChanges() {
     this.activeDashboardId$.subscribe(() => {
       if (!this.grid) return;
 
@@ -252,54 +352,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
-    this.widgetsSub?.unsubscribe();
-    this.updatePositionsSub?.unsubscribe();
-    if (this.grid) {
-      this.grid.off('change');
-      this.grid.destroy();
-      this.grid = undefined;
-    }
-  }
-
-  private initGridStack() {
-    if (this.grid) {
-      this.grid.destroy(false);
-      this.grid = undefined;
-    }
-
-    this.ngZone.runOutsideAngular(() => {
-      const options: GridStackOptions = {
-        column: 20,
-        cellHeight: 60,
-        minRow: 10,
-        float: true,
-
-        resizable: {
-          handles: '',
-        },
-        draggable: {
-          handle: '.grid-stack-item-content',
-        },
-        margin: 5,
-        staticGrid: !this.isEditMode(),
-        disableDrag: !this.isEditMode(),
-        disableResize: !this.isEditMode(),
-      };
-
-      this.grid = GridStack.init(
-        options,
-        this.gridStackContainer.nativeElement
-      );
-
-      this.grid.on('change', (event, items: GridStackNode[]) => {
-        if (this.isUpdatingWidgets) return;
-        this.ngZone.run(() => this.updatePositions$.next(items));
-      });
-    });
-  }
-
   private createWidget(widget: Widget) {
+    const existingEl = this.grid!.el.querySelector(
+      `.grid-stack-item[gs-id="${widget.id}"]`
+    );
+    if (existingEl) {
+      return;
+    }
+
     const el = document.createElement('div');
     el.classList.add('grid-stack-item');
 

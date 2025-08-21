@@ -47,7 +47,11 @@ export class CreateDashboardModalComponent {
   private actions$ = inject(Actions);
   private dialogRef = inject(MatDialogRef<CreateDashboardModalComponent>);
   private fb = inject(FormBuilder);
-  private data = inject(MAT_DIALOG_DATA) as { order: number };
+  private data = inject(MAT_DIALOG_DATA) as {
+    order: number;
+    parentId: string | null;
+    interfaceId: string | null;
+  };
 
   interfaces$: Observable<InterfaceDto[]> = this.store.select(
     InterfacesSelectors.selectAllInterfaces
@@ -56,7 +60,7 @@ export class CreateDashboardModalComponent {
 
   form: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(52)]],
-    interfaceId: [null, Validators.required],
+    interfaceId: [this.data.interfaceId, Validators.required],
   });
 
   constructor() {
@@ -77,6 +81,7 @@ export class CreateDashboardModalComponent {
         this.store.dispatch(
           DashboardsActions.addDashboard({
             name,
+            parentId: this.data.parentId,
             interfaceId,
             order: this.data.order,
           })

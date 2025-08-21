@@ -12,4 +12,5 @@ export type Dashboard = {
   name: string;
   color: string;
   iconId: string;
+  parentId: string | null;
 };

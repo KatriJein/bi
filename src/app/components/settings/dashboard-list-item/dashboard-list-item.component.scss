@@ -1,0 +1,122 @@
+.dashboard-item {
+  display: flex;
+  flex-direction: row;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+  min-height: 48px;
+  height: auto;
+
+  &:hover {
+    background-color: #f5f5f5;
+
+    .actions {
+      opacity: 1;
+    }
+  }
+}
+
+.info-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 16px;
+  flex: 1;
+}
+
+.spacer {
+  width: 32px;
+}
+
+.expand-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    left: -2px;
+  }
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32x;
+  flex-shrink: 0;
+}
+
+.dashboard-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+}
+
+.name {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.6;
+
+  button {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .mat-icon {
+      position: relative;
+      left: -2px;
+    }
+  }
+}
+
+.mat-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+  }
+}
+
+:host {
+  display: block;
+  transition: all 0.3s ease;
+}
+
+ng-container {
+  display: block;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+

@@ -1,0 +1,103 @@
+<div [style.padding-left.px]="level * 20 + 16" class="dashboard-item">
+  <div class="info-container">
+    <div class="info">
+      <button
+        *ngIf="dashboard.children && dashboard.children.length > 0"
+        mat-icon-button
+        (click)="toggle()"
+        class="expand-button"
+      >
+        <mat-icon>
+          {{ expanded() ? "expand_more" : "chevron_right" }}
+        </mat-icon>
+      </button>
+
+      <div
+        *ngIf="!(dashboard.children && dashboard.children.length > 0)"
+        class="spacer"
+      ></div>
+
+      <a [routerLink]="['/dashboard', dashboard.id]" class="dashboard-link">
+        <mat-icon
+          [svgIcon]="dashboard.iconId || 'chart'"
+          [style.color]="dashboard.color || '#50b8c5'"
+          class="icon"
+        >
+        </mat-icon>
+
+        <span class="name">{{ dashboard.name }}</span>
+      </a>
+    </div>
+
+    <div class="actions">
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        (click)="$event.stopPropagation()"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu">
+        <button
+          mat-menu-item
+          (click)="$event.stopPropagation(); createSubDashboard.emit(dashboard)"
+        >
+          <mat-icon>add</mat-icon>
+          Добавить дашборд
+        </button>
+        <button
+          mat-menu-item
+          (click)="$event.stopPropagation(); edit.emit(dashboard)"
+        >
+          <mat-icon>edit</mat-icon>
+          Редактировать
+        </button>
+        <button
+          mat-menu-item
+          (click)="$event.stopPropagation(); delete.emit(dashboard)"
+        >
+          <mat-icon color="warn">delete</mat-icon>
+          Удалить
+        </button>
+      </mat-menu>
+
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="$event.stopPropagation(); moveUp.emit(dashboard)"
+        [disabled]="isFirst"
+      >
+        <mat-icon>arrow_upward</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="$event.stopPropagation(); moveDown.emit(dashboard)"
+        [disabled]="isLast"
+      >
+        <mat-icon>arrow_downward</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<ng-container
+  *ngIf="expanded() && dashboard.children && dashboard.children.length > 0"
+>
+  <dashboard-list-item
+    *ngFor="let child of dashboard.children; trackBy: trackById"
+    [dashboard]="child"
+    [level]="level + 1"
+    [isFirst]="false"
+    [isLast]="false"
+    (toggleExpand)="toggleExpand.emit($event)"
+    (createSubDashboard)="createSubDashboard.emit($event)"
+    (edit)="edit.emit($event)"
+    (moveUp)="moveUp.emit($event)"
+    (moveDown)="moveDown.emit($event)"
+    (delete)="delete.emit($event)"
+  >
+  </dashboard-list-item>
+</ng-container>

@@ -9,6 +9,7 @@ export interface DashboardDto {
   color: string | undefined;
   name: string | undefined;
   order: number | undefined;
+  parentId: string | null |undefined;
   selections?: DashboardFilter[] | undefined;
 }
 

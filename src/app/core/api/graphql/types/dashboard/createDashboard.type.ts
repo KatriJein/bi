@@ -8,4 +8,5 @@ export type CreateDashboardResponse = {
 
 export type CreateDashboardVariables = {
   name: string;
+  parentId: string | null;
 };
