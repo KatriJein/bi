@@ -3,8 +3,12 @@
     <mat-sidenav mode="side" opened class="sidebar">
       <div>
         <div class="navigation">
-          <app-main-button/>
-          <button mat-icon-button class="nav-button" [routerLink]="['/settings']">
+          <app-main-button />
+          <button
+            mat-icon-button
+            class="nav-button"
+            [routerLink]="['/settings']"
+          >
             <mat-icon>settings</mat-icon>
           </button>
         </div>
@@ -36,116 +40,121 @@
 
     <mat-sidenav-content>
       <div class="dashboard-content">
-        <mat-tab-group
-          [(selectedIndex)]="selectedTabIndex"
-          class="dashboard-tabs"
-        >
-          <!-- Вкладка с виджетами -->
-          <mat-tab label="Виджеты">
-            <div class="widgets-tab-content">
-              <div class="dashboard-header">
-                <div class="actions">
-                  <button
-                    mat-button
-                    color="primary"
-                    class="refresh-widget-button"
-                    (click)="onRefreshWidgets()"
-                  >
-                    <mat-icon>refresh</mat-icon>
-                    Обновить
-                  </button>
+        <div [hidden]="isDetailMode()" class="widgets-mode">
+          <div class="dashboard-header">
+            <div class="actions">
+              <button
+                mat-button
+                color="accent"
+                *ngIf="expandedChartId"
+                (click)="isDetailMode.set(true)"
+                class="detail-mode-button"
+              >
+                К детализации
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
 
-                  <button mat-button (click)="toggleEditMode()">
-                    <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
-                    {{ isEditMode() ? "Заблокировать" : "Редактировать" }}
-                  </button>
-
-                  <button
-                    mat-flat-button
-                    *ngIf="isEditMode()"
-                    [matMenuTriggerFor]="addWidgetMenu"
-                    color="primary"
-                    class="add-widget-button"
-                  >
-                    <mat-icon>add</mat-icon>
-                    Добавить виджет
-                  </button>
-
-                  <button mat-button (click)="toggleFilters()">
-                    <mat-icon>filter_alt</mat-icon>
-                    Фильтр
-                  </button>
-                </div>
-                <mat-menu #addWidgetMenu="matMenu">
-                  <button mat-menu-item (click)="openWidgetDialog('text')">
-                    Текст
-                  </button>
-                  <button mat-menu-item (click)="openWidgetDialog('chart')">
-                    График
-                  </button>
-                </mat-menu>
-              </div>
-
-              <!-- Блок фильтров -->
-              <div class="filters-container" *ngIf="showFilters">
-                <mat-chip-listbox
-                  aria-label="Filters list"
-                  *ngIf="(filters$ | async)?.length"
+              <div class="right-actions">
+                <button
+                  mat-button
+                  color="primary"
+                  class="refresh-widget-button"
+                  (click)="onRefreshWidgets()"
                 >
-                  <mat-chip-option
-                    *ngFor="let filter of filters$ | async"
-                    [selectable]="false"
-                    (click)="onFilterClick(filter)"
-                    [removable]="true"
-                    (removed)="removeFilter(filter)"
-                  >
-                    <div class="filter-chip-content">
-                      <span class="filter-name">{{ filter.name }}</span>
-                      <span class="filter-details"
-                        >{{ filter.filterType }}:
-                        {{ formatFilterValue(filter) }}</span
-                      >
-                    </div>
-                    <mat-icon matChipRemove>cancel</mat-icon>
-                  </mat-chip-option>
-                </mat-chip-listbox>
+                  <mat-icon>refresh</mat-icon>
+                  Обновить
+                </button>
+
+                <button mat-button (click)="toggleEditMode()">
+                  <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
+                  {{ isEditMode() ? "Заблокировать" : "Редактировать" }}
+                </button>
 
                 <button
                   mat-flat-button
+                  *ngIf="isEditMode()"
+                  [matMenuTriggerFor]="addWidgetMenu"
                   color="primary"
-                  (click)="openAddFilterDialog()"
-                  class="add-filter-btn"
+                  class="add-widget-button"
                 >
                   <mat-icon>add</mat-icon>
-                  Добавить фильтр
+                  Добавить виджет
+                </button>
+
+                <button mat-button (click)="toggleFilters()">
+                  <mat-icon>filter_alt</mat-icon>
+                  Фильтр
                 </button>
               </div>
-
-              <div #gridStackContainer class="grid-stack"></div>
-              <ng-template #widgetHost></ng-template>
             </div>
-          </mat-tab>
 
-          <!-- Вкладка с расширенной таблицей -->
-          <mat-tab label="Детализация" [disabled]="!expandedChartId">
-            <div class="expanded-table-tab-content" *ngIf="expandedChartId">
-              <div class="expanded-table-header">
-                <button mat-button (click)="selectedTabIndex = 0">
-                  <mat-icon>arrow_back</mat-icon>
-                  Назад к виджетам
-                </button>
-                <h3 *ngIf="expandedChartFilter">
-                  {{ expandedChartName }}
-                </h3>
-              </div>
-              <app-chart-container
-                [chartId]="expandedChartId"
-                [initialFilters]="expandedChartFilter"
-                (chartClick)="handleChartExpanded($event)"
-              ></app-chart-container>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
+            <mat-menu #addWidgetMenu="matMenu">
+              <button mat-menu-item (click)="openWidgetDialog('text')">
+                Текст
+              </button>
+              <button mat-menu-item (click)="openWidgetDialog('chart')">
+                График
+              </button>
+            </mat-menu>
+          </div>
+
+          <!-- Блок фильтров -->
+          <div class="filters-container" [hidden]="!showFilters">
+            <mat-chip-listbox
+              aria-label="Filters list"
+              *ngIf="(filters$ | async)?.length"
+            >
+              <mat-chip-option
+                *ngFor="let filter of filters$ | async"
+                [selectable]="false"
+                (click)="onFilterClick(filter)"
+                [removable]="true"
+                (removed)="removeFilter(filter)"
+              >
+                <div class="filter-chip-content">
+                  <span class="filter-name">{{ filter.name }}</span>
+                  <span class="filter-details"
+                    >{{ filter.filterType }}:
+                    {{ formatFilterValue(filter) }}</span
+                  >
+                </div>
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip-option>
+            </mat-chip-listbox>
+
+            <button
+              mat-flat-button
+              color="primary"
+              (click)="openAddFilterDialog()"
+              class="add-filter-btn"
+            >
+              <mat-icon>add</mat-icon>
+              Добавить фильтр
+            </button>
+          </div>
+
+          <div #gridStackContainer class="grid-stack"></div>
+          <ng-template #widgetHost></ng-template>
+        </div>
+
+        <!-- Режим детализации -->
+        <div [hidden]="!isDetailMode()" class="detail-mode">
+          <div class="detail-mode-header">
+            <button mat-button (click)="backToWidgets()">
+              <mat-icon>arrow_back</mat-icon>
+              Назад к виджетам
+            </button>
+            <h3 *ngIf="expandedChartName">
+              {{ expandedChartName }}
+            </h3>
+          </div>
+          <app-chart-container
+            *ngIf="expandedChartId"
+            [chartId]="expandedChartId"
+            [initialFilters]="expandedChartFilter"
+            (chartClick)="handleChartExpanded($event)"
+          ></app-chart-container>
+        </div>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>

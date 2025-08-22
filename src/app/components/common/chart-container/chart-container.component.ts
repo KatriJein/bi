@@ -74,7 +74,11 @@ export class ChartContainerComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['chartId']) {
+    if (
+      changes['chartId'] ||
+      changes['initialFilters'] ||
+      changes['widgetSelectors']
+    ) {
       this.chart$ = this.store
         .select(ChartsSelectors.selectChartById(this.chartId))
         .pipe(map((chart) => chart || null));
@@ -94,7 +98,9 @@ export class ChartContainerComponent implements OnInit, OnChanges {
       );
     }
 
-    if (changes['chartId'] || changes['widgetSelectors']) {
+    if ( changes['chartId'] ||
+      changes['initialFilters'] ||
+      changes['widgetSelectors']) {
       this.initCombinedFilters();
     }
   }

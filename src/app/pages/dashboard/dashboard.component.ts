@@ -1,11 +1,11 @@
 import {
+  AfterViewInit,
   Component,
   ComponentRef,
   ElementRef,
   inject,
   NgZone,
   OnDestroy,
-  OnInit,
   signal,
   ViewChild,
   ViewContainerRef,
@@ -52,11 +52,14 @@ import { WidgetComponent } from '../../components/widget';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { DashboadMenuItemComponent, DashboardSelectionModalComponent } from '../../components/dashboard';
+import {
+  DashboadMenuItemComponent,
+  DashboardSelectionModalComponent,
+} from '../../components/dashboard';
 import { SelectionTypeDashboard } from '../../core/store/charts';
 import { MatChipsModule } from '@angular/material/chips';
 import { formatFilterValue } from '../../utils';
-import { OnMainButtonComponent } from "../../components/common";
+import { OnMainButtonComponent } from '../../components/common';
 
 export type FilterTypeExp = {
   field: string;
@@ -90,12 +93,12 @@ export type FilterEmitType = {
     MatIconModule,
     MatChipsModule,
     DashboadMenuItemComponent,
-    OnMainButtonComponent
-],
+    OnMainButtonComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnDestroy, AfterViewInit {
   @ViewChild('gridStackContainer', { static: true })
   gridStackContainer!: ElementRef<HTMLDivElement>;
 
@@ -107,10 +110,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
 
+  isDetailMode = signal(false);
   expandedChartId: string | null = null;
   expandedChartName: string | null = null;
   expandedChartFilter: FilterTypeExp[] | null = null;
-  selectedTabIndex = 0;
   isEditMode = signal(false);
   showFilters = false;
 
@@ -136,7 +139,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   formatFilterValue = formatFilterValue;
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.initGridStack();
     this.setupPositionUpdates();
     this.setupWidgetsSubscription();
@@ -162,6 +165,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private initGridStack() {
+    if (!this.gridStackContainer?.nativeElement) {
+      console.warn('GridStack container not available');
+      return;
+    }
+
     const currentNodes = this.grid?.engine.nodes || [];
     const currentPositions = currentNodes.map((node) => ({
       id: node.id,
@@ -439,8 +447,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
     this.expandedChartId = chartId;
     this.expandedChartFilter = filters;
-    this.selectedTabIndex = 1;
     this.expandedChartName = this.stateService.getTableName(chartId);
+    this.isDetailMode.set(true);
+  }
+
+  backToWidgets(): void {
+    this.isDetailMode.set(false);
   }
 
   handleChartExpanded(event: FilterEmitType): void {
