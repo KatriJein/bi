@@ -24,6 +24,7 @@ import { Observable, tap } from 'rxjs';
 })
 export class WidgetComponent implements OnInit, OnChanges {
   @Input() widget!: WidgetDto;
+  @Input() isEditMode: boolean = false;
   @Input() onEditWidget?: (widget: Widget) => void;
   @Input() onChartExpClick?: (event: FilterEmitType) => void;
 
@@ -53,6 +54,12 @@ export class WidgetComponent implements OnInit, OnChanges {
   }
 
   handleClick(event: MouseEvent) {
+    if (!this.isEditMode) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
     const target = event.target as HTMLElement;
     if (
       target.closest('.table-container') ||

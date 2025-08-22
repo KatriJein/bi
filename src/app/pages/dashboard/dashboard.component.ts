@@ -394,6 +394,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
 
     const componentRef = this.widgetHost.createComponent(WidgetComponent);
     componentRef.instance.widget = widget;
+    componentRef.instance.isEditMode = this.isEditMode();
     componentRef.instance.onEditWidget = (w) => this.openEditWidgetDialog(w.id);
     componentRef.instance.onChartExpClick = (event) =>
       this.handleChartExpanded(event);
@@ -403,6 +404,12 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
 
   toggleEditMode(): void {
     this.isEditMode.update((mode) => !mode);
+
+    this.widgetComponentRefs.forEach((compRef) => {
+      compRef.instance.isEditMode = this.isEditMode();
+      compRef.changeDetectorRef.detectChanges();
+    });
+
     this.initGridStack();
   }
 

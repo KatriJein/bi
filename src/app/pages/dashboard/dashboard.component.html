@@ -133,7 +133,12 @@
             </button>
           </div>
 
-          <div #gridStackContainer class="grid-stack"></div>
+          <div
+            #gridStackContainer
+            class="grid-stack"
+            [class.edit-mode]="isEditMode()"
+            [class.read-mode]="!isEditMode()"
+          ></div>
           <ng-template #widgetHost></ng-template>
         </div>
 
@@ -142,7 +147,7 @@
           <div class="detail-mode-header">
             <button mat-button (click)="backToWidgets()">
               <mat-icon>arrow_back</mat-icon>
-              Назад к виджетам
+              К виджетам
             </button>
             <h3 *ngIf="expandedChartName">
               {{ expandedChartName }}

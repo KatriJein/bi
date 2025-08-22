@@ -1,4 +1,9 @@
-<div class="widget" (click)="handleClick($event)">
+<div
+  class="widget"
+  [class.edit-mode]="isEditMode"
+  [class.read-mode]="!isEditMode"
+  (click)="handleClick($event)"
+>
   <p
     [ngClass]="{ 'text-widget': widget.type === 'text' }"
     [ngStyle]="{

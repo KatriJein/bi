@@ -5,6 +5,47 @@
   width: 100%;
   height: 100%;
   padding: 0;
+
+  &.read-mode {
+    cursor: default;
+
+    app-chart-container {
+      cursor: pointer;
+
+      ::ng-deep {
+        .chart-container {
+          cursor: pointer;
+          canvas,
+          svg {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+
+  &.edit-mode {
+    cursor: pointer;
+
+    * {
+      cursor: inherit;
+    }
+
+    app-chart-container {
+      cursor: pointer;
+
+      ::ng-deep {
+        .chart-container {
+          cursor: pointer;
+
+          canvas,
+          svg {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
 }
 
 .widget p {
