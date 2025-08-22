@@ -35,7 +35,7 @@ export class DashboardStateService {
     map((intf) => intf?.id || ''),
     switchMap((interfaceId) =>
       this.store.select(
-        DashboardsSelectors.selectDashboardsByInterfaceId(interfaceId)
+        DashboardsSelectors.selectDashboardHierarchyByInterfaceId(interfaceId)
       )
     )
   );

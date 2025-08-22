@@ -1,0 +1,42 @@
+<div class="dashboard-item" [style.padding-left.px]="level * 10">
+  <div
+    class="dashboard-item-content"
+    [class.active]="dashboard.id === activeDashboardId"
+  >
+    <button
+      *ngIf="hasChildren"
+      mat-icon-button
+      (click)="toggleExpanded()"
+      class="expand-button"
+    >
+      <mat-icon>
+        {{ expanded() ? "expand_more" : "chevron_right" }}
+      </mat-icon>
+    </button>
+
+    <div *ngIf="!hasChildren" class="spacer"></div>
+
+    <a
+      [routerLink]="['/dashboard', dashboard.id]"
+      class="dashboard-link"
+      [class.active]="dashboard.id === activeDashboardId"
+    >
+      <mat-icon
+        [svgIcon]="dashboard.iconId || 'chart'"
+        [style.color]="dashboard.color || '#000000'"
+        class="dashboard-icon"
+      ></mat-icon>
+      <span class="dashboard-name">{{ dashboard.name }}</span>
+    </a>
+  </div>
+
+  <div *ngIf="expanded() && hasChildren" class="children-container">
+    <dashboard-menu-item
+      *ngFor="let child of dashboard.children"
+      [dashboard]="child"
+      [activeDashboardId]="activeDashboardId"
+      [level]="level + 1"
+   
+    ></dashboard-menu-item>
+  </div>
+</div>

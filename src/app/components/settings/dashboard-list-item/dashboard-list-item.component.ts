@@ -23,8 +23,6 @@ import { DashboardDto } from '../../../core/store/dashboards';
 })
 export class DashboardListItemComponent {
   @Input() dashboard!: DashboardDto & { children?: DashboardDto[] };
-
-  // @Input() expanded = false;
   @Input() level = 0;
   @Input() isFirst = false;
   @Input() isLast = false;
@@ -42,8 +40,11 @@ export class DashboardListItemComponent {
     return item.id || '';
   }
 
+   get hasChildren(): boolean {
+    return !!(this.dashboard.children && this.dashboard.children.length > 0);
+  }
+
   toggle() {
     this.expanded.set(!this.expanded());
-   
   }
 }

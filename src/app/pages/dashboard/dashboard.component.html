@@ -8,28 +8,20 @@
         >
           <h3 class="title">{{ activeInterface.name }}</h3>
         </div>
+        
         <mat-divider></mat-divider>
+
         <mat-nav-list>
           <ng-container *ngIf="dashboards$ | async as dashboards">
             <ng-container
               *ngIf="activeDashboardId$ | async as activeDashboardId"
             >
-              <mat-list-item
-                *ngFor="let dash of dashboards"
-                class="dashboard-item"
-                routerLinkActive="active"
-                [class.active]="dash.id === activeDashboardId"
-                [routerLink]="['/dashboard', dash.id]"
-              >
-                <div class="dashboard-item-content">
-                  <mat-icon
-                    [svgIcon]="dash.iconId || 'chart'"
-                    [ngStyle]="{ color: dash.color }"
-                    class="dashboard-icon"
-                  ></mat-icon>
-                  {{ dash.name }}
-                </div>
-              </mat-list-item>
+              <dashboard-menu-item
+                *ngFor="let dashboard of dashboards"
+                [dashboard]="dashboard"
+                [activeDashboardId]="activeDashboardId"
+                [level]="0"
+              ></dashboard-menu-item>
             </ng-container>
           </ng-container>
         </mat-nav-list>

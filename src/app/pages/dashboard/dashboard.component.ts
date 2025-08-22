@@ -52,7 +52,7 @@ import { WidgetComponent } from '../../components/widget';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { DashboardSelectionModalComponent } from '../../components/dashboard';
+import { DashboadMenuItemComponent, DashboardSelectionModalComponent } from '../../components/dashboard';
 import { SelectionTypeDashboard } from '../../core/store/charts';
 import { MatChipsModule } from '@angular/material/chips';
 import { formatFilterValue } from '../../utils';
@@ -88,6 +88,7 @@ export type FilterEmitType = {
     MatDialogModule,
     MatIconModule,
     MatChipsModule,
+    DashboadMenuItemComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',

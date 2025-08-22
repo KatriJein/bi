@@ -19,13 +19,13 @@ export const routes: Routes = [
     component: HeaderLayoutComponent,
     children: [
       { path: '', component: MainComponent },
-      { path: 'dashboard/:id', component: DashboardComponent },
       { path: 'dataset/new', component: DatasetComponent },
       { path: 'dataset/:id', component: DatasetComponent },
       { path: 'chart/new', component: ChartPageComponent },
       { path: 'chart/:id', component: ChartPageComponent },
     ],
   },
+  { path: 'dashboard/:id', component: DashboardComponent },
   //settings
   {
     path: 'settings',
