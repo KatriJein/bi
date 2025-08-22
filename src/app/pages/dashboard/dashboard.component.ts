@@ -56,6 +56,7 @@ import { DashboadMenuItemComponent, DashboardSelectionModalComponent } from '../
 import { SelectionTypeDashboard } from '../../core/store/charts';
 import { MatChipsModule } from '@angular/material/chips';
 import { formatFilterValue } from '../../utils';
+import { OnMainButtonComponent } from "../../components/common";
 
 export type FilterTypeExp = {
   field: string;
@@ -88,8 +89,9 @@ export type FilterEmitType = {
     MatDialogModule,
     MatIconModule,
     MatChipsModule,
-    DashboadMenuItemComponent
-  ],
+    DashboadMenuItemComponent,
+    OnMainButtonComponent
+],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })

@@ -1,10 +1,7 @@
 <mat-sidenav-container class="settings-container">
   <mat-sidenav mode="side" opened class="settings-sidenav">
     <div class="back-button">
-      <a mat-button routerLink="/" class="back-link">
-        <mat-icon>arrow_back</mat-icon>
-        На главную
-      </a>
+      <app-main-button/>
     </div>
 
     <div class="user-info" *ngIf="user$ | async as user">

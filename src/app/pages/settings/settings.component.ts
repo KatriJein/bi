@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ChartsActions } from '../../core/store/charts';
 import { DatasetsActions } from '../../core/store/datasets';
+import { OnMainButtonComponent } from "../../components/common";
 
 @Component({
   selector: 'app-settings',
@@ -21,7 +22,8 @@ import { DatasetsActions } from '../../core/store/datasets';
     MatIconModule,
     MatButtonModule,
     CommonModule,
-  ],
+    OnMainButtonComponent
+],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })

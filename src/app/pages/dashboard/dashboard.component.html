@@ -2,13 +2,19 @@
   <mat-sidenav-container class="sidenav-container">
     <mat-sidenav mode="side" opened class="sidebar">
       <div>
+        <div class="navigation">
+          <app-main-button/>
+          <button mat-icon-button class="nav-button" [routerLink]="['/settings']">
+            <mat-icon>settings</mat-icon>
+          </button>
+        </div>
         <div
           class="active-interface"
           *ngIf="activeInterface$ | async as activeInterface"
         >
           <h3 class="title">{{ activeInterface.name }}</h3>
         </div>
-        
+
         <mat-divider></mat-divider>
 
         <mat-nav-list>
