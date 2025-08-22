@@ -12,24 +12,46 @@ import {
   MainComponent,
   SettingsComponent,
 } from './pages';
+import { AuthGuard } from './guards';
 
 export const routes: Routes = [
   {
     path: '',
     component: HeaderLayoutComponent,
     children: [
-      { path: '', component: MainComponent },
-      { path: 'dataset/new', component: DatasetComponent },
-      { path: 'dataset/:id', component: DatasetComponent },
-      { path: 'chart/new', component: ChartPageComponent },
-      { path: 'chart/:id', component: ChartPageComponent },
+      { path: '', component: MainComponent, canActivate: [AuthGuard] },
+      {
+        path: 'dataset/new',
+        component: DatasetComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'dataset/:id',
+        component: DatasetComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'chart/new',
+        component: ChartPageComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'chart/:id',
+        component: ChartPageComponent,
+        canActivate: [AuthGuard],
+      },
     ],
   },
-  { path: 'dashboard/:id', component: DashboardComponent },
+  {
+    path: 'dashboard/:id',
+    component: DashboardComponent,
+    canActivate: [AuthGuard],
+  },
   //settings
   {
     path: 'settings',
     component: SettingsComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'datasets', pathMatch: 'full' },
       { path: 'datasets', component: DatasetsSettingsComponent },
@@ -44,6 +66,11 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: 'auth', component: AuthComponent },
+  {
+    path: 'auth',
+    component: AuthComponent,
+    canActivate: [AuthGuard],
+    data: { onlyUnAuth: true },
+  },
   { path: '**', redirectTo: '' },
 ];
