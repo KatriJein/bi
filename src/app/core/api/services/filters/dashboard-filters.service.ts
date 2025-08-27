@@ -10,12 +10,15 @@ import {
   UpdateDashboardFilterResponse,
   UpdateDashboardFilterVariables,
 } from '../../graphql/types';
-import { getDashboardFiltersQuery } from '../../graphql/queries/dashboard-filter';
 import {
   createDashboardFilterMutation,
   deleteDashboardFilterMutation,
   updateDashboardFilterMutation,
 } from '../../graphql/mutations';
+import {
+  getDashboardFiltersByIdQuery,
+  getDashboardFiltersQuery,
+} from '../../graphql/queries';
 
 @Injectable({
   providedIn: 'root',
@@ -87,6 +90,25 @@ export class DashboardFiltersService {
         catchError((err) => {
           console.error('Error deleting dashboard filter', err);
           throw err;
+        })
+      );
+  }
+
+  getDashboardFiltersById(dashboardId: string): Observable<DashboardFilter[]> {
+    return this.graphql
+      .watchQuery<GetDashboardFiltersResponse>(
+        undefined,
+        getDashboardFiltersByIdQuery,
+        { dashboardId }
+      )
+      .pipe(
+        map((res) => res.dashboardFilters.nodes),
+        catchError((err) => {
+          console.error(
+            `Error loading dashboard filters for dashboardId=${dashboardId}`,
+            err
+          );
+          return of([]);
         })
       );
   }

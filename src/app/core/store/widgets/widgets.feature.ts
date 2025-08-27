@@ -228,6 +228,63 @@ export const WidgetsFeature = createFeature({
     on(WidgetsActions.deleteWidgetFilterBindingFailure, (state, { error }) => ({
       ...state,
       error,
+    })),
+
+    // Загрузка фильтров виджета по id
+    on(
+      WidgetsActions.loadWidgetSelectionsSuccess,
+      (state, { widgetId, selections }) => {
+        const updatedWidgets = { ...state.widgets };
+
+        for (const [dashboardId, widgets] of Object.entries(updatedWidgets)) {
+          updatedWidgets[dashboardId] = widgets.map((widget) =>
+            widget.id === widgetId ? { ...widget, selections } : widget
+          );
+        }
+
+        return { ...state, widgets: updatedWidgets };
+      }
+    ),
+
+    on(WidgetsActions.loadWidgetSelectionsFailure, (state, { error }) => ({
+      ...state,
+      error,
+    })),
+
+    // Загрузка виджета
+    on(WidgetsActions.loadWidget, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(WidgetsActions.loadWidgetSuccess, (state, { widget }) => {
+      const dashboardId = widget.dashboardId;
+      const existingWidgets = state.widgets[dashboardId] || [];
+      const widgetIndex = existingWidgets.findIndex((w) => w.id === widget.id);
+
+      let updatedWidgets;
+      if (widgetIndex >= 0) {
+        updatedWidgets = [...existingWidgets];
+        updatedWidgets[widgetIndex] = mapToWidgetDto(widget);
+      } else {
+        updatedWidgets = [...existingWidgets, mapToWidgetDto(widget)];
+      }
+
+      return {
+        ...state,
+        widgets: {
+          ...state.widgets,
+          [dashboardId]: updatedWidgets,
+        },
+        isLoading: false,
+        error: null,
+      };
+    }),
+
+    on(WidgetsActions.loadWidgetFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
     }))
   ),
 });

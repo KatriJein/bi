@@ -128,3 +128,35 @@ export const deleteWidgetFilterBindingFailure = createAction(
   '[Widgets] Delete Widget Filter Binding Failure',
   props<{ error: string }>()
 );
+
+// Загрузка виджета
+export const loadWidget = createAction(
+  '[Widgets] Load Widget',
+  props<{ widgetId: string }>()
+);
+
+export const loadWidgetSuccess = createAction(
+  '[Widgets] Load Widget Success',
+  props<{ widget: Widget }>()
+);
+
+export const loadWidgetFailure = createAction(
+  '[Widgets] Load Widget Failure',
+  props<{ error: string }>()
+);
+
+// Загрузка фильтров виджета
+export const loadWidgetSelections = createAction(
+  '[Widgets] Load Widget Selections',
+  props<{ widgetId: string }>()
+);
+
+export const loadWidgetSelectionsSuccess = createAction(
+  '[Widgets] Load Widget Selections Success',
+  props<{ widgetId: string; selections: WidgetFilterBinding[] }>()
+);
+
+export const loadWidgetSelectionsFailure = createAction(
+  '[Widgets] Load Widget Selections Failure',
+  props<{ widgetId: string; error: string }>()
+);

@@ -15,7 +15,10 @@ import {
   deleteChartFilterMutation,
   updateChartFilterMutation,
 } from '../../graphql/mutations';
-import { getChartFiltersQuery } from '../../graphql/queries';
+import {
+  getChartFiltersByIdQuery,
+  getChartFiltersQuery,
+} from '../../graphql/queries';
 
 @Injectable({
   providedIn: 'root',
@@ -81,6 +84,25 @@ export class ChartFiltersService {
         catchError((err) => {
           console.error('Error deleting chart filter', err);
           throw err;
+        })
+      );
+  }
+
+  getChartFiltersByChartId(chartId: string): Observable<ChartFilter[]> {
+    return this.graphql
+      .watchQuery<GetChartFiltersResponse>(
+        undefined,
+        getChartFiltersByIdQuery,
+        { chartId }
+      )
+      .pipe(
+        map((res) => res.chartFilters.nodes),
+        catchError((err) => {
+          console.error(
+            `Error loading chart filters for chartId=${chartId}`,
+            err
+          );
+          return of([]);
         })
       );
   }

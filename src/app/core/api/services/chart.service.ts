@@ -83,13 +83,15 @@ export class ChartService {
   }
 
   getChartById(id: string): Observable<ChartDto | null> {
-    return this.graphql.query<GetChartByIdType>(id, getChartByIdQuery).pipe(
-      map((res) => res.chart ?? null),
-      catchError((err) => {
-        console.error(`Error loading chart with id ${id}`, err);
-        return of(null);
-      })
-    );
+    return this.graphql
+      .query<GetChartByIdType>(undefined, getChartByIdQuery, { id })
+      .pipe(
+        map((res) => res.chart ?? null),
+        catchError((err) => {
+          console.error(`Error loading chart with id ${id}`, err);
+          return of(null);
+        })
+      );
   }
 
   updateChart(

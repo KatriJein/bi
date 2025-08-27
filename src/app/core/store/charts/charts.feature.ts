@@ -211,6 +211,55 @@ export const ChartsFeature = createFeature({
     on(ChartsActions.deleteChartFilterFailure, (state, { error }) => ({
       ...state,
       error,
+    })),
+
+    // Загрузка графика
+    on(ChartsActions.loadChart, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(ChartsActions.loadChartSuccess, (state, { chart }) => {
+      const chartIndex = state.charts.findIndex((c) => c.id === chart.id);
+
+      let updatedCharts;
+      if (chartIndex >= 0) {
+        updatedCharts = [...state.charts];
+        updatedCharts[chartIndex] = chart;
+      } else {
+        updatedCharts = [...state.charts, chart];
+      }
+
+      return {
+        ...state,
+        charts: updatedCharts,
+        isLoading: false,
+        error: null,
+      };
+    }),
+
+    on(ChartsActions.loadChartFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
+    // Загрузка фильтров графика
+    on(
+      ChartsActions.loadChartSelectionsSuccess,
+      (state, { chartId, filters }) => ({
+        ...state,
+        charts: state.charts.map((chart) =>
+          chart.id === chartId ? { ...chart, selections: filters } : chart
+        ),
+        isLoading: false,
+        error: null,
+      })
+    ),
+
+    on(ChartsActions.loadChartSelectionsFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
     }))
   ),
 });

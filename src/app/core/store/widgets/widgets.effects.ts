@@ -17,13 +17,15 @@ import {
 } from 'rxjs/operators';
 import { WidgetFilterBindingService, WidgetService } from '../../api/services';
 import * as WidgetsActions from './widgets.actions';
-import { WidgetFilterBinding } from '../../api/graphql/types';
+import { Widget, WidgetFilterBinding } from '../../api/graphql/types';
+import { Store } from '@ngrx/store';
 
 @Injectable()
 export class WidgetsEffects {
   private actions$ = inject(Actions);
   private widgetService = inject(WidgetService);
   private widgetFilterBindingService = inject(WidgetFilterBindingService);
+  private store = inject(Store);
 
   loadWidgets$ = createEffect(() =>
     this.actions$.pipe(
@@ -182,6 +184,50 @@ export class WidgetsEffects {
             )
           )
         )
+      )
+    )
+  );
+
+  loadWidget$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(WidgetsActions.loadWidget),
+      mergeMap(({ widgetId }) =>
+        this.widgetService.getWidgetById(widgetId).pipe(
+          filter((w): w is Widget => w !== null),
+          mergeMap((widget) => [
+            WidgetsActions.loadWidgetSuccess({ widget }),
+            WidgetsActions.loadWidgetSelections({ widgetId: widget.id }),
+          ]),
+          catchError((error) =>
+            of(WidgetsActions.loadWidgetFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  loadWidgetSelections$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(WidgetsActions.loadWidgetSelections),
+      mergeMap(({ widgetId }) =>
+        this.widgetFilterBindingService
+          .getWidgetFilterBindings({ widgetId })
+          .pipe(
+            map((selections) =>
+              WidgetsActions.loadWidgetSelectionsSuccess({
+                widgetId,
+                selections,
+              })
+            ),
+            catchError((error) =>
+              of(
+                WidgetsActions.loadWidgetSelectionsFailure({
+                  widgetId,
+                  error: error.message,
+                })
+              )
+            )
+          )
       )
     )
   );

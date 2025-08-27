@@ -7,6 +7,7 @@ import {
   DashboardsSettingsComponent,
   DatasetComponent,
   DatasetsSettingsComponent,
+  FullscreenWidgetComponent,
   HeaderLayoutComponent,
   InterfacesSettingsComponent,
   MainComponent,
@@ -46,6 +47,10 @@ export const routes: Routes = [
     path: 'dashboard/:id',
     component: DashboardComponent,
     canActivate: [AuthGuard],
+  },
+   {
+    path: 'widget-fullscreen/:widgetId',
+    component: FullscreenWidgetComponent
   },
   //settings
   {

@@ -1,7 +1,11 @@
 import { createAction, props } from '@ngrx/store';
 import { ChartDto } from './charts.feature';
 import { Chart } from '../../models';
-import { ChartFilter, CreateChartFilterVariables, UpdateChartFilterVariables } from '../../api/graphql/types';
+import {
+  ChartFilter,
+  CreateChartFilterVariables,
+  UpdateChartFilterVariables,
+} from '../../api/graphql/types';
 
 // Загрузка
 export const loadCharts = createAction('[Charts] Load Charts');
@@ -57,9 +61,7 @@ export const deleteChartFailure = createAction(
 );
 
 // Загрузка фильтров
-export const loadChartFilters = createAction(
-  '[Charts] Load Chart Filters'
-);
+export const loadChartFilters = createAction('[Charts] Load Chart Filters');
 
 export const loadChartFiltersSuccess = createAction(
   '[Charts] Load Chart Filters Success',
@@ -119,3 +121,34 @@ export const deleteChartFilterFailure = createAction(
   props<{ error: string }>()
 );
 
+// Загрузка графика
+export const loadChart = createAction(
+  '[Charts] Load Chart',
+  props<{ chartId: string }>()
+);
+
+export const loadChartSuccess = createAction(
+  '[Charts] Load Chart Success',
+  props<{ chart: ChartDto }>()
+);
+
+export const loadChartFailure = createAction(
+  '[Charts] Load Chart Failure',
+  props<{ error: string }>()
+);
+
+// Загрузка фильтров одного графика
+export const loadChartSelections = createAction(
+  '[Charts] Load Chart Selections',
+  props<{ chartId: string }>()
+);
+
+export const loadChartSelectionsSuccess = createAction(
+  '[Charts] Load Chart Selections Success',
+  props<{ chartId: string; filters: ChartFilter[] }>()
+);
+
+export const loadChartSelectionsFailure = createAction(
+  '[Charts] Load Chart Selections Failure',
+  props<{ error: string }>()
+);

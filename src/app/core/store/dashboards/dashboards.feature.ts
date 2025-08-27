@@ -9,7 +9,7 @@ export interface DashboardDto {
   color: string | undefined;
   name: string | undefined;
   order: number | undefined;
-  parentId: string | null |undefined;
+  parentId: string | null | undefined;
   selections?: DashboardFilter[] | undefined;
 }
 
@@ -261,6 +261,47 @@ export const DashboardsFeature = createFeature({
     on(DashboardsActions.deleteDashboardFilterFailure, (state, { error }) => ({
       ...state,
       error,
-    }))
+    })),
+
+    // Загрузка фильтров дашборда по id
+    on(
+      DashboardsActions.loadDashboardSelectionsSuccess,
+      (state, { dashboardId, filters }) => {
+        if (Object.keys(state.dashboards).length === 0) {
+          const minimalDashboard: DashboardDto = {
+            id: dashboardId,
+            name: `Dashboard ${dashboardId}`,
+            iconId: undefined,
+            color: undefined,
+            order: 0,
+            parentId: null,
+            selections: filters,
+          };
+          return {
+            ...state,
+            dashboards: {
+              '1': [minimalDashboard],
+            },
+            activeDashboardId: dashboardId,
+            isLoading: false,
+            error: null,
+          };
+        }
+        return {
+          ...state,
+          dashboards: Object.fromEntries(
+            Object.entries(state.dashboards).map(([interfaceId, dashes]) => [
+              interfaceId,
+              dashes.map((d) =>
+                d.id === dashboardId ? { ...d, selections: filters } : d
+              ),
+            ])
+          ),
+          activeDashboardId: dashboardId,
+          isLoading: false,
+          error: null,
+        };
+      }
+    )
   ),
 });

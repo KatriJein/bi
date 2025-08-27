@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { catchError, map, mergeMap, switchMap, tap } from 'rxjs/operators';
-import { DashboardsActions } from './index';
+import { DashboardDto, DashboardsActions } from './index';
 import { DashboardFiltersService, DashboardService } from '../../api/services';
 
 @Injectable()
@@ -223,6 +223,30 @@ export class DashboardsEffects {
           catchError((error) =>
             of(
               DashboardsActions.deleteDashboardFilterFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
+  );
+
+  // Загрузка фильтров по id
+  loadDashboardSelectionsById$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.loadDashboardSelections),
+      switchMap(({ dashboardId }) =>
+        this.dashboardFiltersService.getDashboardFiltersById(dashboardId).pipe(
+          map((filters) => {
+            return DashboardsActions.loadDashboardSelectionsSuccess({
+              dashboardId,
+              filters,
+            });
+          }),
+          catchError((error) =>
+            of(
+              DashboardsActions.loadDashboardSelectionsFailure({
                 error: error.message,
               })
             )

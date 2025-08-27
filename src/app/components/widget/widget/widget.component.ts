@@ -8,17 +8,25 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { Widget, WidgetFilterBinding } from '../../../core/api/graphql/types';
 import { FilterEmitType } from '../../../pages';
 import { ChartContainerComponent } from '../../common';
 import { WidgetDto, WidgetsSelectors } from '../../../core/store/widgets';
-import { Store } from '@ngrx/store';
-import { Observable, tap } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-widget',
   standalone: true,
-  imports: [CommonModule, MatCardModule, ChartContainerComponent],
+  imports: [
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    ChartContainerComponent,
+  ],
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.scss'],
 })
@@ -71,6 +79,25 @@ export class WidgetComponent implements OnInit, OnChanges {
     if (this.onEditWidget) {
       this.onEditWidget(this.widget);
     }
+  }
+
+  handleChartClick(event: FilterEmitType): void {
+    if (this.onChartExpClick) {
+      this.onChartExpClick(event);
+    }
+  }
+
+  expandToFullscreen(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const fullscreenUrl = this.createFullscreenUrl();
+    window.open(fullscreenUrl, '_blank');
+  }
+
+  private createFullscreenUrl(): string {
+    const baseUrl = window.location.origin;
+    return `${baseUrl}/widget-fullscreen/${this.widget.id}`;
   }
 
   private initWidgetSelections(): void {

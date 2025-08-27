@@ -42,6 +42,7 @@ export class ChartContainerComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.initCombinedFilters();
+    console.log(this.chartId, this.initialFilters);
   }
 
   constructor() {
@@ -106,7 +107,7 @@ export class ChartContainerComponent implements OnInit, OnChanges {
   }
 
   handleClick(event: any): void {
-    this.chartClick.emit(event);
+    this.chartClick?.emit(event);
   }
 
   private initCombinedFilters(): void {
@@ -120,6 +121,7 @@ export class ChartContainerComponent implements OnInit, OnChanges {
 
     return this.widgetSelectors.pipe(
       switchMap((widgetSelections) => {
+        console.log(widgetSelections);
         const chartSelections$ = this.store.select(
           ChartsSelectors.selectSelectionsByChartId(this.chartId)
         );

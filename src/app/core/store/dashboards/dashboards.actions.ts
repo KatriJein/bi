@@ -155,3 +155,22 @@ export const deleteDashboardFilterFailure = createAction(
   '[DashboardFilters] Delete Filter Failure',
   props<{ error: string }>()
 );
+
+// Загрузка фильтров по id
+export const loadDashboardSelections = createAction(
+  '[Dashboards] Load Dashboard Selections',
+  props<{ dashboardId: string }>()
+);
+
+export const loadDashboardSelectionsSuccess = createAction(
+  '[Dashboards] Load Dashboard Selections Success',
+  props<{
+    dashboardId: string;
+    filters: DashboardFilter[];
+  }>()
+);
+
+export const loadDashboardSelectionsFailure = createAction(
+  '[Dashboards] Load Dashboard Selections Failure',
+  props<{ error: string }>()
+);

@@ -9,13 +9,14 @@ import {
   UpdateWidgetType,
   GetWidgetsType,
   Widget,
+  GetWidgetType,
 } from '../../api/graphql/types';
 import {
   createWidgetMutation,
   deleteWidgetMutation,
   updateWidgetMutation,
 } from '../graphql/mutations';
-import { getWidgetsQuery } from '../graphql/queries';
+import { getWidgetQuery, getWidgetsQuery } from '../graphql/queries';
 
 @Injectable({ providedIn: 'root' })
 export class WidgetService {
@@ -96,6 +97,18 @@ export class WidgetService {
         catchError((err) => {
           console.error('Error deleting widget:', err);
           throw err;
+        })
+      );
+  }
+
+  getWidgetById(widgetId: string): Observable<Widget | null> {
+    return this.graphql
+      .watchQuery<GetWidgetType>(undefined, getWidgetQuery, { id: widgetId })
+      .pipe(
+        map((res) => res.widget || null),
+        catchError((err) => {
+          console.error(`Error loading widget with id=${widgetId}:`, err);
+          return of(null);
         })
       );
   }

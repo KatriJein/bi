@@ -4,6 +4,13 @@
   [class.read-mode]="!isEditMode"
   (click)="handleClick($event)"
 >
+  <button
+    mat-icon-button
+    class="fullscreen-btn"
+    (click)="expandToFullscreen($event)"
+  >
+    <mat-icon>fullscreen</mat-icon>
+  </button>
   <p
     [ngClass]="{ 'text-widget': widget.type === 'text' }"
     [ngStyle]="{
@@ -27,6 +34,6 @@
     *ngIf="widget.chartId"
     [chartId]="widget.chartId"
     [widgetSelectors]="widgetSelections$"
-    (chartClick)="onChartExpClick?.($event)"
+    (chartClick)="handleChartClick($event)"
   ></app-chart-container>
 </div>

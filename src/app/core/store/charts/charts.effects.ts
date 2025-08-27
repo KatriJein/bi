@@ -149,4 +149,44 @@ export class ChartsEffects {
       )
     )
   );
+
+  // Загрузка графика
+  loadChart$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.loadChart),
+      switchMap(({ chartId }) =>
+        
+        this.chartService.getChartById(chartId).pipe(
+          map((chart) => {
+            if (!chart) throw new Error('Chart not found');
+            return ChartsActions.loadChartSuccess({ chart });
+          }),
+          catchError((error) =>
+            of(ChartsActions.loadChartFailure({ error: error.message }))
+          )
+        )
+      )
+    )
+  );
+
+  // Загрузка фильтров графика
+  loadChartSelections$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(ChartsActions.loadChartSelections),
+      switchMap(({ chartId }) =>
+        this.chartFiltersService.getChartFiltersByChartId(chartId).pipe(
+          map((filters) =>
+            ChartsActions.loadChartSelectionsSuccess({ chartId, filters })
+          ),
+          catchError((error) =>
+            of(
+              ChartsActions.loadChartSelectionsFailure({
+                error: error.message,
+              })
+            )
+          )
+        )
+      )
+    )
+  );
 }
