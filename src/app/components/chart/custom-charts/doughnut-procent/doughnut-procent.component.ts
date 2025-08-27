@@ -27,6 +27,7 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
 
   private readonly DEFAULT_COLOR = COLORS[0];
   private readonly LIGHT_COLOR = '#E0E0E0';
+  private resizeObserver?: ResizeObserver;
 
   doughnutChartData: ChartConfiguration['data'] = {
     datasets: [
@@ -47,8 +48,12 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
   doughnutChartType = 'doughnut' as const;
 
   ngAfterViewInit() {
+    this.resizeObserver = new ResizeObserver(() => this.updateFontSize());
+    this.resizeObserver.observe(this.chartContainer.nativeElement);
     this.updateFontSize();
-    window.addEventListener('resize', this.updateFontSize.bind(this));
+
+    // this.updateFontSize();
+    // window.addEventListener('resize', this.updateFontSize.bind(this));
   }
 
   private updateFontSize() {
@@ -61,22 +66,21 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
       this.chartContainer.nativeElement.querySelector('.chart-title');
 
     if (percentageElement) {
-      const fontSize = Math.min(Math.max(containerWidth * 0.8, 16), 60);
+      const fontSize = Math.min(Math.max(containerWidth * 0.16, 16), 110);
       percentageElement.style.fontSize = `${fontSize}px`;
     }
 
     if (titleElement) {
-      const titleSize = Math.min(Math.max(containerWidth * 0.04, 14), 24);
+      const titleSize = Math.min(Math.max(containerWidth * 0.06, 14), 24);
       titleElement.style.fontSize = `${titleSize}px`;
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (this.data && this.data.datasets?.length > 0) {
+    if (this.data?.datasets?.length) {
       const dataset = this.data.datasets[0];
 
-      const rawPercentage =
-        dataset.data?.length > 0 ? (dataset.data[0] as number) : 0;
+      const rawPercentage = (dataset.data?.[0] as number) || 0;
       this.percentage = parseFloat(rawPercentage.toFixed(1));
 
       this.title = dataset.label || '';
@@ -94,7 +98,9 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
   }
 
   ngOnDestroy() {
-    window.removeEventListener('resize', this.updateFontSize.bind(this));
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
   private getBackgroundColors(

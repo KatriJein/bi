@@ -25,6 +25,7 @@ import { ChartsEffects, ChartsFeature } from './core/store/charts';
 import { WidgetsFeature } from './core/store/widgets/widgets.feature';
 import { WidgetsEffects } from './core/store/widgets';
 import { provideHttpClient } from '@angular/common/http';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 function getGraphQLUri(): string {
   return `http://${window.location.hostname}:5000/graphql`;
@@ -33,6 +34,7 @@ function getGraphQLUri(): string {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const uri = getGraphQLUri();
