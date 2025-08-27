@@ -138,7 +138,7 @@ export const ChartsFeature = createFeature({
       error,
     })),
 
-    //Фильтры
+    // Фильтры
     // Загрузка фильтров
     on(ChartsActions.loadChartFilters, (state) => ({
       ...state,

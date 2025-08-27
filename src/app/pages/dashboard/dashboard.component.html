@@ -1,6 +1,12 @@
 <div class="dashboard-page">
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav mode="side" opened class="sidebar">
+    <mat-sidenav
+      mode="side"
+      opened
+      class="sidebar"
+      [style.width.px]="sidenavWidth"
+    >
+      <div class="resize-handle" (mousedown)="startResize($event)"></div>
       <div>
         <div class="navigation">
           <app-main-button />

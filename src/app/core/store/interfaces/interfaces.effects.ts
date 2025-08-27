@@ -200,11 +200,8 @@ export class InterfacesEffects {
         this.store.select(InterfacesSelectors.selectAllInterfaces)
       ),
       map(([{ interfaces }]) => {
-        console.log('localStorage keys:', Object.keys(localStorage));
-        console.log('stored value:', localStorage.getItem('activeInterfaceId'));
         const savedId = localStorage.getItem('activeInterfaceId');
         const exists = interfaces.find((i) => i.id === savedId);
-        console.log(exists, savedId);
 
         return InterfacesActions.setActiveInterface({
           id: exists?.id || sortByOrder(interfaces)[0]?.id || '',

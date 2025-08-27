@@ -6,7 +6,10 @@ import {
   DashboardsActions,
   DashboardsSelectors,
 } from '../../../core/store/dashboards';
-import { InterfacesActions, InterfacesSelectors } from '../../../core/store/interfaces';
+import {
+  InterfacesActions,
+  InterfacesSelectors,
+} from '../../../core/store/interfaces';
 import {
   BehaviorSubject,
   combineLatest,
@@ -272,7 +275,6 @@ export class DashboardsSettingsComponent implements OnInit {
 
   onDashboardSelect(dashboard: DashboardDto): void {
     const interfaceId = this.selectedInterfaceId$.value;
-    console.log(interfaceId);
     if (!interfaceId) return;
 
     this.store.dispatch(

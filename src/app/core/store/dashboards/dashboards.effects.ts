@@ -149,7 +149,7 @@ export class DashboardsEffects {
     { dispatch: false }
   );
 
-  //Фильтры
+  // Фильтры
   loadFilters$ = createEffect(() =>
     this.actions$.pipe(
       ofType(DashboardsActions.loadDashboardsSuccess),

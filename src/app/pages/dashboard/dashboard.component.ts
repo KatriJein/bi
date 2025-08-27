@@ -3,6 +3,7 @@ import {
   Component,
   ComponentRef,
   ElementRef,
+  HostListener,
   inject,
   NgZone,
   OnDestroy,
@@ -105,6 +106,11 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   @ViewChild('widgetHost', { read: ViewContainerRef, static: true })
   widgetHost!: ViewContainerRef;
 
+  sidenavWidth = 300;
+  private isResizing = false;
+  private minWidth = 200;
+  private maxWidth = 500;
+
   private stateService = inject(DashboardStateService);
   private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
@@ -149,6 +155,28 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.cleanupSubscriptions();
     this.destroyGridStack();
+  }
+
+  startResize(event: MouseEvent) {
+    this.isResizing = true;
+    event.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.isResizing) return;
+    const newWidth = Math.min(
+      this.maxWidth,
+      Math.max(this.minWidth, event.clientX)
+    );
+    setTimeout(() => {
+      this.sidenavWidth = newWidth;
+    });
+  }
+
+  @HostListener('document:mouseup')
+  stopResize() {
+    this.isResizing = false;
   }
 
   private cleanupSubscriptions() {

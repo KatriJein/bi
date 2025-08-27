@@ -28,7 +28,7 @@ export const DatasetsFeature = createFeature({
   name: 'datasets',
   reducer: createReducer(
     initialState,
-    //Загрузка
+    // Загрузка
     on(DatasetsActions.loadDatasets, (state) => ({
       ...state,
       isLoading: true,
