@@ -255,4 +255,22 @@ export class DashboardsEffects {
       )
     )
   );
+
+  restoreActiveDashboard$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(DashboardsActions.loadDashboardsSuccess),
+      switchMap(({ interfaceId, dashboards }) => {
+        const savedDashboardId = localStorage.getItem('activeDashboardId');
+        if (
+          savedDashboardId &&
+          dashboards.some((d) => d.id === savedDashboardId)
+        ) {
+          return [
+            DashboardsActions.setActiveDashboard({ id: savedDashboardId }),
+          ];
+        }
+        return [];
+      })
+    )
+  );
 }

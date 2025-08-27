@@ -32,12 +32,15 @@ export const InterfacesFeature = createFeature({
       isLoading: true,
       error: null,
     })),
-    on(InterfaceActions.loadInterfacesSuccess, (state, { interfaces }) => ({
-      ...state,
-      interfaces: sortByOrder(interfaces),
-      activeInterfaceId: sortByOrder(interfaces)[0]?.id || '',
-      isLoading: false,
-    })),
+    on(InterfaceActions.loadInterfacesSuccess, (state, { interfaces }) => {
+      const sorted = sortByOrder(interfaces);
+
+      return {
+        ...state,
+        interfaces: sorted,
+        isLoading: false,
+      };
+    }),
     on(InterfaceActions.loadInterfacesFailure, (state, { error }) => ({
       ...state,
       isLoading: false,

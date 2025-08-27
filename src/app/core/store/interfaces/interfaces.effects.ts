@@ -15,6 +15,7 @@ import { DashboardsActions } from '../dashboards';
 import { Store } from '@ngrx/store';
 import { UserSelectors } from '../user';
 import { User } from '../../models';
+import { sortByOrder } from '../../utils';
 
 @Injectable()
 export class InterfacesEffects {
@@ -170,32 +171,18 @@ export class InterfacesEffects {
     )
   );
 
-  setActiveInterface$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(InterfacesActions.setActiveInterface),
-        tap(({ id }) => {
-          if (id !== null) {
-            localStorage.setItem('activeInterfaceId', id);
-          }
-        })
-      ),
-    { dispatch: false }
-  );
-
   syncActiveInterfaceWithLocalStorage$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(
           InterfacesActions.setActiveInterface,
           InterfacesActions.deleteInterfaceSuccess,
-          InterfacesActions.loadInterfacesSuccess,
           InterfacesActions.createInterfaceSuccess
         ),
         withLatestFrom(
           this.store.select(InterfacesSelectors.selectActiveInterfaceId)
         ),
-        tap(([action, activeInterfaceId]) => {
+        tap(([_, activeInterfaceId]) => {
           if (activeInterfaceId) {
             localStorage.setItem('activeInterfaceId', activeInterfaceId);
           } else {
@@ -206,30 +193,23 @@ export class InterfacesEffects {
     { dispatch: false }
   );
 
-  initActiveSelections$ = createEffect(() =>
+  ensureActiveInterface$ = createEffect(() =>
     this.actions$.pipe(
       ofType(InterfacesActions.loadInterfacesSuccess),
-      map(() => {
-        const savedInterfaceId = localStorage.getItem('activeInterfaceId');
-        const savedDashboardId = localStorage.getItem('activeDashboardId');
+      withLatestFrom(
+        this.store.select(InterfacesSelectors.selectAllInterfaces)
+      ),
+      map(([{ interfaces }]) => {
+        console.log('localStorage keys:', Object.keys(localStorage));
+        console.log('stored value:', localStorage.getItem('activeInterfaceId'));
+        const savedId = localStorage.getItem('activeInterfaceId');
+        const exists = interfaces.find((i) => i.id === savedId);
+        console.log(exists, savedId);
 
-        const actions = [];
-
-        if (savedInterfaceId) {
-          actions.push(
-            InterfacesActions.setActiveInterface({ id: savedInterfaceId })
-          );
-        }
-
-        if (savedDashboardId) {
-          actions.push(
-            DashboardsActions.setActiveDashboard({ id: savedDashboardId })
-          );
-        }
-
-        return actions;
-      }),
-      switchMap((actions) => actions)
+        return InterfacesActions.setActiveInterface({
+          id: exists?.id || sortByOrder(interfaces)[0]?.id || '',
+        });
+      })
     )
   );
 }

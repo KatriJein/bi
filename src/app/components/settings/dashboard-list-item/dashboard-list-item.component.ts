@@ -33,6 +33,7 @@ export class DashboardListItemComponent {
   @Output() moveUp = new EventEmitter<DashboardDto>();
   @Output() moveDown = new EventEmitter<DashboardDto>();
   @Output() delete = new EventEmitter<DashboardDto>();
+  @Output() select = new EventEmitter<DashboardDto>();
 
   expanded = signal(false);
 

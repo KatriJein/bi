@@ -14,7 +14,7 @@
 
       <div *ngIf="!hasChildren" class="spacer"></div>
 
-      <a [routerLink]="['/dashboard', dashboard.id]" class="dashboard-link">
+      <div (click)="select.emit(dashboard)" class="dashboard-link">
         <mat-icon
           [svgIcon]="dashboard.iconId || 'chart'"
           [style.color]="dashboard.color || '#50b8c5'"
@@ -23,7 +23,7 @@
         </mat-icon>
 
         <span class="name">{{ dashboard.name }}</span>
-      </a>
+      </div>
     </div>
 
     <div class="actions">
@@ -80,6 +80,7 @@
     (moveUp)="moveUp.emit($event)"
     (moveDown)="moveDown.emit($event)"
     (delete)="delete.emit($event)"
+    (select)="select.emit($event)"
   >
   </dashboard-list-item>
 </ng-container>
