@@ -15,6 +15,7 @@ export interface UserDto {
 export interface UserState {
   user: UserDto | null;
   isLoading: boolean;
+  isChecking: boolean;
   isAuthenticated: boolean;
   error: string | null;
 }
@@ -22,6 +23,7 @@ export interface UserState {
 export const initialState: UserState = {
   user: null,
   isLoading: false,
+  isChecking: false,
   isAuthenticated: false,
   error: null,
 };
@@ -34,6 +36,8 @@ export const UserFeature = createFeature({
     on(UserActions.login, (state) => ({
       ...state,
       isLoading: true,
+      isAuthenticated: false,
+      isChecking: true,
       error: null,
     })),
     on(UserActions.loginSuccess, (state, { user }) => ({
@@ -41,12 +45,14 @@ export const UserFeature = createFeature({
       user: user,
       isLoading: false,
       isAuthenticated: true,
+      isChecking: false,
       error: null,
     })),
     on(UserActions.loginFailure, (state, { error }) => ({
       ...state,
       isLoading: false,
       error,
+      isChecking: false,
       isAuthenticated: false,
     })),
 

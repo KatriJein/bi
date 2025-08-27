@@ -5,7 +5,7 @@ import { LogoComponent } from '../../components/logo/logo.component';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserActions, UserSelectors } from '../../core/store/user';
 
 @Component({
@@ -19,11 +19,14 @@ export class AuthComponent {
   private fb = inject(FormBuilder);
   private store = inject(Store);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   authForm: FormGroup;
   isShowPassword = false;
   errorMessage: string | null = null;
   private destroy$ = new Subject<void>();
+
+  isChecking$ = this.store.select(UserSelectors.selectIsChecking);
 
   constructor() {
     this.authForm = this.fb.group({
@@ -36,7 +39,8 @@ export class AuthComponent {
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
-          this.router.navigate(['/']);
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+          this.router.navigateByUrl(returnUrl);
         }
       });
 

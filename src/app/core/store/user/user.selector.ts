@@ -6,6 +6,7 @@ export const {
   selectIsLoading,
   selectError,
   selectIsAuthenticated,
+  selectIsChecking,
 } = UserFeature;
 
 export const selectUserRole = createSelector(
