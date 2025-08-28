@@ -97,7 +97,7 @@ export class WidgetComponent implements OnInit, OnChanges {
 
   private createFullscreenUrl(): string {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/widget-fullscreen/${this.widget.id}`;
+    return `${baseUrl}/#/widget-fullscreen/${this.widget.id}`;
   }
 
   private initWidgetSelections(): void {
