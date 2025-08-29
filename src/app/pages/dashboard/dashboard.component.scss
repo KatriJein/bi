@@ -270,3 +270,24 @@ mat-sidenav-content {
 .grid-stack > .grid-stack-item {
   transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease;
 }
+
+.multiple-filters-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.5rem;
+
+  .multiple-filter-item {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .filter-name {
+    font-weight: 500;
+    font-size: 18px;
+  }
+}

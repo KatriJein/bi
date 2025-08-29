@@ -13,6 +13,7 @@ export type UpdateDashboardFilterVariables = {
     name?: string;
     fieldType?: string;
     filterType?: string;
+    isMultiple?: boolean;
     value?: {
       value: any;
     };

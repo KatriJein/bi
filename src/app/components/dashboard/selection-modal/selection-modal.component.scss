@@ -4,8 +4,35 @@
   padding-top: 0.5rem;
 }
 
-.selection-date-input {
+.toggle-group {
   display: flex;
-  margin-bottom: 0.5rem;
-  padding-top: 0.5rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+  padding-top: 0;
+}
+
+.multi-value-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.multi-value-row app-date-input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.delete-button {
+  flex: 0 0 auto;
+  position: relative;
+  top: -8px;
+  color: var(--red);
 }

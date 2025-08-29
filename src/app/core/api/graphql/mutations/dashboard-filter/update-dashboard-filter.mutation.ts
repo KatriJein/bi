@@ -2,7 +2,7 @@ import { gql } from 'apollo-angular';
 
 export const updateDashboardFilterMutation = gql(`
 mutation UpdateDashboardFilter($id: UUID!, $patch: DashboardFilterPatch!) {
-  updateDashboardFilter(input: {patch: $patch, id: $id}) {
+  updateDashboardFilter(input: { patch: $patch, id: $id }) {
     dashboardFilter {
       dashboardId
       fieldType
@@ -10,6 +10,7 @@ mutation UpdateDashboardFilter($id: UUID!, $patch: DashboardFilterPatch!) {
       id
       name
       value
+      isMultiple
     }
   }
 }

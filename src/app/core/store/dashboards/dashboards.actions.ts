@@ -174,3 +174,14 @@ export const loadDashboardSelectionsFailure = createAction(
   '[Dashboards] Load Dashboard Selections Failure',
   props<{ error: string }>()
 );
+
+// Установка активных фильтров
+export const setActiveMultipleSelection = createAction(
+  '[Dashboards] Set Active Multiple Selection',
+  props<{ filterId: string; value: any }>()
+);
+
+export const clearActiveMultipleSelection = createAction(
+  '[Dashboards] Clear Active Multiple Selection',
+  props<{ filterId: string }>()
+);

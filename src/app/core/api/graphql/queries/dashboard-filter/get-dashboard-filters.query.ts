@@ -10,6 +10,7 @@ query GetDashboardFilters {
       id
       name
       value
+      isMultiple
     }
   }
 }

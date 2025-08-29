@@ -24,6 +24,7 @@ export type SelectionTypeDashboard = {
   name: string;
   columnType: string;
   filterType: string;
+  isMultiple: boolean;
   value: any;
 };
 

@@ -7,6 +7,7 @@ mutation CreateDashboardFilter(
   $filterType: String!
   $name: String!
   $value: JSON!
+  $isMultiple: Boolean
 ) {
   createDashboardFilter(
     input: {
@@ -16,6 +17,7 @@ mutation CreateDashboardFilter(
         fieldType: $fieldType
         filterType: $filterType
         value: $value
+        isMultiple: $isMultiple
       }
     }
   ) {
@@ -26,6 +28,7 @@ mutation CreateDashboardFilter(
       id
       name
       value
+      isMultiple
     }
   }
 }

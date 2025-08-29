@@ -1,5 +1,7 @@
 <h2 mat-dialog-title>
-  {{ isEditMode ? "Редактировать фильтр" : "Добавить фильтр" }}
+  {{
+    filterForm.get("name")?.value ? "Редактировать фильтр" : "Добавить фильтр"
+  }}
 </h2>
 
 <div mat-dialog-content>
@@ -9,7 +11,6 @@
       <input
         matInput
         formControlName="name"
-        required
         placeholder="Введите имя фильтра"
       />
       <mat-error *ngIf="filterForm.get('name')?.hasError('required')">
@@ -19,75 +20,199 @@
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Тип колонки</mat-label>
-      <mat-select formControlName="type" required>
-        <mat-option *ngFor="let type of columnTypes" [value]="type">
-          {{ getNameOfType(type) }}
-        </mat-option>
+      <mat-select formControlName="type">
+        <mat-option *ngFor="let t of columnTypes" [value]="t">{{
+          getNameOfType(t)
+        }}</mat-option>
       </mat-select>
-      <mat-error *ngIf="filterForm.get('type')?.hasError('required')">
-        Выберите тип колонки
-      </mat-error>
+      <mat-error *ngIf="filterForm.get('type')?.hasError('required')"
+        >Выберите тип</mat-error
+      >
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Тип фильтра</mat-label>
-      <mat-select formControlName="filterType" required>
-        <mat-option *ngFor="let type of filterTypes" [value]="type">
-          {{ type }}
-        </mat-option>
+      <mat-select formControlName="filterType">
+        <mat-option *ngFor="let ft of filterTypes" [value]="ft">{{
+          ft
+        }}</mat-option>
       </mat-select>
-      <mat-error *ngIf="filterForm.get('filterType')?.hasError('required')">
-        Выберите тип фильтра
-      </mat-error>
+      <mat-error *ngIf="filterForm.get('filterType')?.hasError('required')"
+        >Выберите тип фильтра</mat-error
+      >
     </mat-form-field>
 
-    <ng-container *ngIf="currentInputType !== 'date'; else dateInputs">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>{{ getValuePlaceholder() }}</mat-label>
-        <input
-          matInput
-          formControlName="value"
-          required
-          [type]="currentInputType"
-          [placeholder]="getValuePlaceholder()"
-        />
-        <mat-error *ngIf="filterForm.get('value')?.hasError('required')">
-          Введите значение
-        </mat-error>
+    <div class="toggle-group full-width">
+      <mat-label>Тип выбора:</mat-label>
+      <mat-button-toggle-group
+        formControlName="isMultiple"
+        aria-label="Тип выбора"
+      >
+        <mat-button-toggle [value]="false">Одиночный</mat-button-toggle>
+        <mat-button-toggle [value]="true">Множественный</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <!-- Одиночный режим-->
+    <ng-container *ngIf="!filterForm.get('isMultiple')?.value">
+      <mat-form-field
+        *ngIf="filterForm.get('type')?.value !== 'date'"
+        appearance="outline"
+        class="full-width"
+      >
+        <mat-label>{{
+          currentInputType === "number" ? "Введите число" : "Введите значение"
+        }}</mat-label>
+        <input matInput formControlName="value" [type]="currentInputType" />
       </mat-form-field>
+
+      <!-- Дата -->
+      <ng-container *ngIf="filterForm.get('type')?.value === 'date'">
+        <div
+          *ngIf="filterForm.get('filterType')?.value !== DATE_RANGE_FILTER"
+          formArrayName="dateValues"
+          class="multi-value-row"
+        >
+          <div *ngIf="dateControls.length > 0" class="full-width">
+            <app-date-input
+              label="Дата"
+              [dateValue]="dateControls[0].value"
+              (dateValueChange)="onSingleDateChange($event)"
+            ></app-date-input>
+          </div>
+        </div>
+
+        <div
+          *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
+          formArrayName="dateRangeValues"
+          class="full-width"
+        >
+          <div
+            *ngIf="dateRangeValuesArray.length > 0"
+            [formGroupName]="0"
+            class="multi-value-row"
+          >
+            <app-date-input
+              label="Дата от"
+              [dateValue]="dateRangeValuesArray.at(0).get('start')?.value"
+              (dateValueChange)="onSingleRangePartChange('start', $event)"
+            ></app-date-input>
+            <app-date-input
+              label="Дата до"
+              [dateValue]="dateRangeValuesArray.at(0).get('end')?.value"
+              (dateValueChange)="onSingleRangePartChange('end', $event)"
+            ></app-date-input>
+          </div>
+        </div>
+      </ng-container>
     </ng-container>
 
-    <ng-template #dateInputs class="date-inputs">
-      <app-date-input
-        class="selection-date-input"
-        label="{{
-          filterForm.get('filterType')?.value === DATE_RANGE_FILTER
-            ? 'Дата от'
-            : 'Дата'
-        }}"
-        [(dateValue)]="filterValueDateRange[0]"
-        (dateValueChange)="onDateRangeChange(0, $event)"
-      ></app-date-input>
+    <!-- Множественный выбор -->
+    <ng-container *ngIf="filterForm.get('isMultiple')?.value">
+      <div *ngIf="filterForm.get('type')?.value !== 'date'">
+        <div formArrayName="values" class="multi-value-wrapper">
+          <div
+            *ngFor="let control of valuesControls; let i = index"
+            class="multi-value-row"
+          >
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>{{
+                currentInputType === "number"
+                  ? "Введите число"
+                  : "Введите значение"
+              }}</mat-label>
+              <input
+                matInput
+                [formControl]="control"
+                [type]="currentInputType"
+              />
+            </mat-form-field>
+            <button
+              mat-icon-button
+              color="warn"
+              class="delete-button"
+              (click)="removeValueInput(i)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+        <button mat-button (click)="addValueInput()">
+          <mat-icon>add</mat-icon> Добавить значение
+        </button>
+      </div>
 
-      <app-date-input
-        *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
-        class="selection-date-input"
-        label="Дата до"
-        [(dateValue)]="filterValueDateRange[1]"
-        (dateValueChange)="onDateRangeChange(1, $event)"
-      ></app-date-input>
-    </ng-template>
+      <!-- Дата -->
+      <div *ngIf="filterForm.get('type')?.value === 'date'">
+        <div
+          *ngIf="filterForm.get('filterType')?.value !== DATE_RANGE_FILTER"
+          formArrayName="dateValues"
+          class="multi-value-wrapper"
+        >
+          <div
+            *ngFor="let ctrl of dateControls; let i = index"
+            class="multi-value-row full-width"
+          >
+            <app-date-input
+              [label]="'Дата ' + (i + 1)"
+              [dateValue]="ctrl.value"
+              (dateValueChange)="onDateControlChange(i, $event)"
+            ></app-date-input>
+            <button
+              mat-icon-button
+              color="warn"
+              class="delete-button"
+              (click)="removeDateInput(i)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <button mat-button (click)="addDateInput()">
+            <mat-icon>add</mat-icon> Добавить дату
+          </button>
+        </div>
+
+        <div
+          *ngIf="filterForm.get('filterType')?.value === DATE_RANGE_FILTER"
+          formArrayName="dateRangeValues"
+          class="multi-value-wrapper"
+        >
+          <div
+            *ngFor="let grp of dateRangeValuesArray.controls; let i = index"
+            [formGroupName]="i"
+            class="multi-value-row full-width"
+          >
+            <app-date-input
+              label="Дата от"
+              [dateValue]="grp.get('start')?.value"
+              (dateValueChange)="onDateRangeControlChange(i, 'start', $event)"
+            ></app-date-input>
+            <app-date-input
+              label="Дата до"
+              [dateValue]="grp.get('end')?.value"
+              (dateValueChange)="onDateRangeControlChange(i, 'end', $event)"
+            ></app-date-input>
+            <button
+              mat-icon-button
+              color="warn"
+              class="delete-button"
+              (click)="removeDateRangeInput(i)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <button mat-button (click)="addDateRangeInput()">
+            <mat-icon>add</mat-icon> Добавить диапазон
+          </button>
+        </div>
+      </div>
+    </ng-container>
   </form>
 </div>
 
-<div mat-dialog-actions>
+<div mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Отмена</button>
-  <button
-    mat-button
-    color="primary"
-    (click)="onSave()"
-    [disabled]="filterForm.invalid"
-  >
+  <button mat-button color="primary" (click)="onSave()" [disabled]="!canSave">
     Сохранить
   </button>
 </div>

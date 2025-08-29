@@ -9,6 +9,7 @@ export type CreateDashboardFilterVariables = {
   name: string;
   fieldType: string;
   filterType: string;
+  isMultiple: boolean;
   value: {
     value: any;
   };
@@ -18,6 +19,7 @@ export type DashboardFilter = {
   id: string;
   dashboardId: string;
   name: string;
+  isMultiple: boolean;
   fieldType: string;
   filterType: string;
   value: {

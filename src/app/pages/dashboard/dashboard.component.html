@@ -140,6 +140,28 @@
           </div>
 
           <div
+            class="multiple-filters-container"
+            *ngIf="multipleFilters$ | async as selections"
+          >
+            <div *ngFor="let filter of selections" class="multiple-filter-item">
+              <span class="filter-name">{{ filter.name }}:</span>
+
+              <mat-button-toggle-group
+                [hideSingleSelectionIndicator]="true"
+                [value]="activeMultipleSelections[filter.id]"
+                (change)="onMultipleSelectionChange(filter.id, $event.value)"
+              >
+                <mat-button-toggle
+                  *ngFor="let option of filter.value.value"
+                  [value]="option"
+                >
+                  {{ formatOption(option, filter.fieldType) }}
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+          </div>
+
+          <div
             #gridStackContainer
             class="grid-stack"
             [class.edit-mode]="isEditMode()"

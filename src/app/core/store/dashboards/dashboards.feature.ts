@@ -16,6 +16,7 @@ export interface DashboardDto {
 export interface DashboardState {
   dashboards: Record<string, DashboardDto[]>;
   activeDashboardId: string | null;
+  activeMultipleSelections: Record<string, any>;
   isLoading: boolean;
   error: string | null;
 }
@@ -23,6 +24,7 @@ export interface DashboardState {
 export const initialState: DashboardState = {
   dashboards: {},
   activeDashboardId: null,
+  activeMultipleSelections: {},
   isLoading: false,
   error: null,
 };
@@ -300,6 +302,27 @@ export const DashboardsFeature = createFeature({
           activeDashboardId: dashboardId,
           isLoading: false,
           error: null,
+        };
+      }
+    ),
+    on(
+      DashboardsActions.setActiveMultipleSelection,
+      (state, { filterId, value }) => ({
+        ...state,
+        activeMultipleSelections: {
+          ...state.activeMultipleSelections,
+          [filterId]: value,
+        },
+      })
+    ),
+
+    on(
+      DashboardsActions.clearActiveMultipleSelection,
+      (state, { filterId }) => {
+        const { [filterId]: removed, ...rest } = state.activeMultipleSelections;
+        return {
+          ...state,
+          activeMultipleSelections: rest,
         };
       }
     )

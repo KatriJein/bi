@@ -125,7 +125,7 @@ export class ChartContainerComponent implements OnInit, OnChanges {
         );
 
         const dashboardSelections$ = this.store.select(
-          DashboardsSelectors.selectSelectionsByActiveDashboard
+          DashboardsSelectors.selectEffectiveSelectionsByActiveDashboard
         );
 
         const convertedFilters$ = convertBindingsToFilters(

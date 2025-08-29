@@ -9,6 +9,7 @@ import {
 import { toCamelCase } from '../../core/utils';
 import { FilterType } from '../../core/store/charts';
 import { DashboardFilter } from '../../core/api/graphql/types';
+import { SelectionColumnType } from '../../constants';
 
 export function applyFilters(
   data: Record<string, any>[],
@@ -244,26 +245,43 @@ export function formatDate(date: Date, format: string): string {
   return formatDateFns(date, convertedFormat);
 }
 
-export function formatFilterValue(filter: DashboardFilter): string {
-  const value = filter.value.value;
-
-  if (filter.fieldType === 'date') {
-    if (Array.isArray(value)) {
-      return value
-        .map((date) =>
+export function formatSingle(val: any, fieldType: SelectionColumnType) {
+  if (fieldType === 'date') {
+    if (Array.isArray(val)) {
+      return val
+        .map((d) =>
           formatDate(
-            parseDateFromAnyFormat(date, 'yyyy-MM-dd') as Date,
+            parseDateFromAnyFormat(d, 'yyyy-MM-dd') as Date,
             'dd.MM.yyyy'
           )
         )
-        .join(' - ');
+        .join(' – ');
     } else {
       return formatDate(
-        parseDateFromAnyFormat(value, 'yyyy-MM-dd') as Date,
+        parseDateFromAnyFormat(val, 'yyyy-MM-dd') as Date,
         'dd.MM.yyyy'
       );
     }
   }
 
-  return String(value);
+  if (Array.isArray(val)) {
+    return val.join(' – ');
+  }
+  return String(val);
+}
+
+export function formatFilterValue(filter: DashboardFilter): string {
+  const { value } = filter.value;
+  const { isMultiple, fieldType } = filter;
+
+  if (isMultiple) {
+    if (Array.isArray(value)) {
+      return value
+        .map((v) => formatSingle(v, fieldType as SelectionColumnType))
+        .join(', ');
+    }
+    return formatSingle(value, fieldType as SelectionColumnType);
+  } else {
+    return formatSingle(value, fieldType as SelectionColumnType);
+  }
 }

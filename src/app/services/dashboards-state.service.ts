@@ -49,6 +49,14 @@ export class DashboardStateService {
     distinctUntilChanged()
   );
 
+  multipleFilters$ = this.store.select(
+    DashboardsSelectors.selectMultipleSelectionsByActiveDashboard
+  );
+
+  activeMultipleSelections$ = this.store.select(
+    DashboardsSelectors.selectActiveMultipleSelections
+  );
+
   widgets$ = this.activeDashboard$.pipe(
     filter((dashboard) => !!dashboard?.id),
     switchMap((dashboard) =>
@@ -133,6 +141,7 @@ export class DashboardStateService {
             name: selection.name,
             fieldType: selection.columnType,
             filterType: selection.filterType,
+            isMultiple: selection.isMultiple,
             value: {
               value: selection.value,
             },
@@ -150,6 +159,7 @@ export class DashboardStateService {
           name: selection.name,
           fieldType: selection.columnType,
           filterType: selection.filterType,
+          isMultiple: selection.isMultiple,
           value: {
             value: selection.value,
           },
@@ -168,6 +178,18 @@ export class DashboardStateService {
         })
       );
     });
+  }
+
+  onMultipleSelectionChange(filterId: string, value: any) {
+    this.store.dispatch(
+      DashboardsActions.setActiveMultipleSelection({ filterId, value })
+    );
+  }
+
+  onClearMultipleSelection(filterId: string) {
+    this.store.dispatch(
+      DashboardsActions.clearActiveMultipleSelection({ filterId })
+    );
   }
 
   constructor() {}

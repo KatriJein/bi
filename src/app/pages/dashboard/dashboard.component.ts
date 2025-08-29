@@ -32,7 +32,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { take } from 'rxjs/operators';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import {
   GridStack,
   GridStackOptions,
@@ -45,22 +48,19 @@ import {
   Widget,
   WidgetType,
 } from '../../core/api/graphql/types';
-import { EditWidgetModalComponent } from '../../components/widget/edit-widget/edit-widget.component';
-import { CreateWidgetModalComponent } from '../../components/widget/create-widget/create-widget.component';
-import { ChartContainerComponent } from '../../components/common';
+import {
+  ChartContainerComponent,
+  OnMainButtonComponent,
+} from '../../components/common';
 import { DashboardDto } from '../../core/store/dashboards';
-import { WidgetComponent } from '../../components/widget';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { CreateWidgetModalComponent, EditWidgetModalComponent, WidgetComponent } from '../../components/widget';
 import {
   DashboadMenuItemComponent,
   DashboardSelectionModalComponent,
 } from '../../components/dashboard';
 import { SelectionTypeDashboard } from '../../core/store/charts';
-import { MatChipsModule } from '@angular/material/chips';
-import { formatFilterValue } from '../../utils';
-import { OnMainButtonComponent } from '../../components/common';
+import { formatFilterValue, formatSingle } from '../../utils';
+import { SelectionColumnType } from '../../constants';
 
 export type FilterTypeExp = {
   field: string;
@@ -85,16 +85,15 @@ export type FilterEmitType = {
     MatMenuModule,
     MatButtonModule,
     MatIcon,
-    MatTabsModule,
-    ChartContainerComponent,
-    MatExpansionModule,
     MatInputModule,
     MatSelectModule,
     MatDialogModule,
     MatIconModule,
     MatChipsModule,
+    MatButtonToggleModule,
     DashboadMenuItemComponent,
     OnMainButtonComponent,
+    ChartContainerComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -128,6 +127,10 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   dashboards$ = this.stateService.dashboards$;
   widgets$ = this.stateService.widgets$;
   activeDashboard$ = this.stateService.activeDashboard$;
+  multipleFilters$ = this.stateService.multipleFilters$;
+  activeMultipleSelections$ = this.stateService.activeMultipleSelections$;
+
+  activeMultipleSelections: Record<string, any> = {};
 
   activeDashboardId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -144,6 +147,8 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   private isUpdatingWidgets = false;
 
   formatFilterValue = formatFilterValue;
+  formatOption = (option: any, fieldType: string) =>
+    formatSingle(option, fieldType as SelectionColumnType);
 
   ngAfterViewInit() {
     this.initGridStack();
@@ -475,6 +480,14 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
       });
   }
 
+  onMultipleSelectionChange(filterId: string, value: any) {
+    this.stateService.onMultipleSelectionChange(filterId, value);
+  }
+
+  onClearMultipleSelection(filterId: string) {
+    this.stateService.onClearMultipleSelection(filterId);
+  }
+
   removeFilter(filter: DashboardFilter): void {
     this.stateService.removeFilter(filter);
   }
@@ -557,6 +570,4 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   onRefreshWidgets() {
     this.stateService.refreshWidgets();
   }
-
-  constructor() {}
 }

@@ -10,6 +10,7 @@ query GetDashboardFiltersById($dashboardId: UUID) {
       id
       name
       value
+      isMultiple
     }
   }
 }
