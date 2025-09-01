@@ -12,11 +12,14 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { ICONS, ICONS_DEFAULT } from '../../../constants';
+import { SmartIconComponent } from "../../common";
 
 @Component({
   selector: 'app-edit-icon',
@@ -30,7 +33,9 @@ import { MatInputModule } from '@angular/material/input';
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
-  ],
+    FormsModule,
+    SmartIconComponent
+],
   templateUrl: './edit-dashboard.component.html',
   styleUrl: './edit-dashboard.component.scss',
 })
@@ -43,20 +48,17 @@ export class EditDashboardModalComponent implements OnInit {
   };
   private dialogRef = inject(MatDialogRef<EditDashboardModalComponent>);
 
-  icons: string[] = [
-    'actions',
-    'analytics',
-    'chart-organisation',
-    'chart',
-    'group-team',
-    'group',
-  ];
+  showAllIcons = false;
+
+  ICONS = ICONS;
+  iconsDefault = ICONS_DEFAULT;
 
   form: FormGroup = this.fb.group({
     icon: [this.data.icon, Validators.required],
     selectedColor: [this.data.color, Validators.required],
     customColor: ['#000000'],
     name: [this.data.name, [Validators.required, Validators.maxLength(52)]],
+    iconSearch: [''],
   });
 
   ngOnInit(): void {
@@ -78,9 +80,32 @@ export class EditDashboardModalComponent implements OnInit {
       : value.selectedColor;
   }
 
+  get iconSearchControl(): FormControl<string> {
+    return this.form.get('iconSearch') as FormControl<string>;
+  }
+
+  isDefaultIcon(icon: string): boolean {
+    return this.iconsDefault.includes(icon);
+  }
+
+  filteredIcons(): string[] {
+    const search = this.iconSearchControl.value.toLowerCase();
+    return this.ICONS.filter((icon) => icon.toLowerCase().includes(search));
+  }
+
+  // filteredIcons(): string[] {
+  //   const search = this.iconSearch.toLowerCase();
+  //   return this.ICONS.filter((icon) => icon.toLowerCase().includes(search));
+  // }
+
   selectIcon(icon: string) {
     this.form.patchValue({ icon });
+    this.showAllIcons = false;
   }
+
+  // selectIcon(icon: string) {
+  //   this.form.patchValue({ icon });
+  // }
 
   onSelectedColorChange(color: string) {
     this.form.patchValue({ selectedColor: color });

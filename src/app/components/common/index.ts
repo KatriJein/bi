@@ -4,3 +4,4 @@ export * from './svg-icon-initializer.component';
 export * from './chart-container/chart-container.component';
 export * from './date-input/date-input.component';
 export * from './on-main-button/on-main-button.component';
+export * from './smart-icon/smart-icon.component';

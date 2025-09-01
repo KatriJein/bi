@@ -56,6 +56,9 @@
   height: 32px;
   font-size: 32x;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dashboard-link {

@@ -448,8 +448,6 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       value = formValue.isMultiple ? this.valuesArray.value : formValue.value;
     }
 
-    console.log('value', formValue);
-
     const newFilter = {
       name: formValue.name,
       columnType: formValue.type,

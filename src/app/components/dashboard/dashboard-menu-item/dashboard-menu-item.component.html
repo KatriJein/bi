@@ -21,11 +21,12 @@
       class="dashboard-link"
       [class.active]="dashboard.id === activeDashboardId"
     >
-      <mat-icon
-        [svgIcon]="dashboard.iconId || 'chart'"
-        [style.color]="dashboard.color || '#000000'"
+      <smart-icon
+        [iconName]="dashboard.iconId || 'chart'"
+        [color]="dashboard.color || '#000000'"
+        [size]="'24px'"
         class="dashboard-icon"
-      ></mat-icon>
+      ></smart-icon>
       <span class="dashboard-name">{{ dashboard.name }}</span>
     </a>
   </div>
@@ -36,7 +37,6 @@
       [dashboard]="child"
       [activeDashboardId]="activeDashboardId"
       [level]="level + 1"
-   
     ></dashboard-menu-item>
   </div>
 </div>

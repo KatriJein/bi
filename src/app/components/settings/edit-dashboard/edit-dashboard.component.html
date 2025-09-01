@@ -22,30 +22,60 @@
 
     <!-- Просмотр текущей иконки -->
     <div class="preview">
-      <mat-icon
-        [svgIcon]="form.get('icon')?.value"
-        [ngStyle]="{ color: currentColor }"
-        class="icon-preview"
-      ></mat-icon>
+      <smart-icon
+        [iconName]="form.get('icon')?.value || 'chart'"
+        [color]="currentColor || '#50b8c5'"
+        [size]="'64px'"
+        [iconClass]="'icon-preview'"
+      ></smart-icon>
     </div>
 
     <!-- Сетка иконок -->
     <div class="icon-grid">
       <button
-        *ngFor="let icon of icons"
+        *ngFor="let icon of iconsDefault"
         mat-icon-button
         class="icon-option"
         (click)="selectIcon(icon)"
         [class.selected]="icon === form.get('icon')?.value"
         type="button"
       >
-        <mat-icon
-          [svgIcon]="icon"
-          [ngStyle]="{ color: '#000000' }"
-          style="font-size: 64px; width: 64px; height: 64px"
-          class="icon"
-        ></mat-icon>
+        <mat-icon [svgIcon]="icon" class="icon"></mat-icon>
       </button>
+      <button
+        mat-icon-button
+        type="button"
+        (click)="showAllIcons = !showAllIcons"
+        class="icon-option"
+      >
+        <mat-icon class="icon add">add</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="showAllIcons" class="all-icons">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Поиск иконки</mat-label>
+        <input
+          matInput
+          type="text"
+          [formControl]="iconSearchControl"
+          placeholder="Введите название"
+          class="full-width"
+        />
+      </mat-form-field>
+
+      <div class="icons-list">
+        <button
+          *ngFor="let icon of filteredIcons()"
+          mat-icon-button
+          class="icon-option"
+          (click)="selectIcon(icon)"
+          [class.selected]="icon === form.get('icon')?.value"
+          type="button"
+        >
+          <mat-icon class="icon">{{ icon }}</mat-icon>
+        </button>
+      </div>
     </div>
 
     <!-- Выбор цвета -->

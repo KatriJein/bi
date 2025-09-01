@@ -15,12 +15,12 @@
       <div *ngIf="!hasChildren" class="spacer"></div>
 
       <div (click)="select.emit(dashboard)" class="dashboard-link">
-        <mat-icon
-          [svgIcon]="dashboard.iconId || 'chart'"
-          [style.color]="dashboard.color || '#50b8c5'"
+        <smart-icon
+          [iconName]="dashboard.iconId || 'chart'"
+          [color]="dashboard.color || '#50b8c5'"
           class="icon"
-        >
-        </mat-icon>
+          [size]="'32px'"
+        ></smart-icon>
 
         <span class="name">{{ dashboard.name }}</span>
       </div>

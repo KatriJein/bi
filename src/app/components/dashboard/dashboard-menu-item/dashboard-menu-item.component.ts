@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { DashboardDto } from '../../../core/store/dashboards';
+import { SmartIconComponent } from "../../common";
 
 @Component({
   selector: 'dashboard-menu-item',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule, SmartIconComponent],
   templateUrl: './dashboard-menu-item.component.html',
   styleUrl: './dashboard-menu-item.component.scss',
 })

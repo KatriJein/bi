@@ -16,6 +16,7 @@ import {
 import { InterfaceService } from '../../core/api/services';
 import { DashboardDto, DashboardsSelectors } from '../../core/store/dashboards';
 import { DatasetsActions } from '../../core/store/datasets';
+import { SmartIconComponent } from "../../components/common";
 
 @Component({
   selector: 'app-main',
@@ -28,7 +29,8 @@ import { DatasetsActions } from '../../core/store/datasets';
     MatListModule,
     MatProgressSpinnerModule,
     MatIconModule,
-  ],
+    SmartIconComponent
+],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
   providers: [InterfaceService],
@@ -67,7 +69,7 @@ export class MainComponent implements OnInit {
         );
     })
   );
-  
+
   firstColumnDashboards$ = this.dashboardsSplit$.pipe(
     map((split) => split.first)
   );

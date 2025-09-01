@@ -4,3 +4,4 @@ export * from './filter';
 export * from './ag-grid-localisation';
 export * from './ag-grid-theme';
 export * from './chart-options.const';
+export * from './material-design-icons';

@@ -1,0 +1,19 @@
+@if (isDefaultIcon(iconName)) {
+<mat-icon
+  [svgIcon]="iconName"
+  [style.color]="color"
+  [class]="iconClass"
+  [style.font-size]="size"
+  [style.width]="size"
+  [style.height]="size"
+></mat-icon>
+} @else {
+<mat-icon
+  [style.color]="color"
+  [class]="iconClass"
+  [style.font-size]="size"
+  [style.width]="size"
+  [style.height]="size"
+  >{{ iconName }}</mat-icon
+>
+}

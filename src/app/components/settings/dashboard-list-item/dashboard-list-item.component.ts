@@ -6,6 +6,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 import { DashboardDto } from '../../../core/store/dashboards';
+import { ICONS_DEFAULT } from '../../../constants';
+import { SmartIconComponent } from "../../common";
 
 @Component({
   selector: 'dashboard-list-item',
@@ -17,7 +19,8 @@ import { DashboardDto } from '../../../core/store/dashboards';
     MatButtonModule,
     MatMenuModule,
     RouterModule,
-  ],
+    SmartIconComponent
+],
   templateUrl: './dashboard-list-item.component.html',
   styleUrl: './dashboard-list-item.component.scss',
 })
@@ -41,7 +44,7 @@ export class DashboardListItemComponent {
     return item.id || '';
   }
 
-   get hasChildren(): boolean {
+  get hasChildren(): boolean {
     return !!(this.dashboard.children && this.dashboard.children.length > 0);
   }
 

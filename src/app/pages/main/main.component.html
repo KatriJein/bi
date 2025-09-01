@@ -29,11 +29,12 @@ async; as activeInterface) {
     <mat-list-item class="button" [routerLink]="['/dashboard', button.id]">
       <div class="button-content">
         <span class="button-title">{{ button.name }}</span>
-        <mat-icon
-          [svgIcon]="button.iconId || 'chart'"
-          [ngStyle]="{ color: button.color }"
+        <smart-icon
+          [iconName]="button.iconId || 'chart'"
+          [color]="button.color || '#50b8c5'"
+          [size]="'40px'"
           class="button-icon"
-        ></mat-icon>
+        ></smart-icon>
       </div>
     </mat-list-item>
     } }
@@ -44,11 +45,12 @@ async; as activeInterface) {
     <mat-list-item class="button" [routerLink]="['/dashboard', button.id]">
       <div class="button-content">
         <span class="button-title">{{ button.name }}</span>
-        <mat-icon
-          [svgIcon]="button.iconId || 'chart'"
-          [ngStyle]="{ color: button.color }"
+        <smart-icon
+          [iconName]="button.iconId || 'chart'"
+          [color]="button.color || '#50b8c5'"
+          [size]="'40px'"
           class="button-icon"
-        ></mat-icon>
+        ></smart-icon>
       </div>
     </mat-list-item>
     }
