@@ -1,10 +1,14 @@
-<div class="dashboard-item" [style.padding-left.px]="level * 10">
+<div
+  class="dashboard-item"
+  [style.padding-left.px]="isCollapsed ? 0 : level * 10"
+>
   <div
     class="dashboard-item-content"
     [class.active]="dashboard.id === activeDashboardId"
+    [class.collapsed]="isCollapsed"
   >
     <button
-      *ngIf="hasChildren"
+      *ngIf="hasChildren && !isCollapsed"
       mat-icon-button
       (click)="toggleExpanded()"
       class="expand-button"
@@ -14,29 +18,40 @@
       </mat-icon>
     </button>
 
-    <div *ngIf="!hasChildren" class="spacer"></div>
+    <div *ngIf="!hasChildren && !isCollapsed" class="spacer"></div>
 
     <a
       [routerLink]="['/dashboard', dashboard.id]"
       class="dashboard-link"
       [class.active]="dashboard.id === activeDashboardId"
+      [matTooltip]="dashboard.name"
+      matTooltipPosition="right"
+      [matTooltipDisabled]="!isCollapsed"
     >
       <smart-icon
         [iconName]="dashboard.iconId || 'chart'"
         [color]="dashboard.color || '#000000'"
         [size]="'24px'"
+        [class.collapsed]="isCollapsed"
         class="dashboard-icon"
       ></smart-icon>
-      <span class="dashboard-name">{{ dashboard.name }}</span>
+      <span class="dashboard-name" *ngIf="!isCollapsed">{{
+        dashboard.name
+      }}</span>
     </a>
   </div>
 
-  <div *ngIf="expanded() && hasChildren" class="children-container">
+  <div
+    *ngIf="expanded() && hasChildren"
+    class="children-container"
+    [class.collapsed]="isCollapsed"
+  >
     <dashboard-menu-item
       *ngFor="let child of dashboard.children"
       [dashboard]="child"
       [activeDashboardId]="activeDashboardId"
       [level]="level + 1"
+      [isCollapsed]="isCollapsed"
     ></dashboard-menu-item>
   </div>
 </div>

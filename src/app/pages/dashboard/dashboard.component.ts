@@ -48,12 +48,13 @@ import {
   Widget,
   WidgetType,
 } from '../../core/api/graphql/types';
-import {
-  ChartContainerComponent,
-  OnMainButtonComponent,
-} from '../../components/common';
+import { ChartContainerComponent, OnMainButtonComponent, SmartIconComponent } from '../../components/common';
 import { DashboardDto } from '../../core/store/dashboards';
-import { CreateWidgetModalComponent, EditWidgetModalComponent, WidgetComponent } from '../../components/widget';
+import {
+  CreateWidgetModalComponent,
+  EditWidgetModalComponent,
+  WidgetComponent,
+} from '../../components/widget';
 import {
   DashboadMenuItemComponent,
   DashboardSelectionModalComponent,
@@ -61,6 +62,7 @@ import {
 import { SelectionTypeDashboard } from '../../core/store/charts';
 import { formatFilterValue, formatSingle } from '../../utils';
 import { SelectionColumnType } from '../../constants';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export type FilterTypeExp = {
   field: string;
@@ -94,7 +96,8 @@ export type FilterEmitType = {
     DashboadMenuItemComponent,
     OnMainButtonComponent,
     ChartContainerComponent,
-  ],
+    
+],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -107,8 +110,11 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
 
   sidenavWidth = 300;
   private isResizing = false;
-  private minWidth = 200;
+  private minWidth = 300;
   private maxWidth = 500;
+
+  isSidebarCollapsed = false;
+  collapsedWidth = 64;
 
   private stateService = inject(DashboardStateService);
   private route = inject(ActivatedRoute);
@@ -433,6 +439,11 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
       this.handleChartExpanded(event);
     content.appendChild(componentRef.location.nativeElement);
     this.widgetComponentRefs.set(widget.id, componentRef);
+  }
+
+  toggleSidebar() {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    this.sidenavWidth = this.isSidebarCollapsed ? this.collapsedWidth : 300;
   }
 
   toggleEditMode(): void {

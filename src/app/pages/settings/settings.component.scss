@@ -3,11 +3,21 @@
   color: black;
 }
 
+mat-sidenav-content {
+  transition: margin-left 0.3s ease !important;
+}
+
+::ng-deep .mat-drawer {
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
+}
+
 .settings-sidenav {
-  width: 300px;
   background-color: var(--light-blue);
   padding: 0.5rem;
   border-radius: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .user-info {
@@ -24,6 +34,11 @@
   width: 115px;
   height: 115px;
   border-radius: 50%;
+
+  &.collapsed {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .user-name {
@@ -35,20 +50,13 @@
 
 .back-button {
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
 
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    font-weight: 500;
-    text-decoration: none;
-    color: black;
-    border-radius: var(--border-radius);
-  }
-
-  mat-icon {
-    font-size: 20px;
-    position: relative;
-    top: -1px;
+  &.collapsed {
+    justify-content: center;
   }
 }
 
@@ -65,11 +73,27 @@
     color: black;
     font-size: 20px;
     border-radius: var(--border-radius);
+
+    &.collapsed {
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
+  .list-icon {
+    position: relative;
+    top: 3px;
   }
 }
 
 .settings-list a.active {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.settings-sidenav ::ng-deep .mat-drawer-inner-container {
+  overflow: hidden !important;
 }
 
 .router-content {

@@ -10,7 +10,8 @@ import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ChartsActions } from '../../core/store/charts';
 import { DatasetsActions } from '../../core/store/datasets';
-import { OnMainButtonComponent } from "../../components/common";
+import { OnMainButtonComponent, SmartIconComponent } from '../../components/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-settings',
@@ -22,7 +23,9 @@ import { OnMainButtonComponent } from "../../components/common";
     MatIconModule,
     MatButtonModule,
     CommonModule,
-    OnMainButtonComponent
+    OnMainButtonComponent,
+    MatTooltipModule,
+    SmartIconComponent
 ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
@@ -33,11 +36,20 @@ export class SettingsComponent {
     UserSelectors.selectUser
   );
 
+  isSidebarCollapsed = false;
+  sidenavWidth = 300;
+  collapsedWidth = 80;
+
+  toggleSidebar() {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    this.sidenavWidth = this.isSidebarCollapsed ? this.collapsedWidth : 280;
+  }
+
   buttons = [
-    { link: 'datasets', name: 'Датасеты' },
-    { link: 'charts', name: 'Графики' },
-    { link: 'interfaces', name: 'Интерфейсы' },
-    { link: 'dashboards', name: 'Дашборды' },
+    { link: 'datasets', name: 'Датасеты', icon: 'storage' },
+    { link: 'charts', name: 'Графики', icon: 'bar_chart' },
+    { link: 'interfaces', name: 'Интерфейсы', icon: 'widgets' },
+    { link: 'dashboards', name: 'Дашборды', icon: 'dashboard' },
   ];
 
   constructor() {

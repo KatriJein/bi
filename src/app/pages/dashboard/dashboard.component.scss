@@ -20,6 +20,14 @@
   }
 }
 
+mat-sidenav-content {
+  transition: margin-left 0.3s ease !important;
+}
+
+::ng-deep .mat-drawer {
+  transition: width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
+}
+
 .dashboard-page {
   height: 100vh;
   background-color: white;
@@ -42,13 +50,23 @@
   height: 100%;
   position: relative;
   width: auto;
-  min-width: 300px;
   max-width: 500px;
   transition: width 0.1s;
 }
 
-::ng-deep .mat-drawer-inner-container {
-  overflow-x: hidden !important;
+::ng-deep {
+  .mat-drawer-inner-container {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+
+    &::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  }
 }
 
 .resize-handle {
@@ -76,13 +94,18 @@ mat-sidenav-content {
   gap: 1rem;
   margin-bottom: 16px;
 
-  .nav-button {
+  .buttons {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    color: #3f4948;
-    font-size: 16px;
   }
+}
+
+.nav-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: #3f4948;
+  font-size: 16px;
 }
 
 .dashboard-item {

@@ -415,7 +415,7 @@ export class EditWidgetModalComponent implements OnInit {
     return this.chartSelections$.pipe(
       map((selections) => {
         const filter = selections.find((f) => f.id === filterId);
-        return filter?.fieldName || 'Неизвестный фильтр графика';
+        return filter?.name || 'Неизвестный фильтр графика';
       })
     );
   }

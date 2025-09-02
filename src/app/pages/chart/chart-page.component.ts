@@ -9,7 +9,6 @@ import {
   Observable,
   startWith,
   Subscription,
-  take,
 } from 'rxjs';
 import {
   ChartComponent,
@@ -30,9 +29,8 @@ import {
   CHART_TYPES,
   getChartDisplayName,
   getChartIcon,
-  getFilterOptionsByType,
 } from '../../constants';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { ChartFilter } from '../../core/api/graphql/types';
 

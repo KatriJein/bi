@@ -1,12 +1,36 @@
 <mat-sidenav-container class="settings-container">
-  <mat-sidenav mode="side" opened class="settings-sidenav">
-    <div class="back-button">
-      <app-main-button/>
+  <mat-sidenav
+    mode="side"
+    opened
+    class="settings-sidenav"
+    [class.collapsed]="isSidebarCollapsed"
+    [style.width.px]="sidenavWidth"
+  >
+    <div class="sidebar-header">
+      <div class="back-button" [class.collapsed]="isSidebarCollapsed">
+        <app-main-button *ngIf="!isSidebarCollapsed" />
+        <button
+          mat-icon-button
+          class="toggle-sidebar-btn"
+          (click)="toggleSidebar()"
+        >
+          <mat-icon>
+            {{ isSidebarCollapsed ? "chevron_right" : "chevron_left" }}
+          </mat-icon>
+        </button>
+      </div>
     </div>
 
     <div class="user-info" *ngIf="user$ | async as user">
-      <img src="/assets/img/acc.png" alt="User" class="user-avatar" />
-      <h3 class="user-name">{{ user.name }}</h3>
+      <img
+        src="/assets/img/acc.png"
+        alt="User"
+        class="user-avatar"
+        [class.collapsed]="isSidebarCollapsed"
+      />
+      <h3 class="user-name" *ngIf="!isSidebarCollapsed">
+        {{ user.name }}
+      </h3>
     </div>
 
     <mat-nav-list class="settings-list">
@@ -15,13 +39,27 @@
         *ngFor="let button of buttons"
         [routerLink]="button.link"
         routerLinkActive="active"
+        class="settings-list-item"
+        [class.collapsed]="isSidebarCollapsed"
+        matTooltipPosition="right"
+        [matTooltip]="isSidebarCollapsed ? button.name : ''"
       >
-        {{ button.name }}
+        <smart-icon
+          [iconName]="button.icon"
+          [color]="'#000000'"
+          [size]="'30px'"
+          class="list-icon"
+          *ngIf="isSidebarCollapsed"
+        ></smart-icon>
+
+        <span class="list-text" *ngIf="!isSidebarCollapsed">
+          {{ button.name }}
+        </span>
       </a>
     </mat-nav-list>
   </mat-sidenav>
 
-  <mat-sidenav-content>
+  <mat-sidenav-content [style.margin-left.px]="sidenavWidth">
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>

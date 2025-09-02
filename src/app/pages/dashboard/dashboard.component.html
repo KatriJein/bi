@@ -4,28 +4,56 @@
       mode="side"
       opened
       class="sidebar"
-      [style.width.px]="sidenavWidth"
+      [style.width.px]="isSidebarCollapsed ? collapsedWidth : sidenavWidth"
+      [class.collapsed]="isSidebarCollapsed"
     >
-      <div class="resize-handle" (mousedown)="startResize($event)"></div>
-      <div>
-        <div class="navigation">
+      <div
+        class="resize-handle"
+        (mousedown)="startResize($event)"
+        *ngIf="!isSidebarCollapsed"
+      ></div>
+
+      <div class="toggle-sidebar-button" *ngIf="isSidebarCollapsed">
+        <button mat-icon-button (click)="toggleSidebar()" class="nav-button">
+          <mat-icon>
+            {{ isSidebarCollapsed ? "chevron_right" : "chevron_left" }}
+          </mat-icon>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="navigation" *ngIf="!isSidebarCollapsed">
           <app-main-button />
-          <button
-            mat-icon-button
-            class="nav-button"
-            [routerLink]="['/settings']"
-          >
-            <mat-icon>settings</mat-icon>
-          </button>
-        </div>
-        <div
-          class="active-interface"
-          *ngIf="activeInterface$ | async as activeInterface"
-        >
-          <h3 class="title">{{ activeInterface.name }}</h3>
+          <div class="buttons">
+            <button
+              mat-icon-button
+              class="nav-button"
+              [routerLink]="['/settings']"
+            >
+              <mat-icon>settings</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="toggleSidebar()"
+              class="nav-button"
+            >
+              <mat-icon>
+                {{ isSidebarCollapsed ? "chevron_right" : "chevron_left" }}
+              </mat-icon>
+            </button>
+          </div>
         </div>
 
-        <mat-divider></mat-divider>
+        <ng-container *ngIf="!isSidebarCollapsed">
+          <div
+            class="active-interface"
+            *ngIf="activeInterface$ | async as activeInterface"
+          >
+            <h3 class="title">{{ activeInterface.name }}</h3>
+          </div>
+        </ng-container>
+
+        <mat-divider *ngIf="!isSidebarCollapsed"></mat-divider>
 
         <mat-nav-list>
           <ng-container *ngIf="dashboards$ | async as dashboards">
@@ -37,6 +65,7 @@
                 [dashboard]="dashboard"
                 [activeDashboardId]="activeDashboardId"
                 [level]="0"
+                [isCollapsed]="isSidebarCollapsed"
               ></dashboard-menu-item>
             </ng-container>
           </ng-container>
