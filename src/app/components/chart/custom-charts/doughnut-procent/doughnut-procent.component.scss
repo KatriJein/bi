@@ -31,7 +31,7 @@
   .center-percentage {
     position: absolute;
     top: 50%;
-    left: 48%;
+    left: 47%;
     transform: translate(-50%, -50%);
     font-weight: bold;
     color: #50b8c5;
@@ -39,8 +39,7 @@
 }
 
 .chart-title {
-  font-size: 20px;
   color: #666;
-  padding: 1rem 0;
+  padding: 0.6rem 0;
   flex-shrink: 0;
 }

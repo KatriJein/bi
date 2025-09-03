@@ -19,6 +19,7 @@ import { COLORS } from '../../../../constants';
   imports: [BaseChartDirective],
 })
 export class DoughnutChartComponent implements OnChanges, AfterViewInit {
+  @ViewChild('container') container!: ElementRef;
   @ViewChild('chartContainer') chartContainer!: ElementRef;
   @Input() data: ChartConfiguration['data'] | undefined;
 
@@ -51,9 +52,6 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
     this.resizeObserver = new ResizeObserver(() => this.updateFontSize());
     this.resizeObserver.observe(this.chartContainer.nativeElement);
     this.updateFontSize();
-
-    // this.updateFontSize();
-    // window.addEventListener('resize', this.updateFontSize.bind(this));
   }
 
   private updateFontSize() {
@@ -63,15 +61,15 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
     const percentageElement =
       this.chartContainer.nativeElement.querySelector('.center-percentage');
     const titleElement =
-      this.chartContainer.nativeElement.querySelector('.chart-title');
+      this.container.nativeElement.querySelector('.chart-title');
 
     if (percentageElement) {
-      const fontSize = Math.min(Math.max(containerWidth * 0.16, 16), 110);
+      const fontSize = Math.min(Math.max(containerWidth * 0.15, 16), 110);
       percentageElement.style.fontSize = `${fontSize}px`;
     }
 
     if (titleElement) {
-      const titleSize = Math.min(Math.max(containerWidth * 0.06, 14), 24);
+      const titleSize = Math.min(Math.max(containerWidth * 0.07, 14), 48);
       titleElement.style.fontSize = `${titleSize}px`;
     }
   }

@@ -28,7 +28,6 @@
     </mat-form-field>
   </ng-container>
 
-  <!-- Значение фильтра -->
   <ng-container *ngIf="selectedFilterType">
     <!-- Множественный выбор -->
     <div *ngIf="isMultiSelectFilter()" class="multi-select-grid">
@@ -61,12 +60,10 @@
       </mat-card>
     </div>
 
-    <!-- Диапазон дат -->
     <div
       *ngIf="selectedFilterType === 'Принадлежит диапазону'"
       class="date-range"
     >
-      <!-- Дата "от" -->
       <app-date-input
         class="half-width"
         label="Дата от"
@@ -74,7 +71,6 @@
         (dateValueChange)="onDateRangeChange(0, $event)"
       ></app-date-input>
 
-      <!-- Дата "до" -->
       <app-date-input
         class="half-width"
         label="Дата до"

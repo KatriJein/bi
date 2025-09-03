@@ -93,19 +93,10 @@ export class EditDashboardModalComponent implements OnInit {
     return this.ICONS.filter((icon) => icon.toLowerCase().includes(search));
   }
 
-  // filteredIcons(): string[] {
-  //   const search = this.iconSearch.toLowerCase();
-  //   return this.ICONS.filter((icon) => icon.toLowerCase().includes(search));
-  // }
-
   selectIcon(icon: string) {
     this.form.patchValue({ icon });
     this.showAllIcons = false;
   }
-
-  // selectIcon(icon: string) {
-  //   this.form.patchValue({ icon });
-  // }
 
   onSelectedColorChange(color: string) {
     this.form.patchValue({ selectedColor: color });
