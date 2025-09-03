@@ -69,7 +69,7 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
     }
 
     if (titleElement) {
-      const titleSize = Math.min(Math.max(containerWidth * 0.07, 14), 48);
+      const titleSize = Math.min(Math.max(containerWidth * 0.06, 14), 48);
       titleElement.style.fontSize = `${titleSize}px`;
     }
   }
@@ -79,7 +79,13 @@ export class DoughnutChartComponent implements OnChanges, AfterViewInit {
       const dataset = this.data.datasets[0];
 
       const rawPercentage = (dataset.data?.[0] as number) || 0;
-      this.percentage = parseFloat(rawPercentage.toFixed(1));
+
+      let processedPercentage = rawPercentage;
+      if (rawPercentage >= 0 && rawPercentage <= 1) {
+        processedPercentage = rawPercentage * 100;
+      }
+
+      this.percentage = parseFloat(processedPercentage.toFixed(1));
 
       this.title = dataset.label || '';
 

@@ -32,7 +32,12 @@
   </div>
 
   <div class="panel right">
-    <ng-container *ngIf="currentChartType() !== 'table'">
+    <ng-container
+      *ngIf="
+        currentChartType() !== 'table' &&
+        currentChartType() !== 'doughnutPercent'
+      "
+    >
       <div class="column-container">
         <div class="column-header"><h3>Ось X</h3></div>
         <div

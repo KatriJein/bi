@@ -20,8 +20,6 @@ export function getAggregatedData(
     aggregate: col.aggregate as AggregateType,
   }));
 
-
-
   const hasNone = aggregations.some((a) => a.aggregate === 'NONE');
 
   if (hasNone && aggregations.every((a) => a.aggregate === 'NONE')) {
