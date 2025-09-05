@@ -177,12 +177,12 @@
 
               <mat-button-toggle-group
                 [hideSingleSelectionIndicator]="true"
-                [value]="activeMultipleSelections[filter.id]"
-                (change)="onMultipleSelectionChange(filter.id, $event.value)"
+                [value]="(activeMultipleSelections$ | async)?.[filter.id]"
               >
                 <mat-button-toggle
                   *ngFor="let option of filter.value.value"
                   [value]="option"
+                  (click)="onMultipleSelectionClick(filter.id, option)"
                 >
                   {{ formatOption(option, filter.fieldType) }}
                 </mat-button-toggle>

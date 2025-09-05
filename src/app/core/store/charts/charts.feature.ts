@@ -114,7 +114,11 @@ export const ChartsFeature = createFeature({
     on(ChartsActions.updateChartSuccess, (state, { chart }) => ({
       ...state,
       isLoading: false,
-      charts: state.charts.map((d) => (d.id === chart.id ? chart : d)),
+      charts: state.charts.map((d) =>
+        d.id === chart.id
+          ? { ...d, ...chart } 
+          : d
+      ),
     })),
     on(ChartsActions.updateChartFailure, (state, { error }) => ({
       ...state,

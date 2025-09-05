@@ -96,7 +96,7 @@ export type FilterEmitType = {
     DashboadMenuItemComponent,
     OnMainButtonComponent,
     ChartContainerComponent,
-    
+
 ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -135,8 +135,6 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
   activeDashboard$ = this.stateService.activeDashboard$;
   multipleFilters$ = this.stateService.multipleFilters$;
   activeMultipleSelections$ = this.stateService.activeMultipleSelections$;
-
-  activeMultipleSelections: Record<string, any> = {};
 
   activeDashboardId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -491,8 +489,8 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
       });
   }
 
-  onMultipleSelectionChange(filterId: string, value: any) {
-    this.stateService.onMultipleSelectionChange(filterId, value);
+  onMultipleSelectionClick(filterId: string, value: any) {
+    this.stateService.onMultipleSelectionClick(filterId, value);
   }
 
   onClearMultipleSelection(filterId: string) {

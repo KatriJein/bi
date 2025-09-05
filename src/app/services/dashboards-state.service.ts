@@ -180,10 +180,23 @@ export class DashboardStateService {
     });
   }
 
-  onMultipleSelectionChange(filterId: string, value: any) {
-    this.store.dispatch(
-      DashboardsActions.setActiveMultipleSelection({ filterId, value })
-    );
+  onMultipleSelectionClick(filterId: string, selectedValue: any) {
+    this.activeMultipleSelections$.pipe(take(1)).subscribe((selections) => {
+      const currentSelection = selections[filterId];
+
+      if (currentSelection === selectedValue) {
+        this.store.dispatch(
+          DashboardsActions.clearActiveMultipleSelection({ filterId })
+        );
+      } else {
+        this.store.dispatch(
+          DashboardsActions.setActiveMultipleSelection({
+            filterId,
+            value: selectedValue,
+          })
+        );
+      }
+    });
   }
 
   onClearMultipleSelection(filterId: string) {
