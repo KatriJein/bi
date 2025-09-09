@@ -8,3 +8,17 @@ export type GetUserType = {
     }>;
   };
 };
+
+// export type GetUserType = {
+//   authenticate: {
+//     jwtToken: string;
+//     query: {
+//       users: {
+//         nodes: Array<{
+//           id: string;
+//           name: string;
+//         }>;
+//       };
+//     };
+//   };
+// };

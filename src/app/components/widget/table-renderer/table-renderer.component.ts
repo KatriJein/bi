@@ -4,6 +4,7 @@ import {
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -15,22 +16,19 @@ import {
   map,
   Observable,
   of,
+  Subscription,
   switchMap,
   take,
-  tap,
 } from 'rxjs';
 import { ChartDto, ChartsSelectors } from '../../../core/store/charts';
 import { DatasetDto, DatasetsSelectors } from '../../../core/store/datasets';
-import { Chart } from 'chart.js';
 import { ChartService } from '../../../core/api/services';
 import {
   collectAllColumns,
   createChartDataRequests,
   findColumnByName,
   findColumnsByNames,
-  formatDate,
   groupColumnsByTable,
-  parseDateFromAnyFormat,
   processChartData,
 } from '../../../utils';
 import { FilterColumn } from '../../../services';
@@ -48,27 +46,17 @@ import { FilterEmitType, FilterTypeExp } from '../../../pages';
   templateUrl: './table-renderer.component.html',
   styleUrl: './table-renderer.component.scss',
 })
-export class TableRendererComponent implements OnChanges {
+export class TableRendererComponent implements OnChanges, OnDestroy {
   private store = inject(Store);
   private tableService = inject(ChartService);
+
   @Input() tableId!: string;
   @Input() initialFilters?: FilterTypeExp[] | null;
   @Output() tableDoubleClick = new EventEmitter<FilterEmitType>();
 
-  onTableDoubleClick(event: FilterTypeExp): void {
-    if (!this.tableSubject.value?.childId) {
-      console.error('Child chart ID is missing');
-      return;
-    }
-
-    this.tableDoubleClick.emit({
-      chartId: this.tableSubject.value.childId,
-      filters: [{ field: event.field, value: event.value }],
-    });
-  }
-
   private tableSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
+  private sub?: Subscription;
 
   table$ = this.tableSubject.asObservable();
   dataset$ = this.datasetSubject.asObservable();
@@ -176,25 +164,43 @@ export class TableRendererComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if ('tableId' in changes && this.tableId) {
-      this.store
-        .pipe(select(ChartsSelectors.selectChartById(this.tableId)), take(1))
-        .subscribe((table) => {
-          this.tableSubject.next(table ?? null);
-
-          if (table?.datasetId) {
-            this.store
-              .pipe(
-                select(DatasetsSelectors.selectDatasetById(table.datasetId)),
-                take(1)
-              )
-              .subscribe((dataset) => {
-                this.datasetSubject.next(dataset ?? null);
-              });
-          } else {
-            console.warn('[TableRenderer] No datasetId in chart');
-            this.datasetSubject.next(null);
-          }
-        });
+      this.loadTableAndDataset(this.tableId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
+
+  private loadTableAndDataset(tableId: string) {
+    this.store
+      .pipe(select(ChartsSelectors.selectChartById(tableId)), take(1))
+      .subscribe((table) => {
+        this.tableSubject.next(table ?? null);
+
+        if (table?.datasetId) {
+          this.store
+            .pipe(
+              select(DatasetsSelectors.selectDatasetById(table.datasetId)),
+              take(1)
+            )
+            .subscribe((dataset) => this.datasetSubject.next(dataset ?? null));
+        } else {
+          console.warn('[TableRenderer] No datasetId in chart');
+          this.datasetSubject.next(null);
+        }
+      });
+  }
+
+  onTableDoubleClick(event: FilterTypeExp): void {
+    if (!this.tableSubject.value?.childId) {
+      console.error('Child chart ID is missing');
+      return;
+    }
+
+    this.tableDoubleClick.emit({
+      chartId: this.tableSubject.value.childId,
+      filters: [{ field: event.field, value: event.value }],
+    });
   }
 }

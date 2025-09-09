@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { GraphqlService } from './grapghql.service';
-import { getChartsQuery, getDataQuery } from '../graphql/queries';
+import { getChartsQuery, getDataQuery, getDataSub } from '../graphql/queries';
 import { ChartDto, SortingType } from '../../store/charts';
 import {
   CreateChartType,
@@ -18,7 +18,6 @@ import {
 } from '../graphql/mutations';
 import { GetChartByIdType } from '../graphql/types/chart/getChartById.type';
 import { getChartByIdQuery } from '../graphql/queries/chart/getChartById.query';
-import { toCamelCase } from '../../utils';
 
 @Injectable({ providedIn: 'root' })
 export class ChartService {
@@ -137,5 +136,27 @@ export class ChartService {
           throw err;
         })
       );
+  }
+
+  getDataSub(
+    tableName: string,
+    columns: string[]
+  ): Observable<Array<Record<string, any>>> {
+    if (!tableName || columns.length === 0) {
+      return of([]);
+    }
+
+    const query = getDataSub(tableName, columns);
+
+    return this.graphql.subscribe<getDataType>(query).pipe(
+      map((res) => {
+        const tableData = res?.[tableName]?.nodes ?? [];
+        return tableData;
+      }),
+      catchError((err) => {
+        console.error(`Error subscribing to data from ${tableName}`, err);
+        return of([]);
+      })
+    );
   }
 }

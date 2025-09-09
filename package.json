@@ -31,7 +31,8 @@
     "arquero": "8.0.1",
     "chart.js": "4.4.9",
     "date-fns": "4.1.0",
-    "graphql": "15.8.0",
+    "graphql": "15.10.1",
+    "graphql-ws": "6.0.6",
     "gridstack": "12.2.1",
     "lodash-es": "4.17.21",
     "ng2-charts": "8.0.0",
@@ -42,7 +43,7 @@
     "zone.js": "0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "19.2.7",
+    "@angular-devkit/build-angular": "19.2.15",
     "@angular/cli": "19.2.7",
     "@angular/compiler-cli": "19.2.7",
     "@types/gridstack": "0.5.0",

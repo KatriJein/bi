@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
       UserActions.login({
         name: 'Администратор',
         password:
-          '$2a$06$DOcdRmKkyE87zfZConVbSO/ueB46STjUZ/tkm.ou1rdFAWA.u4cke',
+          '$2a$06$lkT2d40E5PwlY8BTs/woVub16/xJYVCiIomgTvdDeIMrhpUhpXk4y',
       })
     );
 

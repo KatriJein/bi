@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {
-  distinctUntilChanged,
   filter,
   Observable,
   startWith,
   Subscription,
+  take,
 } from 'rxjs';
 import {
   ChartComponent,
@@ -86,33 +86,30 @@ export class ChartPageComponent implements OnInit {
   nameControl = new FormControl<string>('');
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe((params) => {
+    this.route.paramMap.pipe(take(1)).subscribe((params) => {
       const chartId = params.get('id');
-      const url = this.route.snapshot.routeConfig?.path;
-
-      if (url === 'chart/new') {
+      if (this.route.snapshot.routeConfig?.path === 'chart/new') {
         this.state.createNewChart();
       } else if (chartId) {
         this.state.loadChartFromStore(chartId);
       }
     });
 
-    this.chartTypeSubscription = this.chartTypeControl.valueChanges.subscribe(
-      (type) => {
-        if (type) {
-          this.state.setChartType(type);
-        }
-      }
-    );
-
-    this.state.chartType$.pipe(distinctUntilChanged()).subscribe((type) => {
-      this.chartTypeControl.setValue(type, { emitEvent: false });
+    this.state.chart$.pipe(filter((chart) => !!chart)).subscribe((chart) => {
+      this.chartTypeControl.setValue(chart.settings?.chartType || 'line', {
+        emitEvent: false,
+      });
+      this.selectedDatasetControl.setValue(chart.datasetId || null, {
+        emitEvent: false,
+      });
+      this.nameControl.setValue(chart.name || '', { emitEvent: false });
+      this.childChartControl.setValue(chart.childId || null, {
+        emitEvent: false,
+      });
     });
 
-    this.state.selectedDataset$.subscribe((dataset) => {
-      if (dataset) {
-        this.selectedDatasetControl.setValue(dataset.id || '');
-      }
+    this.chartTypeControl.valueChanges.subscribe((type) => {
+      if (type) this.state.setChartType(type);
     });
 
     this.selectedDatasetControl.valueChanges
@@ -121,24 +118,12 @@ export class ChartPageComponent implements OnInit {
         this.state.setSelectedDatasetId(id);
       });
 
-    this.state.chart$.subscribe((chart) => {
-      if (chart?.name != null) {
-        this.nameControl.setValue(chart.name, { emitEvent: false });
-      }
-    });
-
     this.nameControl.valueChanges.subscribe((name) => {
       this.state.updateChartField('name', name || '');
     });
 
     this.childChartControl.valueChanges.subscribe((childId) => {
       this.state.updateChartField('childId', childId);
-    });
-
-    this.state.chart$.subscribe((chart) => {
-      this.childChartControl.setValue(chart?.childId || null, {
-        emitEvent: false,
-      });
     });
   }
 

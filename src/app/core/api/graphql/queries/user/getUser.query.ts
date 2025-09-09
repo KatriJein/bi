@@ -14,3 +14,19 @@ export const getUserQuery =
   }
 }
 `);
+
+// export const getUserQuery = gql(`
+// mutation GetUser($username: String!, $password: String!) {
+//   authenticate(input: { username: $username, password: $password }) {
+//     jwtToken
+//     query {
+//       users(condition: { name: $username }) {
+//         nodes {
+//           id
+//           name
+//         }
+//       }
+//     }
+//   }
+// }
+// `);

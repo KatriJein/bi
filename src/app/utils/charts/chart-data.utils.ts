@@ -40,7 +40,7 @@ export function createChartDataRequests(
   return Object.entries(colsByTable).map(([tableName, columns]) => {
     const colNames = columns.map((c) => toCamelCase(c.columnName));
     return chartService
-      .getData(tableName, colNames)
+      .getDataSub(tableName, colNames)
       .pipe(map((data) => ({ tableName, data })));
   });
 }

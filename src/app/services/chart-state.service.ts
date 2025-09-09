@@ -258,6 +258,8 @@ export class ChartPageStateService {
     };
 
     this.setChart(newChart);
+    this.measuresSubject.next([]);
+    this.dimensionsSubject.next([]);
     this.xAxisSubject.next([]);
     this.yAxisSubject.next([]);
     this.sortingSubject.next([]);

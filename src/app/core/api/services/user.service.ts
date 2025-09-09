@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, filter } from 'rxjs/operators';
@@ -16,11 +15,7 @@ export class UserService {
     password: string
   ): Observable<UserDto | null> {
     return this.graphql
-      .watchQuery<GetUserType>(
-        undefined,
-        getUserQuery,
-        { name, password }
-      )
+      .watchQuery<GetUserType>(undefined, getUserQuery, { name, password })
       .pipe(
         map((data) => this.transformResponse(data)),
         catchError((error) => {
@@ -43,5 +38,36 @@ export class UserService {
       role: undefined,
     };
   }
-}
 
+  // getUserByNameAndPassword(
+  //   name: string,
+  //   password: string
+  // ): Observable<UserDto | null> {
+  //   return this.graphql
+  //     .mutate<GetUserType>(undefined, getUserQuery, {
+  //       username: name,
+  //       password,
+  //     })
+  //     .pipe(
+  //       map((data) => this.transformResponse(data)),
+  //       catchError((error) => {
+  //         console.error('Error loading user:', error);
+  //         return of(null);
+  //       })
+  //     );
+  // }
+
+  // private transformResponse(data: GetUserType): UserDto | null {
+  //   if (!data?.authenticate.query.users?.nodes?.length) {
+  //     return null;
+  //   }
+
+  //   const userNode = data.authenticate.query.users?.nodes[0];
+
+  //   return {
+  //     id: userNode.id,
+  //     name: userNode.name,
+  //     role: undefined,
+  //   };
+  // }
+}

@@ -145,6 +145,23 @@ export class GraphqlService {
       );
   }
 
+  subscribe<T = any, V extends OperationVariables = OperationVariables>(
+    query: DocumentNode,
+    variables?: V,
+    connectionId?: string
+  ): Observable<T> {
+    const client = connectionId
+      ? this.apollo.use(connectionId)
+      : this.defaultApollo;
+
+    return client
+      .subscribe<T, V>({
+        query,
+        variables,
+      })
+      .pipe(map((res) => res.data as T));
+  }
+
   async clearCache(connectionId?: string): Promise<void> {
     const client = connectionId
       ? this.apollo.use(connectionId).client

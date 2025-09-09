@@ -4,6 +4,7 @@ import {
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -47,7 +48,7 @@ import { DoughnutChartComponent } from '../../chart/custom-charts/doughnut-proce
   templateUrl: './chart-renderer.component.html',
   styleUrl: './chart-renderer.component.scss',
 })
-export class ChartRendererComponent implements OnChanges {
+export class ChartRendererComponent implements OnChanges, OnDestroy {
   private store = inject(Store);
   private chartService = inject(ChartService);
 
