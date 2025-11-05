@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>{{ isEditMode ? 'Редактировать отбор' : 'Добавить отбор' }}</h2>
 <div mat-dialog-content [formGroup]="form" class="dialog-content">
- 
+
   <mat-form-field appearance="fill" class="full-width">
     <mat-label>Название отбора</mat-label>
     <input matInput formControlName="name" placeholder="Введите название">
@@ -33,10 +33,10 @@
     </mat-error>
   </mat-form-field>
 </div>
-<div mat-dialog-actions>
+<div mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">Отмена</button>
   <button
-    mat-button
+    mat-raised-button
     color="primary"
     (click)="onSave()"
     [disabled]="form.invalid"

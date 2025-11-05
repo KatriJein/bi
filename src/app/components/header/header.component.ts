@@ -7,6 +7,7 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { UserDto, UserSelectors } from '../../core/store/user';
 import { RouterModule } from '@angular/router';
+import { MatIconModule } from "@angular/material/icon";
 
 @Component({
   selector: 'app-header',
@@ -16,7 +17,8 @@ import { RouterModule } from '@angular/router';
     MatMenuModule,
     CommonModule,
     RouterModule,
-  ],
+    MatIconModule
+],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })

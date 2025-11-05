@@ -218,6 +218,8 @@ mat-sidenav-content {
     margin-right: 4px;
     margin-bottom: 4px;
     background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--border-radius);
 
     .filter-chip-content {
       display: flex;

@@ -7,10 +7,23 @@ import { Subject, takeUntil } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserActions, UserSelectors } from '../../core/store/user';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-auth',
-  imports: [CommonModule, ReactiveFormsModule, LogoComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    LogoComponent,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+  ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
   providers: [],
@@ -20,6 +33,7 @@ export class AuthComponent {
   private store = inject(Store);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private titleService = inject(Title);
 
   authForm: FormGroup;
   isShowPassword = false;
@@ -29,6 +43,8 @@ export class AuthComponent {
   isChecking$ = this.store.select(UserSelectors.selectIsChecking);
 
   constructor() {
+    this.titleService.setTitle('Вход в систему');
+
     this.authForm = this.fb.group({
       login: ['', Validators.required],
       password: ['', Validators.required],

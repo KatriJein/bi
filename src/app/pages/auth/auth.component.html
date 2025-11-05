@@ -1,18 +1,18 @@
 @if (!(isChecking$ | async)) {
 <main class="container">
-  <app-logo class="logo"></app-logo>
+  <app-logo class="logo no-link"></app-logo>
   <h1 class="title">Вход в систему</h1>
   <form class="form" [formGroup]="authForm" (ngSubmit)="onSubmit()">
     <div class="inputs-container">
       <div class="inputs">
         <label class="label border"
           >Имя пользователя
-          <input type="text" formControlName="login" />
+          <input class="input" type="text" formControlName="login" />
         </label>
 
         <label class="label"
           >Пароль
-          <input
+          <input class="input"
             [type]="isShowPassword ? 'text' : 'password'"
             formControlName="password"
           />
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <button class="button-submit" type="submit">Войти</button>
+    <button mat-flat-button class="button-submit" type="submit" color="primary">Войти</button>
   </form>
 </main>
 }

@@ -7,7 +7,7 @@
         (click)="toggle()"
         class="expand-button"
       >
-        <mat-icon>
+        <mat-icon class="expand">
           {{ expanded() ? "expand_more" : "chevron_right" }}
         </mat-icon>
       </button>
@@ -27,7 +27,7 @@
     </div>
 
     <div class="actions">
-      <button mat-icon-button [matMenuTriggerFor]="menu">
+      <button mat-icon-button [matMenuTriggerFor]="menu" color="accent">
         <mat-icon>more_vert</mat-icon>
       </button>
 

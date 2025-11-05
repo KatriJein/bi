@@ -3,13 +3,7 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import {
-  filter,
-  Observable,
-  startWith,
-  Subscription,
-  take,
-} from 'rxjs';
+import { filter, Observable, startWith, Subscription, take } from 'rxjs';
 import {
   ChartComponent,
   ChartSelectionModalComponent,
@@ -33,6 +27,8 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatChipsModule } from '@angular/material/chips';
 import { ChartFilter } from '../../core/api/graphql/types';
+import { MatCardModule } from '@angular/material/card';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-chart-page',
@@ -54,6 +50,7 @@ import { ChartFilter } from '../../core/api/graphql/types';
     FormsModule,
     MatIconModule,
     MatChipsModule,
+    MatCardModule,
   ],
 })
 export class ChartPageComponent implements OnInit {
@@ -61,6 +58,7 @@ export class ChartPageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private location = inject(Location);
   private dialog = inject(MatDialog);
+  private titleService = inject(Title);
 
   chartTypes = CHART_TYPES;
   getIcon = getChartIcon;
@@ -89,8 +87,10 @@ export class ChartPageComponent implements OnInit {
     this.route.paramMap.pipe(take(1)).subscribe((params) => {
       const chartId = params.get('id');
       if (this.route.snapshot.routeConfig?.path === 'chart/new') {
+        this.titleService.setTitle('Создание графика');
         this.state.createNewChart();
       } else if (chartId) {
+        this.titleService.setTitle('Редактирование графика');
         this.state.loadChartFromStore(chartId);
       }
     });
@@ -184,5 +184,10 @@ export class ChartPageComponent implements OnInit {
 
   removeSelection(id: string): void {
     this.state.removeSelection(id);
+  }
+
+  getSelectionsCount(): number {
+    const chart = this.state.getCurrentChart();
+    return chart?.selections?.length || 0;
   }
 }

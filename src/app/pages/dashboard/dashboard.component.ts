@@ -7,6 +7,7 @@ import {
   inject,
   NgZone,
   OnDestroy,
+  OnInit,
   signal,
   ViewChild,
   ViewContainerRef,
@@ -48,7 +49,11 @@ import {
   Widget,
   WidgetType,
 } from '../../core/api/graphql/types';
-import { ChartContainerComponent, OnMainButtonComponent, SmartIconComponent } from '../../components/common';
+import {
+  ChartContainerComponent,
+  OnMainButtonComponent,
+  SmartIconComponent,
+} from '../../components/common';
 import { DashboardDto } from '../../core/store/dashboards';
 import {
   CreateWidgetModalComponent,
@@ -63,6 +68,7 @@ import { SelectionTypeDashboard } from '../../core/store/charts';
 import { formatFilterValue, formatSingle } from '../../utils';
 import { SelectionColumnType } from '../../constants';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Title } from '@angular/platform-browser';
 
 export type FilterTypeExp = {
   field: string;
@@ -96,12 +102,13 @@ export type FilterEmitType = {
     DashboadMenuItemComponent,
     OnMainButtonComponent,
     ChartContainerComponent,
-
-],
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnDestroy, AfterViewInit {
+export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
+  private titleService = inject(Title);
+
   @ViewChild('gridStackContainer', { static: true })
   gridStackContainer!: ElementRef<HTMLDivElement>;
 
@@ -159,6 +166,10 @@ export class DashboardComponent implements OnDestroy, AfterViewInit {
     this.setupPositionUpdates();
     this.setupWidgetsSubscription();
     this.setupDashboardChanges();
+  }
+
+  ngOnInit() {
+    this.titleService.setTitle('Дашборды');
   }
 
   ngOnDestroy() {

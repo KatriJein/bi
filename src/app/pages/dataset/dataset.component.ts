@@ -22,6 +22,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dataset',
@@ -49,6 +50,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
   dataset$: Observable<Dataset>;
   private sub = new Subscription();
   nameControl = new FormControl('');
+  private titleService = inject(Title);
 
   constructor(private datasetState: DatasetStateService) {
     this.dataset$ = this.datasetState.dataset$;
@@ -64,6 +66,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
       this.route.paramMap.subscribe((params) => {
         const id = params.get('id');
         if (id) {
+          this.titleService.setTitle('Редактирование датасета');
           this.sub.add(
             this.store
               .select(DatasetsSelectors.selectDatasetById(id))
@@ -88,6 +91,7 @@ export class DatasetComponent implements OnInit, OnDestroy {
               })
           );
         } else {
+          this.titleService.setTitle('Создание датасета');
           const newDataset = new Dataset({
             id: '',
             name: 'Новый датасет',
@@ -117,13 +121,26 @@ export class DatasetComponent implements OnInit, OnDestroy {
         this.datasetState.patch({ name: newName || '' });
       })
     );
+  }
 
+  getStatusClass(): string {
+    return this.nameControl.dirty ? 'draft' : 'published';
+  }
+
+  getStatusText(): string {
+    return this.nameControl.dirty ? 'Черновик' : 'Опубликован';
+  }
+
+  getColumnsCount(): number {
+    return 0;
   }
 
   handleTabChange(event: MatTabChangeEvent) {
-    const label = event.tab.textLabel;
-    if (label === 'Поля') this.currentTab = 'columns';
-    else if (label === 'Источники') this.currentTab = 'tables';
+    if (event.index === 0) {
+      this.currentTab = 'tables';
+    } else if (event.index === 1) {
+      this.currentTab = 'columns';
+    }
   }
 
   ngOnDestroy(): void {
@@ -164,7 +181,6 @@ export class DatasetComponent implements OnInit, OnDestroy {
       }
     });
   }
-
 
   onCancel(): void {
     this.location.back();

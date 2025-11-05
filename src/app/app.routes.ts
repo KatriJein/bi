@@ -74,8 +74,8 @@ export const routes: Routes = [
   {
     path: 'auth',
     component: AuthComponent,
-    canActivate: [AuthGuard],
-    data: { onlyUnAuth: true },
+    // canActivate: [AuthGuard],
+    // data: { onlyUnAuth: true },
   },
   { path: '**', redirectTo: '' },
 ];

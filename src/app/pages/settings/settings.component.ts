@@ -12,6 +12,7 @@ import { ChartsActions } from '../../core/store/charts';
 import { DatasetsActions } from '../../core/store/datasets';
 import { OnMainButtonComponent, SmartIconComponent } from '../../components/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-settings',
@@ -31,6 +32,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent {
+  private titleService = inject(Title);
   private store = inject(Store);
   user$: Observable<UserDto | null> = this.store.select(
     UserSelectors.selectUser
@@ -53,6 +55,7 @@ export class SettingsComponent {
   ];
 
   constructor() {
+    this.titleService.setTitle('Страница настроек');
     this.store.dispatch(ChartsActions.loadCharts());
     this.store.dispatch(DatasetsActions.loadDatasets());
   }

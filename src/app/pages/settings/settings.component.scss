@@ -1,6 +1,7 @@
 .settings-container {
   height: 100vh;
-  color: black;
+  color: var(--color-text);
+  background-color: var(--color-bg);
 }
 
 mat-sidenav-content {
@@ -12,12 +13,12 @@ mat-sidenav-content {
 }
 
 .settings-sidenav {
-  background-color: var(--light-blue);
   padding: 0.5rem;
   border-radius: 0;
   display: flex;
   flex: 1;
   flex-direction: column;
+  box-shadow: var(--shadow-card);
 }
 
 .user-info {
@@ -41,11 +42,25 @@ mat-sidenav-content {
   }
 }
 
+.user-icon {
+  width: 96px;
+  height: 96px;
+  font-size: 96px;
+  color: var(--color-text);
+  transition: all 0.3s ease;
+
+  &.collapsed {
+    width: 42px;
+    height: 42px;
+    font-size: 42px;
+  }
+}
+
 .user-name {
   margin: 0.5rem 0;
   font-size: 1.1rem;
-  font-weight: 600;
-  color: black;
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .back-button {
@@ -60,6 +75,15 @@ mat-sidenav-content {
   }
 }
 
+.toggle-sidebar-btn {
+  color: var(--color-secondary);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    color: var(--color-primary);
+  }
+}
+
 .settings-list {
   margin: 0.8rem 0;
   padding: 0 0.5rem;
@@ -70,7 +94,7 @@ mat-sidenav-content {
   a {
     text-align: center;
     text-decoration: none;
-    color: black;
+    color: var(--color-text);
     font-size: 20px;
     border-radius: var(--border-radius);
 
@@ -119,8 +143,8 @@ mat-sidenav-content {
 .title {
   margin: 0;
   font-size: 2rem;
-  font-weight: 600;
-  color: black;
+  font-weight: 500;
+  color: var(--color-text);
 }
 
 .full-width {
@@ -150,7 +174,7 @@ mat-sidenav-content {
   align-items: center;
   gap: 0.5rem;
   font-size: 20px;
-  color: black;
+  color: var(--color-text);
 }
 
 .icon {

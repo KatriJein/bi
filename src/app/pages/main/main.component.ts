@@ -17,6 +17,7 @@ import { InterfaceService } from '../../core/api/services';
 import { DashboardDto, DashboardsSelectors } from '../../core/store/dashboards';
 import { DatasetsActions } from '../../core/store/datasets';
 import { SmartIconComponent } from "../../components/common";
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-main',
@@ -37,6 +38,7 @@ import { SmartIconComponent } from "../../components/common";
 })
 export class MainComponent implements OnInit {
   private store = inject(Store);
+  private titleService = inject(Title);
 
   interfaces$ = this.store.select(InterfacesSelectors.selectAllInterfaces);
   activeInterface$ = this.store.select(
@@ -81,6 +83,7 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     this.store.dispatch(DatasetsActions.loadDatasets());
+    this.titleService.setTitle('Главная страница');
   }
 
   setActiveInterface(id: string | undefined) {

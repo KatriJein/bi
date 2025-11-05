@@ -1,4 +1,4 @@
-@if (loading$ | async) {
+<!-- @if (loading$ | async) {
 <div class="loading-indicator">
   <mat-progress-spinner
     mode="indeterminate"
@@ -55,5 +55,71 @@ async; as activeInterface) {
     </mat-list-item>
     }
   </mat-nav-list>
+</div>
+} -->
+@if (loading$ | async) {
+<div class="loading-indicator">
+  <mat-progress-spinner
+    mode="indeterminate"
+    diameter="60"
+  ></mat-progress-spinner>
+  <p>Загрузка данных...</p>
+</div>
+} @else {
+<div class="page-container">
+  @if (interfaces$ | async; as interfaces) { @if (activeInterface$ | async; as
+  activeInterface) {
+  <nav class="navigate">
+    @for (button of interfaces; track button.id) {
+    <button
+      mat-raised-button
+      class="nav-button"
+      [class.active]="button.id === activeInterface.id"
+      (click)="setActiveInterface(button.id)"
+    >
+      {{ button.name }}
+    </button>
+    }
+  </nav>
+  } }
+
+  <section class="dashboards">
+    <div class="dashboards-column">
+      @if (firstColumnDashboards$ | async; as firstColumnDashboards) { @for
+      (button of firstColumnDashboards; track button.id) {
+      <mat-card class="dashboard-card" [routerLink]="['/dashboard', button.id]">
+        <div class="card-content">
+          <div class="text-content">
+            <span class="card-title">{{ button.name }}</span>
+          </div>
+          <smart-icon
+            [iconName]="button.iconId || 'chart'"
+            [color]="button.color || '#50b8c5'"
+            [size]="'42px'"
+            class="card-icon"
+          ></smart-icon>
+        </div>
+      </mat-card>
+      } }
+    </div>
+
+    <div class="dashboards-column">
+      @for (button of secondColumnDashboards$ | async; track button.id) {
+      <mat-card class="dashboard-card" [routerLink]="['/dashboard', button.id]">
+        <div class="card-content">
+          <div class="text-content">
+            <span class="card-title">{{ button.name }}</span>
+          </div>
+          <smart-icon
+            [iconName]="button.iconId || 'chart'"
+            [color]="button.color || '#50b8c5'"
+            [size]="'42px'"
+            class="card-icon"
+          ></smart-icon>
+        </div>
+      </mat-card>
+      }
+    </div>
+  </section>
 </div>
 }
