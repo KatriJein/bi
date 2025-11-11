@@ -1,4 +1,4 @@
-<mat-form-field appearance="outline" class="date-input">
+<!-- <mat-form-field appearance="outline" class="date-input">
   <mat-label>{{ label }}</mat-label>
   <input
     matInput
@@ -10,4 +10,35 @@
   />
   <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
   <mat-datepicker #datePicker></mat-datepicker>
+</mat-form-field> -->
+
+<mat-form-field appearance="outline" class="date-input">
+  <mat-label>{{ label }}</mat-label>
+
+  <input
+    matInput
+    [matDatepicker]="datePicker"
+    [value]="dateValue"
+    [placeholder]="placeholder"
+    (dateChange)="onDatePickerChange($event)"
+    readonly
+  />
+
+  <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+
+  <mat-datepicker
+    #datePicker
+    [startView]="
+      granularity === 'year'
+        ? 'multi-year'
+        : granularity === 'month'
+        ? 'year'
+        : 'month'
+    "
+    (monthSelected)="
+      granularity === 'month' && monthSelected($event, datePicker)
+    "
+    (yearSelected)="granularity === 'year' && yearSelected($event, datePicker)"
+    [panelClass]="granularity + '-picker'"
+  ></mat-datepicker>
 </mat-form-field>

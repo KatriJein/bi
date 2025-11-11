@@ -21,7 +21,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DashboardFilter } from '../../../core/api/graphql/types';
+import { DashboardFilter, DateGranularity } from '../../../core/api/graphql/types';
 import { DateInputComponent } from '../../common';
 import {
   getNameOfType,
@@ -61,6 +61,7 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
   filterTypes: string[] = [];
   currentInputType: 'text' | 'number' | 'date' = 'text';
   canSave = false;
+  dateGranularities: DateGranularity[] = ['day', 'month', 'year'];
 
   private subs: Subscription[] = [];
 
@@ -77,6 +78,7 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       values: this.fb.array([]),
       dateValues: this.fb.array([]),
       dateRangeValues: this.fb.array([]),
+      dateGranularity: ['day']
     });
   }
 
@@ -382,6 +384,7 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       type: filter.fieldType,
       filterType: filter.filterType,
       isMultiple: !!filter.isMultiple,
+      dateGranularity: filter.dateGranularity || 'day'
     });
 
     this.filterTypes = this.getSelectionOptionsByType(
@@ -454,6 +457,7 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       filterType: formValue.filterType,
       isMultiple: formValue.isMultiple,
       value,
+      dateGranularity: formValue.dateGranularity
     };
 
     this.dialogRef.close(newFilter);

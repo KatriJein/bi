@@ -22,12 +22,6 @@
     </div>
 
     <div class="user-info" *ngIf="user$ | async as user">
-      <!-- <img
-        src="/assets/img/acc.png"
-        alt="User"
-        class="user-avatar"
-        [class.collapsed]="isSidebarCollapsed"
-      /> -->
       <mat-icon class="user-icon" [class.collapsed]="isSidebarCollapsed"
         >account_circle</mat-icon
       >

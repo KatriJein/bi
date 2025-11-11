@@ -1,141 +1,4 @@
-<!-- <div class="chart-page-container">
-  <div class="chart-header">
-    <div class="header-main">
-      <div class="chart-title-section">
-        <mat-icon class="title-icon">bar_chart</mat-icon>
-        <mat-form-field appearance="outline" class="title-input">
-          <input
-            matInput
-            [formControl]="nameControl"
-            placeholder="Введите название графика"
-          />
-        </mat-form-field>
-      </div>
-
-      <div class="header-actions">
-        <button
-          mat-stroked-button
-          color="warn"
-          (click)="onDelete()"
-          class="action-btn"
-        >
-          <mat-icon>delete</mat-icon>
-          Удалить
-        </button>
-        <div class="action-group">
-          <button mat-button (click)="onCancel()" class="secondary-btn">
-            Отменить
-          </button>
-          <button
-            mat-flat-button
-            color="primary"
-            (click)="onSave()"
-            class="primary-btn"
-          >
-            <mat-icon>save</mat-icon>
-            Сохранить
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="data-container">
-      <div class="chart-page-data-selection">
-        <mat-form-field appearance="fill">
-          <mat-label>Выберите датасет</mat-label>
-          <mat-select [formControl]="selectedDatasetControl">
-            <mat-option
-              *ngFor="let dataset of datasets$ | async"
-              [value]="dataset.id"
-            >
-              {{ dataset.name }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-        <app-data-selection></app-data-selection>
-      </div>
-
-      <div class="chart-page-chart-container">
-        <div>
-          <mat-form-field appearance="fill">
-            <mat-label>Тип графика</mat-label>
-            <mat-select [formControl]="chartTypeControl">
-              <mat-select-trigger>
-                {{ getDisplayName(chartTypeControl.value) }}
-              </mat-select-trigger>
-
-              <mat-option *ngFor="let type of chartTypes" [value]="type">
-                <div class="option-with-icon">
-                  <mat-icon>{{ getIcon(type) }}</mat-icon>
-                  <span>{{ getDisplayName(type) }}</span>
-                </div>
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill">
-            <mat-label>Детализация графика (необязательно)</mat-label>
-            <mat-select [formControl]="childChartControl">
-              <mat-option [value]="null">Нет дочернего графика</mat-option>
-              <mat-option
-                *ngFor="let chart of availableChildCharts$ | async"
-                [value]="chart.id"
-              >
-                {{ chart.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <app-chart class="chart-page-chart"></app-chart>
-      </div>
-    </div>
-
-    <mat-accordion class="advanced-settings">
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>Доступные отборы</mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <div class="filters-container" *ngIf="chart$ | async as chart">
-          <mat-chip-listbox aria-label="Filters list">
-            <mat-chip-option
-              *ngFor="let selection of chart?.selections || []"
-              [selectable]="false"
-              (click)="updateSelection(selection)"
-              [removable]="true"
-              (removed)="removeSelection(selection.id)"
-            >
-              <div class="filter-chip-content">
-                <span class="filter-name">{{ selection.name }}</span>
-                <span class="filter-details"
-                  >{{ selection.fieldName }}: {{ selection.filterType }}</span
-                >
-              </div>
-              <mat-icon matChipRemove>cancel</mat-icon>
-            </mat-chip-option>
-          </mat-chip-listbox>
-
-          <button mat-flat-button (click)="addSelection()">
-            <mat-icon>add</mat-icon>
-            Добавить отбор
-          </button>
-        </div>
-      </mat-expansion-panel>
-
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title> Дополнительные настройки </mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <app-chart-settings></app-chart-settings>
-      </mat-expansion-panel>
-    </mat-accordion>
-  </div>
-  </div> -->
-
 <div class="modern-chart-page">
-  <!-- Хедер с названием и кнопками справа -->
   <div class="chart-header-card">
     <div class="header-content">
       <div class="title-section">
@@ -177,11 +40,8 @@
     </div>
   </div>
 
-  <!-- Основной контент в виде карточек -->
   <div class="main-content-cards">
-    <!-- Левая колонка -->
     <div class="left-column">
-      <!-- Карточка выбора датасета и данных -->
       <div class="content-card card-content">
         <mat-form-field appearance="outline" class="dataset-field">
           <mat-label>Выберите датасет</mat-label>
@@ -191,7 +51,6 @@
               [value]="dataset.id"
             >
               <div class="dataset-option">
-
                 <span>{{ dataset.name }}</span>
               </div>
             </mat-option>
@@ -203,7 +62,6 @@
         ></app-data-selection>
       </div>
 
-      <!-- Карточка отборов -->
       <div class="content-card">
         <div class="card-header">
           <mat-icon>filter_alt</mat-icon>
@@ -269,9 +127,7 @@
       </div>
     </div>
 
-    <!-- Правая колонка -->
     <div class="right-column">
-      <!-- Карточка настроек графика -->
       <div class="content-card card-content">
         <div class="chart-controls-row">
           <mat-form-field appearance="outline" class="chart-type-field">
@@ -318,7 +174,6 @@
         </div>
       </div>
 
-      <!-- Карточка предпросмотра графика -->
       <div class="content-card chart-preview-card">
         <div class="card-header">
           <mat-icon>preview</mat-icon>
@@ -329,7 +184,6 @@
         </div>
       </div>
 
-      <!-- Карточка дополнительных настроек -->
       <div class="content-card">
         <div class="card-header">
           <mat-icon>tune</mat-icon>

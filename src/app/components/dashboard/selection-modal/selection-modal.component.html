@@ -30,6 +30,17 @@
       >
     </mat-form-field>
 
+    <div *ngIf="filterForm.get('type')?.value === 'date'">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Точность даты</mat-label>
+        <mat-select formControlName="dateGranularity">
+          <mat-option value="day">День</mat-option>
+          <mat-option value="month">Месяц</mat-option>
+          <mat-option value="year">Год</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Тип фильтра</mat-label>
       <mat-select formControlName="filterType">
@@ -78,6 +89,7 @@
               label="Дата"
               [dateValue]="dateControls[0].value"
               (dateValueChange)="onSingleDateChange($event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
           </div>
         </div>
@@ -96,11 +108,13 @@
               label="Дата от"
               [dateValue]="dateRangeValuesArray.at(0).get('start')?.value"
               (dateValueChange)="onSingleRangePartChange('start', $event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
             <app-date-input
               label="Дата до"
               [dateValue]="dateRangeValuesArray.at(0).get('end')?.value"
               (dateValueChange)="onSingleRangePartChange('end', $event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
           </div>
         </div>
@@ -157,6 +171,7 @@
               [label]="'Дата ' + (i + 1)"
               [dateValue]="ctrl.value"
               (dateValueChange)="onDateControlChange(i, $event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
             <button
               mat-icon-button
@@ -186,11 +201,13 @@
               label="Дата от"
               [dateValue]="grp.get('start')?.value"
               (dateValueChange)="onDateRangeControlChange(i, 'start', $event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
             <app-date-input
               label="Дата до"
               [dateValue]="grp.get('end')?.value"
               (dateValueChange)="onDateRangeControlChange(i, 'end', $event)"
+              [granularity]="filterForm.get('dateGranularity')?.value"
             ></app-date-input>
             <button
               mat-icon-button
