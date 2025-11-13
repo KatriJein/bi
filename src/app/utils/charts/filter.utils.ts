@@ -1,4 +1,4 @@
-import { from, escape, ColumnTable } from 'arquero';
+import { from, escape, ColumnTable, op } from 'arquero';
 import {
   parse,
   parseISO,
@@ -8,8 +8,13 @@ import {
 } from 'date-fns';
 import { toCamelCase } from '../../core/utils';
 import { FilterType } from '../../core/store/charts';
-import { DashboardFilter } from '../../core/api/graphql/types';
+import { DashboardFilter, DateGranularity } from '../../core/api/graphql/types';
 import { SelectionColumnType } from '../../constants';
+import {
+  applyDateRangeFilterWithGranularity,
+  compareDatesByGranularity,
+  isDateComparisonOperator,
+} from '../date-comparison.utils';
 
 export function applyFilters(
   data: Record<string, any>[],
@@ -21,8 +26,20 @@ export function applyFilters(
     const col = toCamelCase(filter.columnName);
     const type = filter.filterType;
     const val = filter.value;
+    const dateGranularity = filter.dateGranularity;
 
     if (!col || !type || val === undefined || val === null) continue;
+
+    if (dateGranularity && isDateComparisonOperator(type)) {
+      aqTable = applyDateFilterWithGranularity(
+        aqTable,
+        col,
+        val,
+        dateGranularity,
+        type
+      );
+      continue;
+    }
 
     switch (type) {
       case 'Равно':
@@ -131,6 +148,56 @@ export function applyFilters(
   return aqTable;
 }
 
+function applyDateFilterWithGranularity(
+  aqTable: ColumnTable,
+  column: string,
+  value: any,
+  granularity: DateGranularity,
+  operator: string
+): ColumnTable {
+  if (
+    operator === 'Принадлежит диапазону' &&
+    Array.isArray(value) &&
+    value.length === 2
+  ) {
+    return applyDateRangeFilterWithGranularity(
+      aqTable,
+      column,
+      value as [any, any],
+      granularity
+    );
+  }
+  const filterDate = safeParseDate(value);
+  if (!filterDate) {
+    console.warn(`Invalid date value for field ${column}:`, value);
+    return aqTable;
+  }
+
+  const data = aqTable.objects();
+
+  const filteredData = data.filter((item: any) => {
+    const dataDate = safeParseDate(item[column]);
+    if (!dataDate) return false;
+
+    return compareDatesByGranularity(
+      dataDate,
+      filterDate,
+      granularity,
+      operator
+    );
+  });
+
+  return from(filteredData);
+}
+
+export function safeParseDate(dateString: any): Date | null {
+  if (!dateString) return null;
+  if (dateString instanceof Date) return dateString;
+
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? null : date;
+}
+
 export function parseDateFromAnyFormat(
   dateString: any,
   format?: string | string[]
@@ -236,6 +303,154 @@ export function parseDateFromAnyFormat(
   return null;
 }
 
+// export function parseDateFromAnyFormat(
+//   dateString: any,
+//   format?: string | string[],
+//   granularity: DateGranularity = 'day'
+// ): Date | null {
+//   if (dateString === null || dateString === undefined || dateString === '') {
+//     return null;
+//   }
+
+//   if (dateString instanceof Date) {
+//     return dateString;
+//   }
+
+//   if (typeof dateString === 'number') {
+//     const date = new Date(dateString);
+//     return isValid(date) ? date : null;
+//   }
+
+//   dateString = String(dateString).trim();
+
+//   // Специальная обработка для разных granularity
+//   switch (granularity) {
+//     case 'year':
+//       // Парсим только год (например: "2023", "2023-01-01" -> 2023 год)
+//       const yearMatch = dateString.match(/^(\d{4})/);
+//       if (yearMatch) {
+//         const year = parseInt(yearMatch[1]);
+//         if (year >= 1900 && year <= 2100) {
+//           return new Date(year, 0, 1); // 1 января указанного года
+//         }
+//       }
+//       break;
+
+//     case 'month':
+//       // Парсим год и месяц (например: "2023-05", "05.2023", "2023-05-15" -> май 2023)
+//       const monthMatch = dateString.match(/^(\d{4})[-\.]?(\d{1,2})/);
+//       if (monthMatch) {
+//         const year = parseInt(monthMatch[1]);
+//         const month = parseInt(monthMatch[2]) - 1;
+//         if (year >= 1900 && year <= 2100 && month >= 0 && month <= 11) {
+//           return new Date(year, month, 1); // 1 число указанного месяца
+//         }
+//       }
+
+//       // Пробуем формат ММ.ГГГГ
+//       const monthMatch2 = dateString.match(/^(\d{1,2})[\.\-](\d{4})/);
+//       if (monthMatch2) {
+//         const month = parseInt(monthMatch2[1]) - 1;
+//         const year = parseInt(monthMatch2[2]);
+//         if (year >= 1900 && year <= 2100 && month >= 0 && month <= 11) {
+//           return new Date(year, month, 1);
+//         }
+//       }
+//       break;
+
+//     case 'day':
+//     default:
+//       // Стандартный парсинг для полной даты
+//       break;
+//   }
+
+//   // Если granularity-специфичный парсинг не сработал, пробуем стандартные методы
+//   try {
+//     const isoDate = parseISO(dateString);
+//     if (isValid(isoDate)) {
+//       return isoDate;
+//     }
+//   } catch {}
+
+//   if (format) {
+//     const formats = Array.isArray(format) ? format : [format];
+//     const referenceDate = new Date(2000, 0, 1);
+
+//     for (const fmt of formats) {
+//       try {
+//         const convertedFormat = fmt
+//           .replace(/YYYY/g, 'yyyy')
+//           .replace(/YY/g, 'yy')
+//           .replace(/DD/g, 'dd')
+//           .replace(/D/g, 'd')
+//           .replace(/MM/g, 'MM')
+//           .replace(/M/g, 'M')
+//           .replace(/HH/g, 'HH')
+//           .replace(/H/g, 'H')
+//           .replace(/mm/g, 'mm')
+//           .replace(/m/g, 'm')
+//           .replace(/ss/g, 'ss')
+//           .replace(/s/g, 's')
+//           .replace(/x/g, 'T');
+
+//         const parsed = parse(dateString, convertedFormat, referenceDate);
+//         if (isValid(parsed)) {
+//           return parsed;
+//         }
+//       } catch (e) {
+//         continue;
+//       }
+//     }
+//   }
+
+//   const defaultFormats = [
+//     'yyyy-MM-dd',
+//     'dd.MM.yyyy',
+//     'MM/dd/yyyy',
+//     'dd-MM-yyyy',
+//     "yyyy-MM-dd'T'HH:mm:ss",
+//     'yyyy-MM-dd HH:mm:ss',
+//     'T',
+//   ];
+
+//   const referenceDate = new Date(2000, 0, 1);
+//   for (const fmt of defaultFormats) {
+//     try {
+//       const parsed = parse(dateString, fmt, referenceDate);
+//       if (isValid(parsed)) {
+//         return parsed;
+//       }
+//     } catch (e) {
+//       continue;
+//     }
+//   }
+
+//   const parts = String(dateString).split(/[-./]/);
+
+//   if (parts.length === 3) {
+//     const variants = [
+//       { format: 'dd.MM.yyyy', value: `${parts[0]}.${parts[1]}.${parts[2]}` },
+//       { format: 'dd.MM.yyyy', value: `${parts[1]}.${parts[0]}.${parts[2]}` },
+//       { format: 'yyyy-MM-dd', value: `${parts[2]}-${parts[1]}-${parts[0]}` },
+//       { format: 'yyyy-MM-dd', value: `${parts[2]}-${parts[0]}-${parts[1]}` },
+//     ];
+
+//     for (const variant of variants) {
+//       try {
+//         const parsed = parse(variant.value, variant.format, referenceDate);
+//         if (isValid(parsed)) {
+//           return parsed;
+//         }
+//       } catch (e) {
+//         continue;
+//       }
+//     }
+//   }
+
+//   console.warn(`Не удалось распарсить дату: ${dateString}`);
+//   return null;
+// }
+
 export function formatDate(date: Date, format: string): string {
   const convertedFormat = format
     .replace(/dd/g, 'dd')
@@ -245,21 +460,25 @@ export function formatDate(date: Date, format: string): string {
   return formatDateFns(date, convertedFormat);
 }
 
-export function formatSingle(val: any, fieldType: SelectionColumnType) {
+export function formatSingle(
+  val: any,
+  fieldType: SelectionColumnType,
+  dateGranularity?: DateGranularity
+): string {
   if (fieldType === 'date') {
     if (Array.isArray(val)) {
       return val
         .map((d) =>
-          formatDate(
+          formatDateWithGranularity(
             parseDateFromAnyFormat(d, 'yyyy-MM-dd') as Date,
-            'dd.MM.yyyy'
+            dateGranularity
           )
         )
         .join(' – ');
     } else {
-      return formatDate(
+      return formatDateWithGranularity(
         parseDateFromAnyFormat(val, 'yyyy-MM-dd') as Date,
-        'dd.MM.yyyy'
+        dateGranularity
       );
     }
   }
@@ -270,18 +489,81 @@ export function formatSingle(val: any, fieldType: SelectionColumnType) {
   return String(val);
 }
 
+export function formatDateWithGranularity(
+  date: Date,
+  granularity?: DateGranularity
+): string {
+  if (!date || isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+
+  switch (granularity) {
+    case 'year':
+      return formatDate(date, 'yyyy');
+
+    case 'month':
+      // Для русской локализации месяцев
+      const monthNames = [
+        'янв', 'фев', 'мар', 'апр', 'май', 'июн',
+        'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
+      ];
+      const month = monthNames[date.getMonth()];
+      const year = date.getFullYear();
+      return `${month} ${year}`;
+
+    case 'day':
+    default:
+      return formatDate(date, 'dd.MM.yyyy');
+  }
+}
+
+// export function formatSingle(val: any, fieldType: SelectionColumnType) {
+//   if (fieldType === 'date') {
+//     if (Array.isArray(val)) {
+//       return val
+//         .map((d) =>
+//           formatDate(
+//             parseDateFromAnyFormat(d, 'yyyy-MM-dd') as Date,
+//             'dd.MM.yyyy'
+//           )
+//         )
+//         .join(' – ');
+//     } else {
+//       return formatDate(
+//         parseDateFromAnyFormat(val, 'yyyy-MM-dd') as Date,
+//         'dd.MM.yyyy'
+//       );
+//     }
+//   }
+
+//   if (Array.isArray(val)) {
+//     return val.join(' – ');
+//   }
+//   return String(val);
+// }
+
 export function formatFilterValue(filter: DashboardFilter): string {
   const { value } = filter.value;
-  const { isMultiple, fieldType } = filter;
+  const { isMultiple, fieldType, dateGranularity } = filter;
 
   if (isMultiple) {
     if (Array.isArray(value)) {
       return value
-        .map((v) => formatSingle(v, fieldType as SelectionColumnType))
+        .map((v) =>
+          formatSingle(v, fieldType as SelectionColumnType, dateGranularity)
+        )
         .join(', ');
     }
-    return formatSingle(value, fieldType as SelectionColumnType);
+    return formatSingle(
+      value,
+      fieldType as SelectionColumnType,
+      dateGranularity
+    );
   } else {
-    return formatSingle(value, fieldType as SelectionColumnType);
+    return formatSingle(
+      value,
+      fieldType as SelectionColumnType,
+      dateGranularity
+    );
   }
 }

@@ -46,6 +46,7 @@ import {
 import 'gridstack/dist/gridstack.min.css';
 import {
   DashboardFilter,
+  DateGranularity,
   Widget,
   WidgetType,
 } from '../../core/api/graphql/types';
@@ -74,6 +75,7 @@ export type FilterTypeExp = {
   field: string;
   operator?: string;
   value: any;
+   dateGranularity?: DateGranularity;
 };
 
 export type FilterEmitType = {
@@ -102,6 +104,7 @@ export type FilterEmitType = {
     DashboadMenuItemComponent,
     OnMainButtonComponent,
     ChartContainerComponent,
+    MatTooltipModule 
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -158,8 +161,8 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private isUpdatingWidgets = false;
 
   formatFilterValue = formatFilterValue;
-  formatOption = (option: any, fieldType: string) =>
-    formatSingle(option, fieldType as SelectionColumnType);
+  formatOption = (option: any, fieldType: string, dateGranularity?: DateGranularity) =>
+    formatSingle(option, fieldType as SelectionColumnType, dateGranularity);
 
   ngAfterViewInit() {
     this.initGridStack();

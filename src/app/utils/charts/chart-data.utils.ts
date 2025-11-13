@@ -50,7 +50,7 @@ export function processChartData(
   xAxis: string,
   yAxis: Column[],
   sorting: (Column & { direction: 'asc' | 'desc' })[],
-  filters: FilterColumn[]
+  filters: FilterColumn[],
 ): any[] {
   return getAggregatedData(data, xAxis, yAxis, sorting, filters);
 }

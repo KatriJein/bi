@@ -1,6 +1,6 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as ChartsActions from './charts.actions';
-import { ChartFilter } from '../../api/graphql/types';
+import { ChartFilter, DateGranularity } from '../../api/graphql/types';
 
 export type SortingType = {
   columnName: string;
@@ -11,6 +11,7 @@ export type FilterType = {
   columnName: string;
   filterType: string;
   value: any;
+  dateGranularity?: DateGranularity;
 };
 
 export type SelectionTypeChart = {
@@ -26,6 +27,7 @@ export type SelectionTypeDashboard = {
   filterType: string;
   isMultiple: boolean;
   value: any;
+  dateGranularity: DateGranularity;
 };
 
 export type ChartType =
@@ -116,7 +118,7 @@ export const ChartsFeature = createFeature({
       isLoading: false,
       charts: state.charts.map((d) =>
         d.id === chart.id
-          ? { ...d, ...chart } 
+          ? { ...d, ...chart }
           : d
       ),
     })),

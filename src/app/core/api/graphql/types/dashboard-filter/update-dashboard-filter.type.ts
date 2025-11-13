@@ -1,4 +1,4 @@
-import { DashboardFilter } from './create-dashboard-filter.type';
+import { DashboardFilter, DateGranularity } from './create-dashboard-filter.type';
 
 export type UpdateDashboardFilterResponse = {
   updateDashboardFilter: {
@@ -17,5 +17,6 @@ export type UpdateDashboardFilterVariables = {
     value?: {
       value: any;
     };
+    dateGranularity?: DateGranularity;
   };
 };

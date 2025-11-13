@@ -38,8 +38,7 @@ import {
   processChartData,
 } from '../utils';
 import { COLORS } from '../constants';
-import { WidgetType } from '../core/api/graphql/types';
-import { selectChartById } from '../core/store/charts/charts.selector';
+import { DateGranularity, WidgetType } from '../core/api/graphql/types';
 
 export type AggregateType = 'SUM' | 'AVG' | 'COUNT' | 'MAX' | 'MIN' | 'NONE';
 
@@ -47,6 +46,7 @@ export type ColumnWithExtras<T = {}> = Column & T;
 export type FilterColumn = ColumnWithExtras<{
   filterType: string;
   value: any;
+  dateGranularity?: DateGranularity;
 }>;
 
 @Injectable({ providedIn: 'root' })

@@ -32,6 +32,7 @@ export function convertBindingsToFilters(
             field: chartFilter.fieldName,
             operator: chartFilter.filterType,
             value: dashboardFilter.value.value,
+            dateGranularity: dashboardFilter.dateGranularity
           } as FilterTypeExp;
         })
         .filter(Boolean) as FilterTypeExp[];

@@ -154,13 +154,15 @@ mat-sidenav-content {
 
 .dashboard-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid #e0e0e0;
+  gap: 1rem;
 
   .actions {
     display: flex;
-    width: 100%;
+    // width: 100%;
     gap: 1rem;
     justify-content: end;
     align-items: center;
@@ -302,7 +304,7 @@ mat-sidenav-content {
   gap: 2rem;
   flex-wrap: wrap;
   align-items: center;
-  padding: 0.5rem;
+  // padding: 0.5rem;
 
   .multiple-filter-item {
     display: flex;

@@ -11,6 +11,7 @@ query GetDashboardFiltersById($dashboardId: UUID) {
       name
       value
       isMultiple
+      dateGranularity
     }
   }
 }

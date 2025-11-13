@@ -13,6 +13,7 @@ export type CreateDashboardFilterVariables = {
   value: {
     value: any;
   };
+  dateGranularity?: DateGranularity;
 };
 
 export type DashboardFilter = {
@@ -25,4 +26,7 @@ export type DashboardFilter = {
   value: {
     value: any;
   };
+  dateGranularity: DateGranularity;
 };
+
+export type DateGranularity = 'day' | 'month' | 'year';

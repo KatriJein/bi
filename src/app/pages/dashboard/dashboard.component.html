@@ -77,6 +77,37 @@
       <div class="dashboard-content">
         <div [hidden]="isDetailMode()" class="widgets-mode">
           <div class="dashboard-header">
+            <div
+              class="multiple-filters-container"
+              *ngIf="multipleFilters$ | async as selections"
+            >
+              <div
+                *ngFor="let filter of selections"
+                class="multiple-filter-item"
+              >
+                <span class="filter-name">{{ filter.name }}:</span>
+
+                <mat-button-toggle-group
+                  [hideSingleSelectionIndicator]="true"
+                  [value]="(activeMultipleSelections$ | async)?.[filter.id]"
+                >
+                  <mat-button-toggle
+                    *ngFor="let option of filter.value.value"
+                    [value]="option"
+                    (click)="onMultipleSelectionClick(filter.id, option)"
+                  >
+                    {{
+                      formatOption(
+                        option,
+                        filter.fieldType,
+                        filter.dateGranularity
+                      )
+                    }}
+                  </mat-button-toggle>
+                </mat-button-toggle-group>
+              </div>
+            </div>
+
             <div class="actions">
               <button
                 mat-button
@@ -91,34 +122,42 @@
 
               <div class="right-actions">
                 <button
-                  mat-button
+                  mat-icon-button
                   color="primary"
                   class="refresh-widget-button"
                   (click)="onRefreshWidgets()"
+                  [matTooltip]="'Обновить'"
                 >
                   <mat-icon>refresh</mat-icon>
-                  Обновить
-                </button>
-
-                <button mat-button (click)="toggleEditMode()">
-                  <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
-                  {{ isEditMode() ? "Заблокировать" : "Редактировать" }}
                 </button>
 
                 <button
-                  mat-flat-button
+                  mat-icon-button
+                  (click)="toggleEditMode()"
+                  [matTooltip]="
+                    isEditMode() ? 'Заблокировать' : 'Редактировать'
+                  "
+                >
+                  <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
+                </button>
+
+                <button
+                  mat-icon-button
                   *ngIf="isEditMode()"
                   [matMenuTriggerFor]="addWidgetMenu"
                   color="primary"
                   class="add-widget-button"
+                  [matTooltip]="'Добавить виджет'"
                 >
                   <mat-icon>add</mat-icon>
-                  Добавить виджет
                 </button>
 
-                <button mat-button (click)="toggleFilters()">
+                <button
+                  mat-icon-button
+                  (click)="toggleFilters()"
+                  [matTooltip]="'Фильтр'"
+                >
                   <mat-icon>filter_alt</mat-icon>
-                  Фильтр
                 </button>
               </div>
             </div>
@@ -166,28 +205,6 @@
               <mat-icon>add</mat-icon>
               Добавить фильтр
             </button>
-          </div>
-
-          <div
-            class="multiple-filters-container"
-            *ngIf="multipleFilters$ | async as selections"
-          >
-            <div *ngFor="let filter of selections" class="multiple-filter-item">
-              <span class="filter-name">{{ filter.name }}:</span>
-
-              <mat-button-toggle-group
-                [hideSingleSelectionIndicator]="true"
-                [value]="(activeMultipleSelections$ | async)?.[filter.id]"
-              >
-                <mat-button-toggle
-                  *ngFor="let option of filter.value.value"
-                  [value]="option"
-                  (click)="onMultipleSelectionClick(filter.id, option)"
-                >
-                  {{ formatOption(option, filter.fieldType) }}
-                </mat-button-toggle>
-              </mat-button-toggle-group>
-            </div>
           </div>
 
           <div

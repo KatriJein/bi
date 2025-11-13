@@ -11,6 +11,7 @@ query GetDashboardFilters {
       name
       value
       isMultiple
+      dateGranularity
     }
   }
 }

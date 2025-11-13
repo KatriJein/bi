@@ -11,6 +11,7 @@ mutation UpdateDashboardFilter($id: UUID!, $patch: DashboardFilterPatch!) {
       name
       value
       isMultiple
+      dateGranularity
     }
   }
 }

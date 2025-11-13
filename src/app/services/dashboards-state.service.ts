@@ -145,6 +145,7 @@ export class DashboardStateService {
             value: {
               value: selection.value,
             },
+            dateGranularity: selection.dateGranularity,
           },
         })
       );
@@ -163,6 +164,7 @@ export class DashboardStateService {
           value: {
             value: selection.value,
           },
+          dateGranularity: selection.dateGranularity,
         },
       })
     );

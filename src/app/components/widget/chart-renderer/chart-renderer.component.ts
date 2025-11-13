@@ -93,7 +93,8 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
                 ...baseCol,
                 filterType: f.filterType,
                 value: f.value,
-              }
+                dateGranularity: f.dateGranularity,
+              } as FilterColumn
             : null;
         })
         .filter((x): x is FilterColumn => x !== null);
@@ -244,6 +245,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
       columnName: filter.field,
       filterType: filter.operator ? filter.operator : 'Равно',
       value: filter.value,
+      dateGranularity: filter.dateGranularity
     }));
 
     const combined = [...chartFilters];
@@ -258,7 +260,6 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
         combined.push(initialFilter);
       }
     });
-
     return combined;
   }
 
