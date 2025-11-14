@@ -24,7 +24,11 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { FilterTypeExp } from '../../../pages';
 import { toCamelCase } from '../../../core/utils';
-import { parseDateFromAnyFormat } from '../../../utils';
+import {
+  formatDateWithGranularity,
+  parseDateFromAnyFormat,
+} from '../../../utils';
+import { DateGranularity } from '../../../core/api/graphql/types';
 
 ModuleRegistry.registerModules([AllCommunityModule, DateFilterModule]);
 
@@ -59,7 +63,11 @@ export class TableComponent implements OnChanges {
   private isGridReady = false;
   private pendingFilters: FilterTypeExp[] | null = null;
 
-  activeFilters: { colId: string; value: any }[] = [];
+  activeFilters: {
+    colId: string;
+    value: any;
+    dateGranularity?: DateGranularity;
+  }[] = [];
   colIdToHeaderName: { [key: string]: string } = {};
 
   myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
@@ -90,21 +98,11 @@ export class TableComponent implements OnChanges {
         }
         return acc;
       }, {} as { [key: string]: string });
-
-      this.syncFiltersWithColumns();
     }
 
-    if (changes['initialFilters'] && this.gridApi && this.initialFilters) {
-      this.applyFiltersReplacingAll(this.initialFilters);
+    if (changes['initialFilters']) {
+      this.updateActiveFilters();
     }
-
-    if (changes['rowData'] && this.gridApi && this.initialFilters) {
-      this.applyFiltersReplacingAll(this.initialFilters);
-    }
-  }
-
-  columnEverythingChanged(): void {
-    this.syncFiltersWithColumns();
   }
 
   ngOnDestroy() {
@@ -114,13 +112,7 @@ export class TableComponent implements OnChanges {
   onGridReady(params: any): void {
     this.gridApi = params.api;
     this.isGridReady = true;
-
-    this.pendingFilters
-      ? this.applyFiltersReplacingAll(this.pendingFilters)
-      : this.applyInitialFilters();
-
-    this.pendingFilters = null;
-    this.syncFiltersWithColumns();
+    this.updateActiveFilters();
   }
 
   async onCellClicked(event: any): Promise<void> {
@@ -233,18 +225,11 @@ export class TableComponent implements OnChanges {
           const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
           if (isDateColumn) {
-            const date = parseDateFromAnyFormat(filter.value);
-            if (!date) return;
-
-            const utcDate = new Date(
-              Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+            await this.applyDateFilterWithGranularity(
+              filterInstance,
+              filter.value,
+              filter.dateGranularity
             );
-
-            filterInstance.setModel({
-              type: 'equals',
-              dateFrom: utcDate.toISOString(),
-              dateTo: new Date(utcDate.getTime() + 86400000 - 1).toISOString(),
-            });
           } else {
             filterInstance.setModel({
               type: 'equals',
@@ -266,6 +251,67 @@ export class TableComponent implements OnChanges {
       console.error('Error applying filters:', error);
       this.pendingFilters = [...filters];
     }
+  }
+
+  private async applyDateFilterWithGranularity(
+    filterInstance: any,
+    value: any,
+    granularity?: DateGranularity
+  ): Promise<void> {
+    const date = parseDateFromAnyFormat(value);
+    if (!date) return;
+
+    let startDate: Date;
+    let endDate: Date;
+
+    switch (granularity) {
+      case 'year':
+        startDate = new Date(Date.UTC(date.getFullYear(), 0, 1, 0, 0, 0, 0));
+        endDate = new Date(
+          Date.UTC(date.getFullYear(), 11, 31, 23, 59, 59, 999)
+        );
+        break;
+
+      case 'month':
+        startDate = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
+        );
+        endDate = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0)
+        );
+        break;
+
+      case 'day':
+      default:
+        startDate = new Date(
+          Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            0,
+            0,
+            0,
+            0
+          )
+        );
+        endDate = new Date(
+          Date.UTC(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate() + 1,
+            0,
+            0,
+            0,
+            0
+          )
+        );
+        break;
+    }
+    filterInstance.setModel({
+      type: 'inRange',
+      dateFrom: startDate.toISOString(),
+      dateTo: endDate.toISOString(),
+    });
   }
 
   private async applyFilterAppending(field: string, value: any): Promise<void> {
@@ -325,56 +371,27 @@ export class TableComponent implements OnChanges {
     this.activeFilters = [];
   }
 
-  private updateActiveFilters() {
-    if (!this.gridApi) return;
+  private updateActiveFilters(): void {
+    if (!this.initialFilters || this.initialFilters.length === 0) {
+      this.activeFilters = [];
+      return;
+    }
 
-    const model = this.gridApi.getFilterModel();
-
-    this.activeFilters = Object.keys(model).map((colId) => {
-      const filter = model[colId];
-      const colDef = this.gridApi.getColumnDef(colId);
-      const isDateColumn = colDef?.filter === 'agDateColumnFilter';
-
-      let displayValue = '';
-
-      if (isDateColumn) {
-        const dateStr = filter.dateFrom || filter.filter;
-        if (dateStr) {
-          const date = new Date(dateStr);
-          const day = date.getUTCDate().toString().padStart(2, '0');
-          const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-          const year = date.getUTCFullYear();
-          displayValue = `${day}.${month}.${year}`;
-        }
-      } else {
-        displayValue = filter.filter?.toString() || '';
-      }
-
-      return {
-        colId,
-        value: displayValue,
-      };
-    });
+    this.activeFilters = this.initialFilters.map((filter) => ({
+      colId: filter.field,
+      value: this.formatFilterValue(filter),
+      dateGranularity: filter.dateGranularity,
+    }));
   }
 
-  private syncFiltersWithColumns(): void {
-    if (!this.gridApi) return;
-    const columns = this.gridApi.getColumnDefs() as ColDef[];
-    const allowedFields = new Set(
-      (columns || []).map((col) => col.field).filter(Boolean) as string[]
-    );
-    const currentFilterModel = this.gridApi.getFilterModel();
+  private formatFilterValue(filter: FilterTypeExp): string {
+    if (filter.dateGranularity) {
+      const date = parseDateFromAnyFormat(filter.value);
+      if (date) {
+        return formatDateWithGranularity(date, filter.dateGranularity);
+      }
+    }
 
-    const newFilterModel = Object.entries(currentFilterModel).reduce(
-      (acc, [colId, filter]) => {
-        if (allowedFields.has(colId)) acc[colId] = filter;
-        return acc;
-      },
-      {} as { [key: string]: any }
-    );
-
-    this.gridApi.setFilterModel(newFilterModel);
-    this.gridApi.onFilterChanged();
-    this.updateActiveFilters();
+    return String(filter.value);
   }
 }

@@ -56,6 +56,7 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
 
   private tableSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
+  private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
   private sub?: Subscription;
 
   table$ = this.tableSubject.asObservable();
@@ -70,78 +71,96 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
     })
   );
 
-  chartData$: Observable<any[]> = this.table$.pipe(
-    filter(
-      (table): table is ChartDto =>
-        !!table && Array.isArray(table.yAxis) && table.yAxis.length > 0
-    ),
-    switchMap((table) =>
-      this.dataset$.pipe(
-        filter((d): d is DatasetDto => d !== null),
-        switchMap((dataset) => {
-          const tableColumns = findColumnsByNames(table.yAxis || [], dataset);
-
-          const filtersColumns: FilterColumn[] = (table.filters ?? [])
-            .map((f) => {
-              const baseCol = findColumnByName(f.columnName, dataset);
-              return baseCol
-                ? { ...baseCol, filterType: f.filterType, value: f.value }
-                : null;
-            })
-            .filter((x): x is FilterColumn => x !== null);
-
-          const sortingColumns = (table.sorting ?? [])
-            .map((s) => {
-              const col = findColumnByName(s.columnName, dataset);
-              return col ? { ...col, direction: s.direction } : null;
-            })
-            .filter((c): c is Column & { direction: 'asc' | 'desc' } => !!c);
-
-          const allCols = collectAllColumns(
-            null,
-            tableColumns,
-            filtersColumns,
-            sortingColumns
-          );
-
-          const colsByTable = groupColumnsByTable(allCols);
-
-          const requests = createChartDataRequests(
-            colsByTable,
-            this.tableService
-          );
-
-          if (requests.length === 0) {
-            return of([]);
-          }
-
-          return requests.length === 1
-            ? requests[0].pipe(
-                map(({ data }) => {
-                  return processChartData(
-                    data,
-                    '',
-                    tableColumns,
-                    sortingColumns,
-                    filtersColumns
-                  );
-                })
-              )
-            : combineLatest(requests).pipe(
-                map((results) => {
-                  const merged = results.flatMap((r) => r.data);
-                  return processChartData(
-                    merged,
-                    '',
-                    tableColumns,
-                    sortingColumns,
-                    filtersColumns
-                  );
-                })
-              );
-        })
+  chartData$: Observable<any[]> = combineLatest([
+    this.table$.pipe(
+      filter(
+        (table): table is ChartDto =>
+          !!table && Array.isArray(table.yAxis) && table.yAxis.length > 0
       )
-    )
+    ),
+    this.dataset$.pipe(filter((d): d is DatasetDto => d !== null)),
+    this.filtersSubject,
+  ]).pipe(
+    switchMap(([table, dataset, externalFilters]) => {
+      const tableColumns = findColumnsByNames(table.yAxis || [], dataset);
+
+      const filtersColumns: FilterColumn[] = (table.filters ?? [])
+        .map((f) => {
+          const baseCol = findColumnByName(f.columnName, dataset);
+          return baseCol
+            ? ({
+                ...baseCol,
+                filterType: f.filterType,
+                value: f.value,
+                dateGranularity: f.dateGranularity,
+              } as FilterColumn)
+            : null;
+        })
+        .filter((x): x is FilterColumn => x !== null);
+
+      const externalFiltersColumns: FilterColumn[] = externalFilters
+        .map((f) => {
+          const baseCol = findColumnByName(f.field, dataset);
+          return baseCol
+            ? ({
+                ...baseCol,
+                filterType: f.operator || 'Равно',
+                value: f.value,
+                dateGranularity: f.dateGranularity,
+              } as FilterColumn)
+            : null;
+        })
+        .filter((x): x is FilterColumn => x !== null);
+
+      const allFiltersColumns = [...filtersColumns, ...externalFiltersColumns];
+
+      const sortingColumns = (table.sorting ?? [])
+        .map((s) => {
+          const col = findColumnByName(s.columnName, dataset);
+          return col ? { ...col, direction: s.direction } : null;
+        })
+        .filter((c): c is Column & { direction: 'asc' | 'desc' } => !!c);
+
+      const allCols = collectAllColumns(
+        null,
+        tableColumns,
+        allFiltersColumns,
+        sortingColumns
+      );
+
+      const colsByTable = groupColumnsByTable(allCols);
+
+      const requests = createChartDataRequests(colsByTable, this.tableService);
+
+      if (requests.length === 0) {
+        return of([]);
+      }
+
+      return requests.length === 1
+        ? requests[0].pipe(
+            map(({ data }) => {
+              return processChartData(
+                data,
+                '',
+                tableColumns,
+                sortingColumns,
+                allFiltersColumns
+              );
+            })
+          )
+        : combineLatest(requests).pipe(
+            map((results) => {
+              const merged = results.flatMap((r) => r.data);
+              return processChartData(
+                merged,
+                '',
+                tableColumns,
+                sortingColumns,
+                allFiltersColumns
+              );
+            })
+          );
+    })
   );
 
   colDefs$: Observable<ColDef[]> = this.tableColumns$.pipe(
@@ -165,6 +184,10 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if ('tableId' in changes && this.tableId) {
       this.loadTableAndDataset(this.tableId);
+    }
+
+    if (changes['initialFilters']) {
+      this.filtersSubject.next(this.initialFilters || []);
     }
   }
 

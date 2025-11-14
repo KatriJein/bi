@@ -197,7 +197,9 @@ export class EditWidgetModalComponent implements OnInit {
   );
 
   get isChart(): boolean {
-    return this.widgetData?.type === 'chart';
+    return (
+      this.widgetData?.type === 'chart' || this.widgetData?.type === 'table'
+    );
   }
 
   get isText(): boolean {
