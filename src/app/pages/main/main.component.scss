@@ -101,3 +101,35 @@
     margin-bottom: 1rem;
   }
 }
+
+.dashboards-column {
+  .dashboard-card {
+    animation: simpleAppear 0.2s ease-in-out forwards;
+    opacity: 0;
+
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
+  }
+}
+
+@keyframes simpleAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboards {
+  transition: opacity 0.2s ease;
+
+  &.changing {
+    opacity: 0.7;
+  }
+}

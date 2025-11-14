@@ -28,7 +28,11 @@
     <div class="dashboards-column">
       @if (firstColumnDashboards$ | async; as firstColumnDashboards) { @for
       (button of firstColumnDashboards; track button.id) {
-      <mat-card class="dashboard-card" [routerLink]="['/dashboard', button.id]">
+      <mat-card
+        class="dashboard-card"
+        [routerLink]="['/dashboard', button.id]"
+        [style.view-transition-name]="'dashboard-card-' + button.id"
+        >
         <div class="card-content">
           <div class="text-content">
             <span class="card-title">{{ button.name }}</span>
@@ -46,7 +50,11 @@
 
     <div class="dashboards-column">
       @for (button of secondColumnDashboards$ | async; track button.id) {
-      <mat-card class="dashboard-card" [routerLink]="['/dashboard', button.id]">
+      <mat-card
+        class="dashboard-card"
+        [routerLink]="['/dashboard', button.id]"
+        [style.view-transition-name]="'dashboard-card-' + button.id"
+      >
         <div class="card-content">
           <div class="text-content">
             <span class="card-title">{{ button.name }}</span>

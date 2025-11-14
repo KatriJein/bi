@@ -31,7 +31,7 @@ import {
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { take } from 'rxjs/operators';
+import { startWith, take } from 'rxjs/operators';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatChipsModule } from '@angular/material/chips';
@@ -75,7 +75,7 @@ export type FilterTypeExp = {
   field: string;
   operator?: string;
   value: any;
-   dateGranularity?: DateGranularity;
+  dateGranularity?: DateGranularity;
 };
 
 export type FilterEmitType = {
@@ -104,7 +104,7 @@ export type FilterEmitType = {
     DashboadMenuItemComponent,
     OnMainButtonComponent,
     ChartContainerComponent,
-    MatTooltipModule 
+    MatTooltipModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -138,10 +138,10 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   isEditMode = signal(false);
   showFilters = false;
 
-  filters$ = this.stateService.filters$;
+  filters$ = this.stateService.filters$.pipe(startWith([]));
   activeInterface$ = this.stateService.activeInterface$;
   dashboards$ = this.stateService.dashboards$;
-  widgets$ = this.stateService.widgets$;
+  widgets$ = this.stateService.widgets$.pipe(startWith([]));
   activeDashboard$ = this.stateService.activeDashboard$;
   multipleFilters$ = this.stateService.multipleFilters$;
   activeMultipleSelections$ = this.stateService.activeMultipleSelections$;
@@ -161,18 +161,20 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private isUpdatingWidgets = false;
 
   formatFilterValue = formatFilterValue;
-  formatOption = (option: any, fieldType: string, dateGranularity?: DateGranularity) =>
-    formatSingle(option, fieldType as SelectionColumnType, dateGranularity);
+  formatOption = (
+    option: any,
+    fieldType: string,
+    dateGranularity?: DateGranularity
+  ) => formatSingle(option, fieldType as SelectionColumnType, dateGranularity);
 
-  ngAfterViewInit() {
+  ngAfterViewInit() {}
+
+  ngOnInit() {
+    this.titleService.setTitle('Дашборды');
     this.initGridStack();
     this.setupPositionUpdates();
     this.setupWidgetsSubscription();
     this.setupDashboardChanges();
-  }
-
-  ngOnInit() {
-    this.titleService.setTitle('Дашборды');
   }
 
   ngOnDestroy() {

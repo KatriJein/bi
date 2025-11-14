@@ -4,7 +4,7 @@ import {
   inject,
   isDevMode,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { routes } from './app.routes';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
@@ -88,7 +88,7 @@ export const appConfig: ApplicationConfig = {
       };
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(routes, withViewTransitions()),
     provideStore({
       [InterfacesFeature.name]: InterfacesFeature.reducer,
       [UserFeature.name]: UserFeature.reducer,
