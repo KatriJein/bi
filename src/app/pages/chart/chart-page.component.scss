@@ -111,13 +111,11 @@
       margin-left: auto;
     }
   }
-
-
 }
 
 .card-content {
-    padding: 1.5rem;
-  }
+  padding: 1.5rem;
+}
 
 .dataset-field {
   width: 100%;
@@ -163,6 +161,7 @@
       align-items: center;
       gap: 0.75rem;
       flex: 1;
+      padding-right: 6px;
 
       .filter-icon {
         color: #6b7280;
@@ -171,10 +170,41 @@
         height: 1.25rem;
       }
 
+      .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+
+        .status-badge {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 3px;
+          border-radius: 50%;
+
+          .badge-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            color: white;
+          }
+
+          &.pending-badge {
+            background: #ff9800;
+          }
+
+          &.saved-badge {
+            background: #4caf50;
+          }
+        }
+      }
+
       .filter-details {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
+        flex: 1;
 
         .filter-name {
           font-weight: 600;
@@ -268,8 +298,6 @@
 }
 
 .chart-preview-card {
-
-
   .card-content {
     height: 500px;
     padding: 0;

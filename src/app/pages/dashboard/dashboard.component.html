@@ -174,7 +174,7 @@
           </div>
 
           <!-- Блок фильтров -->
-          <div class="filters-container" [hidden]="!showFilters">
+          <div class="filters-container" [hidden]="!(showFilters$ | async)">
             <mat-chip-listbox
               aria-label="Filters list"
               *ngIf="(filters$ | async)?.length"

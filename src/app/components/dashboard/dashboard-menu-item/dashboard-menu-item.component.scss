@@ -44,6 +44,8 @@
   text-decoration: none;
   color: inherit;
   gap: 8px;
+  min-width: 0;
+  width: 100%;
 
   &.active {
     .dashboard-name {
@@ -63,6 +65,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
+  white-space: nowrap;
+  max-width: calc(100% - 40px);
 }
 
 .children-container {

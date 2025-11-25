@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ComponentRef,
   ElementRef,
@@ -19,6 +20,7 @@ import { DashboardStateService } from '../../services/dashboards-state.service';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
+  BehaviorSubject,
   combineLatest,
   filter,
   map,
@@ -31,7 +33,7 @@ import {
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { startWith, take } from 'rxjs/operators';
+import { take, takeUntil } from 'rxjs/operators';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatChipsModule } from '@angular/material/chips';
@@ -111,6 +113,8 @@ export type FilterEmitType = {
 })
 export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private titleService = inject(Title);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
   @ViewChild('gridStackContainer', { static: true })
   gridStackContainer!: ElementRef<HTMLDivElement>;
@@ -136,15 +140,19 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   expandedChartName: string | null = null;
   expandedChartFilter: FilterTypeExp[] | null = null;
   isEditMode = signal(false);
-  showFilters = false;
 
-  filters$ = this.stateService.filters$.pipe(startWith([]));
+  private showFiltersSubject = new BehaviorSubject<boolean>(false);
+  showFilters$ = this.showFiltersSubject.asObservable();
+
+  filters$ = this.stateService.filters$;
   activeInterface$ = this.stateService.activeInterface$;
   dashboards$ = this.stateService.dashboards$;
-  widgets$ = this.stateService.widgets$.pipe(startWith([]));
+  widgets$ = this.stateService.widgets$;
   activeDashboard$ = this.stateService.activeDashboard$;
-  multipleFilters$ = this.stateService.multipleFilters$;
   activeMultipleSelections$ = this.stateService.activeMultipleSelections$;
+
+  private multipleFiltersSubject = new BehaviorSubject<DashboardFilter[]>([]);
+  multipleFilters$ = this.multipleFiltersSubject.asObservable();
 
   activeDashboardId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -167,14 +175,21 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
     dateGranularity?: DateGranularity
   ) => formatSingle(option, fieldType as SelectionColumnType, dateGranularity);
 
-  ngAfterViewInit() {}
-
-  ngOnInit() {
+  ngAfterViewInit() {
     this.titleService.setTitle('Дашборды');
     this.initGridStack();
     this.setupPositionUpdates();
     this.setupWidgetsSubscription();
     this.setupDashboardChanges();
+  }
+
+  ngOnInit() {
+    this.stateService.multipleFilters$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((filters) => {
+        this.multipleFiltersSubject.next(filters);
+        this.cdr.detectChanges();
+      });
   }
 
   ngOnDestroy() {
@@ -291,7 +306,9 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private setupGridChangeHandler() {
     this.grid?.on('change', (event, items: GridStackNode[]) => {
       if (this.isUpdatingWidgets) return;
-      this.ngZone.run(() => this.updatePositions$.next(items));
+      this.ngZone.run(() => {
+        this.updatePositions$.next(items);
+      });
     });
   }
 
@@ -472,7 +489,11 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   toggleFilters() {
-    this.showFilters = !this.showFilters;
+    this.showFiltersSubject.next(!this.showFiltersSubject.value);
+  }
+
+  get showFilters() {
+    return this.showFiltersSubject.value;
   }
 
   openAddFilterDialog(): void {

@@ -38,7 +38,7 @@ import {
   processChartData,
 } from '../utils';
 import { COLORS } from '../constants';
-import { DateGranularity, WidgetType } from '../core/api/graphql/types';
+import { DateGranularity } from '../core/api/graphql/types';
 
 export type AggregateType = 'SUM' | 'AVG' | 'COUNT' | 'MAX' | 'MIN' | 'NONE';
 
@@ -115,6 +115,11 @@ export class ChartPageStateService {
 
   private sortingSubject = new BehaviorSubject<Column[]>([]);
   sorting$ = this.sortingSubject.asObservable();
+
+  private pendingSelectionsSubject = new BehaviorSubject<SelectionTypeChart[]>(
+    []
+  );
+  pendingSelections$ = this.pendingSelectionsSubject.asObservable();
 
   colorSettings$ = this.chart$.pipe(
     map((chart) => {
@@ -479,6 +484,100 @@ export class ChartPageStateService {
       .subscribe();
   }
 
+  // Удаление графика
+  deleteChart(id: string): void {
+    this.store.dispatch(ChartsActions.deleteChart({ id }));
+
+    this.actions$
+      .pipe(
+        ofType(ChartsActions.deleteChartSuccess),
+        filter((action) => action.id === id),
+        take(1)
+      )
+      .subscribe(() => {
+        this.chartSubject.next(null);
+        this.location.back();
+      });
+  }
+
+  addSelection(selection: SelectionTypeChart): void {
+    const chart = this.chartSubject.getValue();
+
+    if (chart?.id) {
+      this.createSelectionImmediately(chart.id, selection);
+    } else {
+      this.addPendingSelection(selection);
+    }
+  }
+
+  private createSelectionImmediately(
+    chartId: string,
+    selection: SelectionTypeChart
+  ): void {
+    this.store.dispatch(
+      ChartsActions.createChartFilter({
+        filter: {
+          chartId: chartId,
+          name: selection.name,
+          fieldName: selection.columnName,
+          fieldType: selection.columnType,
+          filterType: selection.filterType,
+        },
+      })
+    );
+  }
+
+  private addPendingSelection(selection: SelectionTypeChart): void {
+    const currentSelections = this.pendingSelectionsSubject.getValue();
+    this.pendingSelectionsSubject.next([...currentSelections, selection]);
+  }
+
+  updateSelection(id: string, selection: SelectionTypeChart): void {
+    const chart = this.chartSubject.getValue();
+    if (chart?.id) {
+      this.store.dispatch(
+        ChartsActions.updateChartFilter({
+          id,
+          patch: {
+            name: selection.name,
+            fieldName: selection.columnName,
+            fieldType: selection.columnType,
+            filterType: selection.filterType,
+          },
+        })
+      );
+    } else {
+      const currentSelections = this.pendingSelectionsSubject.getValue();
+      const updatedSelections = currentSelections.map((s) =>
+        (s as any).tempId === id ? selection : s
+      );
+      this.pendingSelectionsSubject.next(updatedSelections);
+    }
+  }
+
+  removeSelection(id: string): void {
+    const chart = this.chartSubject.getValue();
+    if (chart?.id) {
+      this.store.dispatch(ChartsActions.deleteChartFilter({ id }));
+    } else {
+      const currentSelections = this.pendingSelectionsSubject.getValue();
+      const updatedSelections = currentSelections.filter(
+        (s) => (s as any).tempId !== id
+      );
+      this.pendingSelectionsSubject.next(updatedSelections);
+    }
+  }
+
+  private createPendingSelections(chartId: string): void {
+    const pendingSelections = this.pendingSelectionsSubject.getValue();
+
+    pendingSelections.forEach((selection) => {
+      this.createSelectionImmediately(chartId, selection);
+    });
+
+    this.pendingSelectionsSubject.next([]);
+  }
+
   // Сохранение графика
   saveChart(): void {
     const chart = this.chartSubject.getValue();
@@ -510,8 +609,14 @@ export class ChartPageStateService {
     this.actions$
       .pipe(ofType(ChartsActions.createChartSuccess), take(1))
       .subscribe(({ chart }) => {
-        this.setChart(chart);
-        this.router.navigate(['/chart', chart.id]);
+        if (chart.id) {
+          this.createPendingSelections(chart.id);
+
+          this.setChart(chart);
+          this.router.navigate(['/chart', chart.id]);
+        } else {
+          console.error('Chart ID is null after creation');
+        }
       });
   }
 
@@ -542,61 +647,39 @@ export class ChartPageStateService {
         },
       })
     );
+
+    const pendingSelections = this.pendingSelectionsSubject.getValue();
+    if (pendingSelections.length > 0) {
+      this.createPendingSelections(chart.id);
+    }
   }
 
-  // Удаление графика
-  deleteChart(id: string): void {
-    this.store.dispatch(ChartsActions.deleteChart({ id }));
+  getSelectionsCount(): number {
+    const chart = this.chartSubject.getValue();
+    const pendingSelections = this.pendingSelectionsSubject.getValue();
 
-    this.actions$
-      .pipe(
-        ofType(ChartsActions.deleteChartSuccess),
-        filter((action) => action.id === id),
-        take(1)
-      )
-      .subscribe(() => {
-        this.chartSubject.next(null);
-        this.location.back();
-      });
+    if (chart?.id) {
+      return (chart.selections?.length || 0) + pendingSelections.length;
+    } else {
+      return pendingSelections.length;
+    }
   }
 
-  addSelection(selection: SelectionTypeChart): void {
-    this.chart$
-      .pipe(
-        take(1),
-        filter((chart): chart is ChartDto => !!chart && !!chart.id)
-      )
-      .subscribe((chart) => {
-        this.store.dispatch(
-          ChartsActions.createChartFilter({
-            filter: {
-              chartId: chart.id as string,
-              name: selection.name,
-              fieldName: selection.columnName,
-              fieldType: selection.columnType,
-              filterType: selection.filterType,
-            },
-          })
-        );
-      });
-  }
+  getAllSelections(): any[] {
+    const chart = this.chartSubject.getValue();
+    const pendingSelections = this.pendingSelectionsSubject
+      .getValue()
+      .map((selection, index) => ({
+        ...selection,
+        id: `temp-${index}`,
+        isPending: true,
+      }));
 
-  updateSelection(id: string, selection: SelectionTypeChart): void {
-    this.store.dispatch(
-      ChartsActions.updateChartFilter({
-        id,
-        patch: {
-          name: selection.name,
-          fieldName: selection.columnName,
-          fieldType: selection.columnType,
-          filterType: selection.filterType,
-        },
-      })
-    );
-  }
-
-  removeSelection(id: string): void {
-    this.store.dispatch(ChartsActions.deleteChartFilter({ id }));
+    if (chart?.selections) {
+      return [...chart.selections, ...pendingSelections];
+    } else {
+      return pendingSelections;
+    }
   }
 
   constructor() {

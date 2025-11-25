@@ -3,7 +3,15 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { filter, Observable, startWith, Subscription, take } from 'rxjs';
+import {
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+  Subscription,
+  take,
+} from 'rxjs';
 import {
   ChartComponent,
   ChartSelectionModalComponent,
@@ -29,6 +37,15 @@ import { MatChipsModule } from '@angular/material/chips';
 import { ChartFilter } from '../../core/api/graphql/types';
 import { MatCardModule } from '@angular/material/card';
 import { Title } from '@angular/platform-browser';
+
+type DisplaySelection = {
+    id: string;
+    name: string;
+    fieldName: string;
+    filterType: string;
+    fieldType?: string;
+    isPending: boolean;
+  }
 
 @Component({
   selector: 'app-chart-page',
@@ -81,6 +98,8 @@ export class ChartPageComponent implements OnInit {
   allColumns$ = this.state.allColumns$;
   chart$ = this.state.chart$;
 
+  allSelections$: Observable<DisplaySelection[]> | undefined;
+
   nameControl = new FormControl<string>('');
 
   ngOnInit(): void {
@@ -94,6 +113,23 @@ export class ChartPageComponent implements OnInit {
         this.state.loadChartFromStore(chartId);
       }
     });
+
+    this.allSelections$ = combineLatest([
+      this.state.chart$.pipe(map((chart) => chart?.selections || [])),
+      this.state.pendingSelections$,
+    ]).pipe(
+      map(([existingSelections, pendingSelections]) => {
+        const formattedExisting = existingSelections.map(selection =>
+          this.createDisplaySelection(selection)
+        );
+
+        const formattedPending = pendingSelections.map((selection, index) =>
+          this.createDisplaySelection(selection, index)
+        );
+
+        return [...formattedExisting, ...formattedPending];
+      })
+    );
 
     this.state.chart$.pipe(filter((chart) => !!chart)).subscribe((chart) => {
       this.chartTypeControl.setValue(chart.settings?.chartType || 'line', {
@@ -166,7 +202,7 @@ export class ChartPageComponent implements OnInit {
     });
   }
 
-  updateSelection(selection: ChartFilter): void {
+  updateSelection(selection: DisplaySelection): void {
     const dialogRef = this.dialog.open(ChartSelectionModalComponent, {
       width: '600px',
       data: {
@@ -187,7 +223,39 @@ export class ChartPageComponent implements OnInit {
   }
 
   getSelectionsCount(): number {
-    const chart = this.state.getCurrentChart();
-    return chart?.selections?.length || 0;
+  return this.state.getSelectionsCount();
+}
+
+  private isChartFilter(selection: any): selection is ChartFilter {
+    return selection && 'id' in selection && 'chartId' in selection;
+  }
+
+  private createDisplaySelection(
+    selection: ChartFilter | SelectionTypeChart,
+    index?: number
+  ): DisplaySelection {
+    const base = {
+      name: selection.name,
+      filterType: selection.filterType,
+      isPending: false
+    };
+
+    if (this.isChartFilter(selection)) {
+      return {
+        ...base,
+        id: selection.id,
+        fieldName: selection.fieldName,
+        fieldType: selection.fieldType,
+        isPending: false
+      };
+    } else {
+      return {
+        ...base,
+        id: `temp-${index}`,
+        fieldName: selection.columnName,
+        fieldType: selection.columnType,
+        isPending: true
+      };
+    }
   }
 }

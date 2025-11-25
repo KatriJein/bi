@@ -21,7 +21,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DashboardFilter, DateGranularity } from '../../../core/api/graphql/types';
+import {
+  DashboardFilter,
+  DateGranularity,
+} from '../../../core/api/graphql/types';
 import { DateInputComponent } from '../../common';
 import {
   getNameOfType,
@@ -78,7 +81,7 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       values: this.fb.array([]),
       dateValues: this.fb.array([]),
       dateRangeValues: this.fb.array([]),
-      dateGranularity: ['day']
+      dateGranularity: [{ value: 'day', disabled: true }],
     });
   }
 
@@ -198,9 +201,13 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
     if (type === 'date') {
       this.currentInputType = 'date';
       this.filterForm.get('value')!.disable({ emitEvent: false });
+      this.filterForm.get('dateGranularity')!.enable({ emitEvent: false });
     } else {
       this.currentInputType = type === 'number' ? 'number' : 'text';
       this.filterForm.get('value')!.enable({ emitEvent: false });
+      this.filterForm
+        .get('dateGranularity')!
+        .setValue(null, { emitEvent: false });
     }
 
     this.filterTypes = this.getSelectionOptionsByType(type);
@@ -379,13 +386,21 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
   }
 
   private initFormWithExistingFilter(filter: DashboardFilter) {
+    const type = filter.fieldType as 'string' | 'number' | 'date';
+
     this.filterForm.patchValue({
       name: filter.name,
-      type: filter.fieldType,
+      type: type,
       filterType: filter.filterType,
       isMultiple: !!filter.isMultiple,
-      dateGranularity: filter.dateGranularity || 'day'
+      dateGranularity: type === 'date' ? (filter.dateGranularity || 'day') : null,
     });
+
+    if (type === 'date') {
+      this.filterForm.get('dateGranularity')!.enable({ emitEvent: false });
+    } else {
+      this.filterForm.get('dateGranularity')!.disable({ emitEvent: false });
+    }
 
     this.filterTypes = this.getSelectionOptionsByType(
       filter.fieldType as SelectionColumnType
@@ -451,13 +466,15 @@ export class DashboardSelectionModalComponent implements OnInit, OnDestroy {
       value = formValue.isMultiple ? this.valuesArray.value : formValue.value;
     }
 
+    const dateGranularity = type === 'date' ? formValue.dateGranularity : null;
+
     const newFilter = {
       name: formValue.name,
       columnType: formValue.type,
       filterType: formValue.filterType,
       isMultiple: formValue.isMultiple,
       value,
-      dateGranularity: formValue.dateGranularity
+      dateGranularity: dateGranularity,
     };
 
     this.dialogRef.close(newFilter);

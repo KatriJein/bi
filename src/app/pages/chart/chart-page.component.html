@@ -73,19 +73,33 @@
             <div
               class="filters-list"
               *ngIf="
-                chart.selections && chart.selections.length > 0;
+                (allSelections$ | async) &&
+                  (allSelections$ | async)!.length > 0;
                 else noFilters
               "
             >
               <div
                 class="filter-item"
-                *ngFor="let selection of chart.selections"
+                *ngFor="let selection of allSelections$ | async"
                 (click)="updateSelection(selection)"
               >
                 <div class="filter-info">
                   <mat-icon class="filter-icon">filter_list</mat-icon>
                   <div class="filter-details">
-                    <span class="filter-name">{{ selection.name }}</span>
+                    <div class="filter-header">
+                      <span class="filter-name">{{ selection.name }}</span>
+                      <span
+                        class="status-badge"
+                        [class.pending-badge]="selection.isPending"
+                        [class.saved-badge]="!selection.isPending"
+                      >
+                        <mat-icon class="badge-icon">
+                          {{
+                            selection.isPending ? "schedule" : "check_circle"
+                          }}
+                        </mat-icon>
+                      </span>
+                    </div>
                     <span class="filter-field"
                       >{{ selection.fieldName }}:
                       {{ selection.filterType }}</span
