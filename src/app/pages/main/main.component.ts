@@ -1,12 +1,21 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { combineLatest, map, Observable, of, switchMap } from 'rxjs';
+import {
+  combineLatest,
+  EMPTY,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { Store } from '@ngrx/store';
 import {
   InterfaceDto,
@@ -16,8 +25,15 @@ import {
 import { InterfaceService } from '../../core/api/services';
 import { DashboardDto, DashboardsSelectors } from '../../core/store/dashboards';
 import { DatasetsActions } from '../../core/store/datasets';
-import { SmartIconComponent } from "../../components/common";
+import { SmartIconComponent } from '../../components/common';
 import { Title } from '@angular/platform-browser';
+import { WidgetDto, WidgetsSelectors } from '../../core/store/widgets';
+import {
+  buildDashboardHierarchy,
+  findFirstDashboardWithWidgets,
+  getFallbackDashboard,
+} from '../../utils';
+import { ChartsActions } from '../../core/store/charts';
 
 @Component({
   selector: 'app-main',
@@ -30,19 +46,23 @@ import { Title } from '@angular/platform-browser';
     MatListModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    SmartIconComponent
-],
+    SmartIconComponent,
+  ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.scss',
   providers: [InterfaceService],
 })
 export class MainComponent implements OnInit {
   private store = inject(Store);
+  private router = inject(Router);
   private titleService = inject(Title);
 
   interfaces$ = this.store.select(InterfacesSelectors.selectAllInterfaces);
   activeInterface$ = this.store.select(
     InterfacesSelectors.selectActiveInterface
+  );
+  activeInterfaceId$ = this.store.select(
+    InterfacesSelectors.selectActiveInterfaceId
   );
 
   loading$ = combineLatest([
@@ -79,11 +99,62 @@ export class MainComponent implements OnInit {
     map((split) => split.second)
   );
 
+  handleDashboardClick(rootDashboardId: string | undefined): void {
+    if (!rootDashboardId) {
+      console.warn('Попытка клика по дашборду без id');
+      return;
+    }
+
+    this.activeInterfaceId$
+      .pipe(
+        take(1),
+        switchMap((activeInterfaceId) => {
+          if (!activeInterfaceId) {
+            this.router.navigate(['/dashboard', rootDashboardId]);
+            return EMPTY; // ✅
+          }
+
+          const dashboards$ = this.store.select(
+            DashboardsSelectors.selectDashboardsByInterfaceId(activeInterfaceId)
+          );
+          const widgets$ = this.store.select(WidgetsSelectors.selectWidgets);
+
+          return combineLatest([dashboards$, widgets$]).pipe(
+            take(1),
+            tap(([dashboards, widgetsRecord]) => {
+              const hierarchy = buildDashboardHierarchy(dashboards);
+              const root = hierarchy.find((d) => d.id === rootDashboardId);
+
+              if (!root) {
+                this.router.navigate(['/dashboard', rootDashboardId]);
+                return;
+              }
+
+              const dashboardWithWidgets = findFirstDashboardWithWidgets(
+                root,
+                widgetsRecord
+              );
+
+              if (dashboardWithWidgets) {
+                this.router.navigate(['/dashboard', dashboardWithWidgets]);
+              } else {
+                const fallbackId = getFallbackDashboard(root);
+                this.router.navigate(['/dashboard', fallbackId]);
+              }
+            })
+          );
+        })
+      )
+      .subscribe();
+  }
+
   constructor() {}
 
   ngOnInit() {
-    this.store.dispatch(DatasetsActions.loadDatasets());
+    // this.store.dispatch(DatasetsActions.loadDatasets());
     this.titleService.setTitle('Главная страница');
+    this.store.dispatch(DatasetsActions.loadDatasets());
+    this.store.dispatch(ChartsActions.loadCharts());
   }
 
   setActiveInterface(id: string | undefined) {

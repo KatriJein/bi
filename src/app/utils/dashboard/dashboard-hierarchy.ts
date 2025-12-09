@@ -1,4 +1,5 @@
 import { DashboardDto } from '../../core/store/dashboards';
+import { WidgetDto } from '../../core/store/widgets';
 import { sortByOrder } from '../../core/utils';
 
 export function buildDashboardHierarchy(
@@ -6,7 +7,7 @@ export function buildDashboardHierarchy(
 ): DashboardDto[] {
   const dashboardMap = new Map<
     string,
-    DashboardDto & { children?: DashboardDto[] }
+    DashboardDto
   >();
   let rootDashboards: DashboardDto[] = [];
 
@@ -36,4 +37,30 @@ export function buildDashboardHierarchy(
   });
 
   return rootDashboards;
+}
+
+export function findFirstDashboardWithWidgets(
+  node: DashboardDto,
+  widgetsRecord: Record<string, WidgetDto[]>
+): string | null {
+  const widgets = widgetsRecord[node.id!] || [];
+  if (widgets.length > 0) {
+    return node.id!;
+  }
+
+  if (node.children) {
+    for (const child of node.children) {
+      const found = findFirstDashboardWithWidgets(child, widgetsRecord);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
+export function getFallbackDashboard(node: DashboardDto): string {
+  if (node.children && node.children.length > 0) {
+    return node.children[0].id!;
+  }
+  return node.id!;
 }

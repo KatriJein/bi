@@ -2,14 +2,14 @@ import { createFeature, createReducer, on } from '@ngrx/store';
 import * as UserActions from './user.actions';
 
 export interface RoleDto {
-  id: string | undefined;
-  name: string | undefined;
+  id: string;
+  name: string;
 }
 
 export interface UserDto {
   id: string | undefined;
   name: string | undefined;
-  role: RoleDto | undefined;
+  role: RoleDto | null;
 }
 
 export interface UserState {

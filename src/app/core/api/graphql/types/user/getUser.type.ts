@@ -4,6 +4,14 @@ export type GetUserType = {
       node: {
         id: string;
         name: string;
+        userRoles: {
+          nodes: Array<{
+            role: {
+              id: string;
+              name: string;
+            };
+          }>;
+        };
       };
     }>;
   };

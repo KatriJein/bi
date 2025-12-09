@@ -21,26 +21,26 @@ export class AppComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    const connection = new Connection({
-      id: 'main',
-      name: 'Main',
-      type: 'graphql',
-      config: {
-        host: 'localhost',
-        port: 5000,
-        database: 'graphql',
-      },
-    });
+    // const connection = new Connection({
+    //   id: 'main',
+    //   name: 'Main',
+    //   type: 'graphql',
+    //   config: {
+    //     host: 'localhost',
+    //     port: 5000,
+    //     database: 'graphql',
+    //   },
+    // });
 
-    this.store.dispatch(
-      UserActions.login({
-        name: 'Администратор',
-        password:
-          '$2a$06$lkT2d40E5PwlY8BTs/woVub16/xJYVCiIomgTvdDeIMrhpUhpXk4y',
-      })
-    );
+    // this.store.dispatch(
+    //   UserActions.login({
+    //     name: 'Администратор',
+    //     password:
+    //       '$2a$06$lkT2d40E5PwlY8BTs/woVub16/xJYVCiIomgTvdDeIMrhpUhpXk4y',
+    //   })
+    // );
 
-    this.store.dispatch(DatasetsActions.loadDatasets());
-    this.store.dispatch(ChartsActions.loadCharts());
+    // this.store.dispatch(DatasetsActions.loadDatasets());
+    // this.store.dispatch(ChartsActions.loadCharts());
   }
 }

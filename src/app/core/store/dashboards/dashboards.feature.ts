@@ -11,6 +11,7 @@ export interface DashboardDto {
   order: number | undefined;
   parentId: string | null | undefined;
   selections?: DashboardFilter[] | undefined;
+  children?: DashboardDto[] | [];
 }
 
 export interface DashboardState {

@@ -30,7 +30,7 @@
       (button of firstColumnDashboards; track button.id) {
       <mat-card
         class="dashboard-card"
-        [routerLink]="['/dashboard', button.id]"
+        (click)="handleDashboardClick(button.id)"
         [style.view-transition-name]="'dashboard-card-' + button.id"
         >
         <div class="card-content">
@@ -52,7 +52,7 @@
       @for (button of secondColumnDashboards$ | async; track button.id) {
       <mat-card
         class="dashboard-card"
-        [routerLink]="['/dashboard', button.id]"
+        (click)="handleDashboardClick(button.id)"
         [style.view-transition-name]="'dashboard-card-' + button.id"
       >
         <div class="card-content">

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map, filter } from 'rxjs/operators';
 import { getUserQuery } from '../graphql/queries/user/getUser.query';
-import { UserDto } from '../../store/user';
+import { RoleDto, UserDto } from '../../store/user';
 import { GetUserType } from '../graphql/types/user/getUser.type';
 import { GraphqlService } from './grapghql.service';
 
@@ -31,11 +31,19 @@ export class UserService {
     }
 
     const userNode = data.users.edges[0].node;
+    const roleNode = userNode.userRoles?.nodes?.[0]?.role;
+
+    const role: RoleDto | null = roleNode
+      ? {
+          id: roleNode.id,
+          name: roleNode.name,
+        }
+      : null;
 
     return {
       id: userNode.id,
       name: userNode.name,
-      role: undefined,
+      role,
     };
   }
 

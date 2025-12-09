@@ -2,7 +2,6 @@
   <ng-container *ngIf="dataset$ | async as dataset">
     <div class="chart-container" [class.has-filters]="initialFilters?.length">
       <div *ngIf="initialFilters?.length" class="filter-indicator">
-        Применены фильтры:
         <span *ngFor="let filter of initialFilters; let last = last">
           {{ filter.field }} = {{ filter.value }}{{ last ? "" : ", " }}
         </span>
