@@ -58,6 +58,8 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
   private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
   private sub?: Subscription;
+  private tableSub?: Subscription;
+  private datasetSub?: Subscription;
 
   table$ = this.tableSubject.asObservable();
   dataset$ = this.datasetSubject.asObservable();
@@ -193,24 +195,29 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.tableSub?.unsubscribe();
+    this.datasetSub?.unsubscribe();
   }
 
   private loadTableAndDataset(tableId: string) {
-    this.store
-      .pipe(select(ChartsSelectors.selectChartById(tableId)), take(1))
+    this.tableSub?.unsubscribe();
+    this.datasetSub?.unsubscribe();
+
+    this.tableSub = this.store
+      .select(ChartsSelectors.selectChartById(tableId))
       .subscribe((table) => {
         this.tableSubject.next(table ?? null);
 
         if (table?.datasetId) {
-          this.store
-            .pipe(
-              select(DatasetsSelectors.selectDatasetById(table.datasetId)),
-              take(1)
-            )
-            .subscribe((dataset) => this.datasetSubject.next(dataset ?? null));
+          this.datasetSub = this.store
+            .select(DatasetsSelectors.selectDatasetById(table.datasetId))
+            .subscribe((dataset) => {
+              this.datasetSubject.next(dataset ?? null);
+            });
         } else {
-          console.warn('[TableRenderer] No datasetId in chart');
+          this.datasetSub?.unsubscribe();
           this.datasetSubject.next(null);
+          console.warn('[TableRenderer] No datasetId in chart');
         }
       });
   }
@@ -226,4 +233,8 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
       filters: [{ field: event.field, value: event.value }],
     });
   }
+
+  shouldShowTable$ = combineLatest([this.table$, this.dataset$]).pipe(
+    map(([table, dataset]) => !!table && !!dataset)
+  );
 }

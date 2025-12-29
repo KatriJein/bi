@@ -55,7 +55,6 @@ import {
 import {
   ChartContainerComponent,
   OnMainButtonComponent,
-  SmartIconComponent,
 } from '../../components/common';
 import { DashboardDto } from '../../core/store/dashboards';
 import {
@@ -72,6 +71,7 @@ import { formatFilterValue, formatSingle } from '../../utils';
 import { SelectionColumnType } from '../../constants';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Title } from '@angular/platform-browser';
+import { GlobalDataService } from '../../core/services/global-data.service';
 
 export type FilterTypeExp = {
   field: string;
@@ -114,6 +114,8 @@ export type FilterEmitType = {
 export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private titleService = inject(Title);
   private cdr = inject(ChangeDetectorRef);
+  private globalData = inject(GlobalDataService);
+
   private destroy$ = new Subject<void>();
 
   @ViewChild('gridStackContainer', { static: true })
@@ -184,6 +186,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   ngOnInit() {
+    this.globalData.ensureLoaded();
     this.stateService.multipleFilters$
       .pipe(takeUntil(this.destroy$))
       .subscribe((filters) => {

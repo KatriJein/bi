@@ -18,8 +18,13 @@ import {
   WidgetsActions,
   WidgetsSelectors,
 } from '../../core/store/widgets';
-import { ChartsActions } from '../../core/store/charts';
+import {
+  ChartDto,
+  ChartsActions,
+  ChartsSelectors,
+} from '../../core/store/charts';
 import { WidgetFilterBinding } from '../../core/api/graphql/types';
+import { DatasetsActions } from '../../core/store/datasets';
 
 @Component({
   selector: 'app-fullscreen-widget',
@@ -45,7 +50,6 @@ export class FullscreenWidgetComponent implements OnInit, OnDestroy {
         filter((id): id is string => !!id),
         switchMap((widgetId) => {
           this.widgetId = widgetId;
-
           this.store.dispatch(WidgetsActions.loadWidget({ widgetId }));
 
           return this.store
@@ -58,20 +62,39 @@ export class FullscreenWidgetComponent implements OnInit, OnDestroy {
         tap((widget) => {
           this.title = widget.title;
           this.chartId = widget.chartId || '';
+          this.widgetSelections$ = this.store.select(
+            WidgetsSelectors.selectSelectionsByWidgetId(widget.id)
+          );
 
-          this.store.dispatch(
-            ChartsActions.loadChart({ chartId: this.chartId })
-          );
-          this.store.dispatch(
-            ChartsActions.loadChartSelections({ chartId: this.chartId })
-          );
+          if (this.chartId) {
+            this.store.dispatch(
+              ChartsActions.loadChart({ chartId: this.chartId })
+            );
+            this.store.dispatch(
+              ChartsActions.loadChartSelections({ chartId: this.chartId })
+            );
+          }
+        }),
+
+        switchMap((widget) => {
+          if (!widget.chartId) {
+            return [];
+          }
+          return this.store
+            .select(ChartsSelectors.selectChartById(widget.chartId))
+            .pipe(
+              filter(
+                (chart): chart is ChartDto => !!chart && !!chart.datasetId
+              ),
+              take(1)
+            );
         })
       )
-      .subscribe();
-
-    this.widgetSelections$ = this.store.select(
-      WidgetsSelectors.selectSelectionsByWidgetId(this.widgetId)
-    );
+      .subscribe((chart) => {
+        this.store.dispatch(
+          DatasetsActions.loadDataset({ id: chart.datasetId || '' })
+        );
+      });
   }
 
   ngOnDestroy() {

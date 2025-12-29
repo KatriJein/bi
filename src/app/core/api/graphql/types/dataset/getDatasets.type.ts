@@ -11,6 +11,10 @@ export type GetDatasetsType = {
   };
 };
 
+export type GetDatasetType = {
+  dataSet: Dataset;
+};
+
 export type SettingsColumn = {
   title: string;
   name: string;

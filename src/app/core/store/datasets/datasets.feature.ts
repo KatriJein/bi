@@ -44,6 +44,23 @@ export const DatasetsFeature = createFeature({
       isLoading: false,
       error,
     })),
+    
+    // Загрузка датасета
+    on(DatasetsActions.loadDataset, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(DatasetsActions.loadDatasetSuccess, (state, { dataset }) => ({
+      ...state,
+      datasets: [dataset],
+      isLoading: false,
+    })),
+    on(DatasetsActions.loadDatasetFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
 
     // Добавление
     on(DatasetsActions.addDataset, (state) => ({

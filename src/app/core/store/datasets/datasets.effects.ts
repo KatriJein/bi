@@ -26,6 +26,25 @@ export class DatasetsEffects {
     )
   );
 
+  loadDataset$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(DatasetsActions.loadDataset),
+    switchMap(({ id }) =>
+      this.datasetService.getDataset(id).pipe(
+        map((dataset) => {
+          if (dataset === null) {
+            throw new Error('Dataset not found');
+          }
+          return DatasetsActions.loadDatasetSuccess({ dataset });
+        }),
+        catchError((error) =>
+          of(DatasetsActions.loadDatasetFailure({ error: error.message }))
+        )
+      )
+    )
+  )
+);
+
   createDataset$ = createEffect(() =>
     this.actions$.pipe(
       ofType(DatasetsActions.addDataset),
@@ -73,5 +92,5 @@ export class DatasetsEffects {
     )
   );
 
-  
+
 }

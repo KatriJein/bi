@@ -59,6 +59,9 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
   private chartSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
 
+  private chartSub?: Subscription;
+  private datasetSub?: Subscription;
+
   chart$ = this.chartSubject.asObservable();
   dataset$ = this.datasetSubject.asObservable();
 
@@ -89,12 +92,12 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
         .map((f) => {
           const baseCol = findColumnByName(f.columnName, dataset);
           return baseCol
-            ? {
+            ? ({
                 ...baseCol,
                 filterType: f.filterType,
                 value: f.value,
                 dateGranularity: f.dateGranularity,
-              } as FilterColumn
+              } as FilterColumn)
             : null;
         })
         .filter((x): x is FilterColumn => x !== null);
@@ -171,8 +174,8 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
     }
 
     if ('chartId' in changes && this.chartId) {
-      this.store
-        .pipe(select(ChartsSelectors.selectChartById(this.chartId)), take(1))
+      const chartSub = this.store
+        .select(ChartsSelectors.selectChartById(this.chartId))
         .subscribe((chart) => {
           this.chartSubject.next(chart ?? null);
 
@@ -184,19 +187,20 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
           }
 
           if (chart?.datasetId) {
-            this.store
-              .pipe(
-                select(DatasetsSelectors.selectDatasetById(chart.datasetId)),
-                take(1)
-              )
+            this.datasetSub?.unsubscribe();
+            this.datasetSub = this.store
+              .select(DatasetsSelectors.selectDatasetById(chart.datasetId))
               .subscribe((dataset) => {
                 this.datasetSubject.next(dataset ?? null);
               });
           } else {
-            console.warn('[ChartRenderer] No datasetId in chart');
+            this.datasetSub?.unsubscribe();
             this.datasetSubject.next(null);
           }
         });
+
+      this.chartSub?.unsubscribe();
+      this.chartSub = chartSub;
 
       this.sub?.unsubscribe();
       this.sub = this.chartData$.subscribe((aggregatedData) => {
@@ -235,6 +239,8 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.chartSub?.unsubscribe();
+    this.datasetSub?.unsubscribe();
   }
 
   private combineFilters(
@@ -245,7 +251,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
       columnName: filter.field,
       filterType: filter.operator ? filter.operator : 'Равно',
       value: filter.value,
-      dateGranularity: filter.dateGranularity
+      dateGranularity: filter.dateGranularity,
     }));
 
     const combined = [...chartFilters];

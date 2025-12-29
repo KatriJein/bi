@@ -8,11 +8,10 @@ import { Store } from '@ngrx/store';
 import { UserActions, UserDto, UserSelectors } from '../../core/store/user';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { ChartsActions } from '../../core/store/charts';
-import { DatasetsActions } from '../../core/store/datasets';
 import { OnMainButtonComponent, SmartIconComponent } from '../../components/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Title } from '@angular/platform-browser';
+import { GlobalDataService } from '../../core/services/global-data.service';
 
 @Component({
   selector: 'app-settings',
@@ -34,6 +33,7 @@ import { Title } from '@angular/platform-browser';
 export class SettingsComponent {
   private titleService = inject(Title);
   private store = inject(Store);
+  private globalData = inject(GlobalDataService);
   user$: Observable<UserDto | null> = this.store.select(
     UserSelectors.selectUser
   );
@@ -56,7 +56,6 @@ export class SettingsComponent {
 
   constructor() {
     this.titleService.setTitle('Страница настроек');
-    this.store.dispatch(ChartsActions.loadCharts());
-    this.store.dispatch(DatasetsActions.loadDatasets());
+    this.globalData.ensureLoaded();
   }
 }

@@ -7,11 +7,12 @@ import {
   CreateDatasetType,
   DeleteDatasetType,
   GetDatasetsType,
+  GetDatasetType,
   SettingsColumn,
   TableColumn,
   UpdateDatasetType,
 } from '../graphql/types';
-import { getDatasetsQuery } from '../graphql/queries';
+import { getDatasetQuery, getDatasetsQuery } from '../graphql/queries';
 import { Column, Dataset } from '../../models';
 import {
   createDatasetMutation,
@@ -35,6 +36,21 @@ export class DatasetService {
         catchError((err) => {
           console.error('Error loading datasets', err);
           return of([]);
+        })
+      );
+  }
+
+  getDataset(id: string): Observable<DatasetDto | null> {
+    return this.graphql
+      .watchQuery<GetDatasetType>(undefined, getDatasetQuery, { id })
+      .pipe(
+        map((result) => {
+          const dataset = result?.dataSet ?? null;
+          return this.transformDataset(dataset);
+        }),
+        catchError((err) => {
+          console.error('Error loading datasets', err);
+          return of(null);
         })
       );
   }

@@ -13,6 +13,20 @@ export const loadDatasetsFailure = createAction(
   props<{ error: string }>()
 );
 
+// Загрузка датасета
+export const loadDataset = createAction(
+  '[Dataset] Load Dataset',
+  props<{ id: string }>()
+);
+export const loadDatasetSuccess = createAction(
+  '[Dataset] Load Dataset Success',
+  props<{ dataset: DatasetDto }>()
+);
+export const loadDatasetFailure = createAction(
+  '[Dataset] Load Dataset Failure',
+  props<{ error: string }>()
+);
+
 // Добавление
 export const addDataset = createAction(
   '[Datasets] Add Dataset',

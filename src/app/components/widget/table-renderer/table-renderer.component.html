@@ -1,4 +1,4 @@
-<ng-container *ngIf="(table$ | async) && (dataset$ | async); else loading">
+<ng-container *ngIf="shouldShowTable$ | async; else loading">
   <app-table
     [rowData]="chartData$ | async"
     [columnDefs]="colDefs$ | async"

@@ -23,17 +23,16 @@ import {
   InterfacesSelectors,
 } from '../../core/store/interfaces';
 import { InterfaceService } from '../../core/api/services';
-import { DashboardDto, DashboardsSelectors } from '../../core/store/dashboards';
-import { DatasetsActions } from '../../core/store/datasets';
+import { DashboardsSelectors } from '../../core/store/dashboards';
 import { SmartIconComponent } from '../../components/common';
 import { Title } from '@angular/platform-browser';
-import { WidgetDto, WidgetsSelectors } from '../../core/store/widgets';
+import { WidgetsSelectors } from '../../core/store/widgets';
 import {
   buildDashboardHierarchy,
   findFirstDashboardWithWidgets,
   getFallbackDashboard,
 } from '../../utils';
-import { ChartsActions } from '../../core/store/charts';
+import { GlobalDataService } from '../../core/services/global-data.service';
 
 @Component({
   selector: 'app-main',
@@ -56,6 +55,7 @@ export class MainComponent implements OnInit {
   private store = inject(Store);
   private router = inject(Router);
   private titleService = inject(Title);
+  private globalData = inject(GlobalDataService);
 
   interfaces$ = this.store.select(InterfacesSelectors.selectAllInterfaces);
   activeInterface$ = this.store.select(
@@ -151,10 +151,8 @@ export class MainComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    // this.store.dispatch(DatasetsActions.loadDatasets());
     this.titleService.setTitle('Главная страница');
-    this.store.dispatch(DatasetsActions.loadDatasets());
-    this.store.dispatch(ChartsActions.loadCharts());
+    this.globalData.ensureLoaded();
   }
 
   setActiveInterface(id: string | undefined) {
