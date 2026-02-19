@@ -12,6 +12,7 @@ import {
   InterfacesSettingsComponent,
   MainComponent,
   SettingsComponent,
+  UsersSettingsComponent,
 } from './pages';
 import { AuthGuard } from './guards';
 
@@ -69,6 +70,7 @@ export const routes: Routes = [
           { path: ':interfaceId', component: DashboardsSettingsComponent },
         ],
       },
+      { path: 'users', component: UsersSettingsComponent },
     ],
   },
   {

@@ -1,0 +1,14 @@
+.full-width {
+  width: 100%;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.input {
+  padding-top: 0.5rem;
+}

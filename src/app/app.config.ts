@@ -29,6 +29,8 @@ import { WidgetsEffects } from './core/store/widgets';
 import { provideHttpClient } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { getMainDefinition } from '@apollo/client/utilities';
+import { UsersEffects, UsersFeature } from './core/store/users';
+import { RolesEffects, RolesFeature } from './core/store/roles';
 
 function getGraphQLUri(): string {
   return `http://${window.location.hostname}:5000/graphql`;
@@ -53,7 +55,7 @@ export const appConfig: ApplicationConfig = {
             const delay = [1000, 2000, 5000][Math.min(retries, 2)];
             await new Promise((resolve) => setTimeout(resolve, delay));
           },
-        })
+        }),
       );
 
       const http = httpLink.create({ uri: getGraphQLUri() });
@@ -67,7 +69,7 @@ export const appConfig: ApplicationConfig = {
           );
         },
         wsLink,
-        http
+        http,
       );
 
       return {
@@ -97,6 +99,8 @@ export const appConfig: ApplicationConfig = {
       [DatasetsFeature.name]: DatasetsFeature.reducer,
       [ChartsFeature.name]: ChartsFeature.reducer,
       [WidgetsFeature.name]: WidgetsFeature.reducer,
+      [UsersFeature.name]: UsersFeature.reducer,
+      [RolesFeature.name]: RolesFeature.reducer,
     }),
     provideEffects([
       InterfacesEffects,
@@ -106,6 +110,8 @@ export const appConfig: ApplicationConfig = {
       DatasetsEffects,
       ChartsEffects,
       WidgetsEffects,
+      UsersEffects,
+      RolesEffects,
     ]),
     provideStoreDevtools({
       maxAge: 50,

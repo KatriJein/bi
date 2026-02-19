@@ -10,3 +10,5 @@ export * from './widget.service';
 export * from './filters/chart-filters.service';
 export * from './filters/dashboard-filters.service';
 export * from './filters/widget-filter-binding.service';
+export * from './roles.service';
+export * from './users.service';

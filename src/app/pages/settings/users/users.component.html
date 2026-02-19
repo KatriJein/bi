@@ -1,0 +1,55 @@
+<div class="router-content">
+  <div class="header">
+    <h2 class="title">Список пользователей</h2>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openCreateUserModal()"
+    >
+      <mat-icon>add</mat-icon>
+      Создать пользователя
+    </button>
+  </div>
+
+  <div class="content">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Поиск пользователей</mat-label>
+      <input
+        matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Введите имя пользователя"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-nav-list>
+      <ng-container *ngIf="filteredUsers$ | async as users">
+        <a
+          mat-list-item
+          *ngFor="let user of users; trackBy: trackById"
+          class="item"
+          (click)="onUserClick(user, $event)"
+        >
+          <div class="info-container">
+            <div class="info">
+              <mat-icon class="icon">person</mat-icon>
+              <div class="user-details">
+                <span class="name">{{ user.name }}</span>
+                <span class="role" *ngIf="user.role"> ({{ user.role.name }})</span>
+              </div>
+            </div>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="onDelete(user, $event)"
+              class="delete-button"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </a>
+      </ng-container>
+    </mat-nav-list>
+  </div>
+</div>

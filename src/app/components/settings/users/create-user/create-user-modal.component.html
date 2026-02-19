@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>Создать пользователя</h2>
+
+<mat-dialog-content class="dialog-content">
+  <form [formGroup]="userForm">
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Имя</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        required
+        autocomplete="username"
+      />
+      <mat-error *ngIf="userForm.get('name')?.hasError('required')">
+        Имя обязательно
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Роль</mat-label>
+      <mat-select formControlName="roleId" required>
+        <mat-option *ngFor="let role of roles$ | async" [value]="role.id">
+          {{ role.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="userForm.get('roleId')?.hasError('required')">
+        Выберите роль
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Пароль</mat-label>
+      <input
+        matInput
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="userForm.invalid"
+    (click)="onSubmit()"
+    type="button"
+  >
+    Сохранить
+  </button>
+</mat-dialog-actions>

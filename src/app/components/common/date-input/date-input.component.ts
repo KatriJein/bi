@@ -129,21 +129,21 @@ export class DateInputComponent implements OnChanges {
   }
 
   onDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
-    console.log('onDatePickerChange', event.value);
+    // console.log('onDatePickerChange', event.value);
     const value = event.value ? formatDate(event.value, 'yyyy-MM-dd') : null;
     this.dateValueChange.emit(value);
   }
 
   /** Обработка выбора месяца */
   monthSelected(date: Date, datepicker: MatDatepicker<Date>) {
-    console.log('monthSelected', date);
+    // console.log('monthSelected', date);
     const result = new Date(date.getFullYear(), date.getMonth(), 1);
     this.emitAndClose(result, datepicker);
   }
 
   /** Обработка выбора года */
   yearSelected(date: Date, datepicker: MatDatepicker<Date>) {
-    console.log('yearSelected', date);
+    // console.log('yearSelected', date);
     const result = new Date(date.getFullYear(), 0, 1);
     this.emitAndClose(result, datepicker);
   }
@@ -151,11 +151,11 @@ export class DateInputComponent implements OnChanges {
   /** Универсальный метод для закрытия и вывода */
   private emitAndClose(date: Date, datepicker: MatDatepicker<Date>) {
     const formatted = this.formatByGranularity(date);
-    console.log('formatted', formatted.value);
+    // console.log('formatted', formatted.value);
     this.dateValueChange.emit(formatted.value);
     // this.dateValue = formatted.value;
     datepicker.close();
-    console.log('this.dateValue', this.dateValue);
+    // console.log('this.dateValue', this.dateValue);
   }
 
   /** Форматирование по granularity */

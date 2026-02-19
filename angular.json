@@ -55,6 +55,8 @@
               }
             ],
             "styles": [
+              "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+              "node_modules/material-icons/iconfont/material-icons.css",
               "src/styles.scss",
               "node_modules/gridstack/dist/gridstack.min.css"
             ],
@@ -121,6 +123,8 @@
               }
             ],
             "styles": [
+              "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+              "node_modules/material-icons/iconfont/material-icons.css",
               "src/styles.scss",
               "node_modules/gridstack/dist/gridstack.min.css"
             ],

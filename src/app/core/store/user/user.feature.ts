@@ -1,5 +1,6 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import * as UserActions from './user.actions';
+import { InterfaceDto } from '../interfaces';
 
 export interface RoleDto {
   id: string;
@@ -10,6 +11,8 @@ export interface UserDto {
   id: string | undefined;
   name: string | undefined;
   role: RoleDto | null;
+  interfaces?: InterfaceDto[] | null;
+  password?: string | null;
 }
 
 export interface UserState {

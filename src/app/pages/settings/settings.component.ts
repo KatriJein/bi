@@ -52,6 +52,7 @@ export class SettingsComponent {
     { link: 'charts', name: 'Графики', icon: 'bar_chart' },
     { link: 'interfaces', name: 'Интерфейсы', icon: 'widgets' },
     { link: 'dashboards', name: 'Дашборды', icon: 'dashboard' },
+    { link: 'users', name: 'Пользователи', icon: 'people' },
   ];
 
   constructor() {

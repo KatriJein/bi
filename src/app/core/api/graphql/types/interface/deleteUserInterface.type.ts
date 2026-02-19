@@ -3,6 +3,9 @@ export type DeleteUserInterfaceResponse = {
     interface: {
       id: string;
     };
+    user: {
+      id: string;
+    }
   };
 }
 
