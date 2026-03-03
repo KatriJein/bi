@@ -55,6 +55,26 @@ export class InterfacesEffects {
     )
   );
 
+  loadAllInterfaces$ = createEffect(() =>
+  this.actions$.pipe(
+    ofType(InterfacesActions.loadAllInterfaces),
+    switchMap(() =>
+      this.interfaceService.loadAllInterfaces().pipe(
+        map(interfaces =>
+          InterfacesActions.loadAllInterfacesSuccess({ interfaces })
+        ),
+        catchError(error =>
+          of(
+            InterfacesActions.loadAllInterfacesFailure({
+              error: error.message || 'Failed to load all interfaces'
+            })
+          )
+        )
+      )
+    )
+  )
+);
+
   createInterface$ = createEffect(() =>
     this.actions$.pipe(
       ofType(InterfacesActions.createInterface),

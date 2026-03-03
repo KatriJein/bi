@@ -20,6 +20,7 @@ import {
   CreateUserInterfaceResponse,
   DeleteUsersInterfaceResponse,
   UpdateUserInterfaceResponse,
+  GetUserInterfacesType,
 } from '../graphql/types';
 
 import {
@@ -36,6 +37,8 @@ import {
 
 import { getUsersQuery } from '../graphql/queries/users';
 import { GraphqlService } from './grapghql.service';
+import { InterfaceDto } from '../../store/interfaces';
+import { getUserInterfacesQuery } from '../graphql/queries';
 
 export interface RawUser {
   id: string;
@@ -64,6 +67,25 @@ export class UsersService {
     );
   }
 
+  loadUserInterfaces(userId: string): Observable<InterfaceDto[]> {
+    return this.graphql
+      .watchQuery<GetUserInterfacesType>(undefined, getUserInterfacesQuery, {
+        id: userId,
+      })
+      .pipe(
+        map((response) => {
+          if (!response?.user?.userInterfaces?.nodes) return [];
+          return response.user.userInterfaces.nodes
+            .filter((node) => node.interface)
+            .map((node) => ({
+              id: node.interface!.id,
+              name: node.interface!.name,
+              order: node.order,
+            }));
+        }),
+      );
+  }
+
   createUserWithRole(
     name: string,
     password: string | null,
@@ -77,11 +99,10 @@ export class UsersService {
       .pipe(
         switchMap((result) => {
           const userId = result.createUser.user.id;
-          return this.graphql.mutate<CreateUserRoleResponse, CreateUserRoleVariables>(
-            undefined,
-            createUserRoleMutation,
-            { userId, roleId },
-          );
+          return this.graphql.mutate<
+            CreateUserRoleResponse,
+            CreateUserRoleVariables
+          >(undefined, createUserRoleMutation, { userId, roleId });
         }),
         map(() => void 0),
       );

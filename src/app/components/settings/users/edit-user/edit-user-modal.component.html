@@ -1,12 +1,15 @@
+<!-- edit-user-modal.component.html -->
 <h2 mat-dialog-title>Редактировать пользователя</h2>
 
 <mat-dialog-content class="dialog-content">
   <form [formGroup]="userForm">
+    <!-- ID -->
     <mat-form-field appearance="outline" class="full-width input">
       <mat-label>ID</mat-label>
       <input matInput formControlName="id" />
     </mat-form-field>
 
+    <!-- Имя -->
     <mat-form-field appearance="outline" class="full-width input">
       <mat-label>Имя</mat-label>
       <input
@@ -20,6 +23,28 @@
       </mat-error>
     </mat-form-field>
 
+    <!-- Пароль -->
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Пароль</mat-label>
+      <input
+        matInput
+        [type]="isShowPassword ? 'text' : 'password'"
+        formControlName="password"
+        autocomplete="new-password"
+      />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        (click)="toggleShowPassword()"
+        [attr.aria-label]="'Скрыть пароль'"
+        [attr.aria-pressed]="isShowPassword"
+      >
+        <mat-icon>{{ isShowPassword ? "visibility_off" : "visibility" }}</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <!-- Роль -->
     <mat-form-field appearance="outline" class="full-width input">
       <mat-label>Роль</mat-label>
       <mat-select formControlName="roleId" required>
@@ -31,6 +56,51 @@
         Выберите роль
       </mat-error>
     </mat-form-field>
+
+    <!-- Табы интерфейсов -->
+    <div class="interfaces-section">
+      <h3>Интерфейсы</h3>
+
+      <mat-tab-group [(selectedIndex)]="selectedTab">
+        <!-- Вкладка 1: Все интерфейсы -->
+        <mat-tab label="Все интерфейсы">
+          <div class="interfaces-list">
+            <mat-checkbox
+              *ngFor="let intf of allInterfaces$ | async; trackBy: trackById"
+              [checked]="selectedInterfaceIds.has(intf.id!)"
+              (change)="onInterfaceToggle(intf.id!)"
+            >
+              {{ intf.name }}
+            </mat-checkbox>
+          </div>
+        </mat-tab>
+
+        <!-- Вкладка 2: Интерфейсы пользователя -->
+        <mat-tab label="Интерфейсы пользователя">
+          <div class="user-interfaces-list" *ngIf="userInterfaces.length > 0; else noInterfaces">
+            <div
+              *ngFor="let intf of userInterfaces; trackBy: trackByInterfaceId"
+              class="interface-item"
+            >
+              <span class="interface-name">{{ intf.name }}</span>
+              <mat-form-field appearance="outline" class="order-input">
+                <mat-label>Порядок</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [value]="intf.order"
+                  (input)="updateInterfaceOrder(intf.id, $any($event.target).valueAsNumber)"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+
+          <ng-template #noInterfaces>
+            <p class="no-interfaces">Нет выбранных интерфейсов</p>
+          </ng-template>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
   </form>
 </mat-dialog-content>
 

@@ -5,7 +5,18 @@ import { InterfaceDto } from '../interfaces';
 export interface RoleDto {
   id: string;
   name: string;
+  permissions: Permission[];
 }
+
+export type Permission =
+  | 'full_access'          
+  | 'roles.manage'
+  | 'users.manage'
+  | 'interfaces.manage'
+  | 'datasets.manage'
+  | 'charts.manage'
+  | 'dashboards.manage'
+  | 'dashboard_filters.manage';
 
 export interface UserDto {
   id: string | undefined;

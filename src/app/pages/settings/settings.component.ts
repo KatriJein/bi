@@ -53,6 +53,7 @@ export class SettingsComponent {
     { link: 'interfaces', name: 'Интерфейсы', icon: 'widgets' },
     { link: 'dashboards', name: 'Дашборды', icon: 'dashboard' },
     { link: 'users', name: 'Пользователи', icon: 'people' },
+    { link: 'roles', name: 'Роли', icon: 'security' },
   ];
 
   constructor() {

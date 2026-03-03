@@ -37,6 +37,7 @@ export class UserService {
       ? {
           id: roleNode.id,
           name: roleNode.name,
+          permissions: roleNode.permissions
         }
       : null;
 

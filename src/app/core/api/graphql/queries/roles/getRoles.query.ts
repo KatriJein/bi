@@ -6,6 +6,7 @@ query GetRoles {
     nodes {
       id
       name
+      permissions
     }
   }
 }

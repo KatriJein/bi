@@ -6,5 +6,5 @@ export * from './widget';
 export * from './chart-filter';
 export * from './dashboard-filter';
 export * from './widget-filter-binding';
-// export * from './roles';
+export * from './role';
 export * from './users';

@@ -19,6 +19,7 @@ import {
   CreateUserModalComponent,
   EditUserModalComponent,
 } from '../../../components/settings';
+import { InterfacesActions } from '../../../core/store/interfaces';
 
 @Component({
   selector: 'app-settings-users',
@@ -64,6 +65,8 @@ export class UsersSettingsComponent {
   constructor() {
     this.store.dispatch(RolesActions.loadRoles());
     this.store.dispatch(UsersActions.loadUsers());
+    this.store.dispatch(InterfacesActions.loadAllInterfaces())
+    
   }
 
   onDelete(user: UserDto, event: Event): void {
@@ -99,7 +102,7 @@ export class UsersSettingsComponent {
 
   openEditUserModal(user: UserDto): void {
     this.dialog.open(EditUserModalComponent, {
-      width: '600px',
+      width: '800px',
       data: user,
     });
   }

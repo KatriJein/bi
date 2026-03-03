@@ -9,6 +9,11 @@ export const selectAllInterfaces = createSelector(
   (state) => state.interfaces
 );
 
+export const selectAllInterfacesList = createSelector(
+  selectInterfacesState,
+  (state) => state.allInterfaces
+);
+
 export const selectActiveInterfaceId = createSelector(
   selectInterfacesState,
   (state) => state.activeInterfaceId

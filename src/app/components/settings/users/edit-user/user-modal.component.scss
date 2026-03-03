@@ -1,0 +1,44 @@
+.interfaces-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.interfaces-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.selected-interfaces {
+  h4 {
+    margin: 16px 0 8px;
+    font-size: 14px;
+    color: #666;
+  }
+}
+
+.drag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drag-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  cursor: move;
+}
+
+.drag-item cdk-drag-placeholder {
+  background: #e0e0e0;
+}
+
+::ng-deep .cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

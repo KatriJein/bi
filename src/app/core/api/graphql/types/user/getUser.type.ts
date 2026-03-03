@@ -1,3 +1,5 @@
+import { Permission } from '../../../../store/user';
+
 export type GetUserType = {
   users: {
     edges: Array<{
@@ -9,6 +11,7 @@ export type GetUserType = {
             role: {
               id: string;
               name: string;
+              permissions: Permission[];
             };
           }>;
         };

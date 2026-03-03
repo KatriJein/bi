@@ -11,6 +11,7 @@ import {
   HeaderLayoutComponent,
   InterfacesSettingsComponent,
   MainComponent,
+  RolesSettingsComponent,
   SettingsComponent,
   UsersSettingsComponent,
 } from './pages';
@@ -71,6 +72,7 @@ export const routes: Routes = [
         ],
       },
       { path: 'users', component: UsersSettingsComponent },
+      { path: 'roles', component: RolesSettingsComponent },
     ],
   },
   {

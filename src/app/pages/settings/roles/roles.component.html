@@ -1,0 +1,52 @@
+<div class="router-content">
+  <div class="header">
+    <h2 class="title">Список ролей</h2>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="openCreateRoleModal()"
+    >
+      <mat-icon>add</mat-icon>
+      Создать роль
+    </button>
+  </div>
+
+  <div class="content">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Поиск ролей</mat-label>
+      <input
+        matInput
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Введите название роли"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-nav-list>
+      <ng-container *ngIf="filteredRoles$ | async as roles">
+        <a
+          mat-list-item
+          *ngFor="let role of roles; trackBy: trackById"
+          class="item"
+          (click)="onRoleClick(role, $event)"
+        >
+          <div class="info-container">
+            <div class="info">
+              <mat-icon class="icon">security</mat-icon>
+              <span class="name">{{ role.name }}</span>
+            </div>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="onDelete(role, $event)"
+              class="delete-button"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </a>
+      </ng-container>
+    </mat-nav-list>
+  </div>
+</div>

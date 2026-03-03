@@ -8,6 +8,7 @@ import {
   DeleteInterfaceVariables,
   DeleteUserInterfaceResponse,
   DeleteUserInterfaceVariables,
+  GetInterfacesType,
   GetUserInterfacesType,
   UpdateInterfaceMutationResponse,
   UpdateInterfaceMutationVariables,
@@ -16,7 +17,7 @@ import {
 } from '../../api/graphql/types';
 import { InterfaceDto } from '../../store/interfaces';
 import { Injectable, inject } from '@angular/core';
-import { getUserInterfacesQuery } from '../graphql/queries';
+import { getInterfacesQuery, getUserInterfacesQuery } from '../graphql/queries';
 import {
   createInterfaceMutation,
   createUserInterfaceMutation,
@@ -43,6 +44,25 @@ export class InterfaceService {
         map((response) => this.transformResponse(response)),
         catchError((error) => {
           console.error('Error loading interfaces:', error);
+          return of([]);
+        })
+      );
+  }
+
+  loadAllInterfaces(): Observable<InterfaceDto[]> {
+    return this.graphql
+      .watchQuery<GetInterfacesType>(undefined, getInterfacesQuery)
+      .pipe(
+        map(response => {
+          if (!response?.interfaces?.nodes) return [];
+          return response.interfaces.nodes.map(node => ({
+            id: node.id,
+            name: node.name,
+            order: undefined,
+          }));
+        }),
+        catchError(error => {
+          console.error('Error loading all interfaces:', error);
           return of([]);
         })
       );

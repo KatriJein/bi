@@ -20,7 +20,11 @@ export const UsersFeature = createFeature({
     initialState,
 
     // Загрузка
-    on(UsersActions.loadUsers, state => ({ ...state, isLoading: true, error: null })),
+    on(UsersActions.loadUsers, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
     on(UsersActions.loadUsersSuccess, (state, { users }) => ({
       ...state,
       users,
@@ -33,31 +37,108 @@ export const UsersFeature = createFeature({
       error,
     })),
 
+    // Загрузка интерфейсов
+    on(UsersActions.loadUserInterfaces, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(
+      UsersActions.loadUserInterfacesSuccess,
+      (state, { userId, interfaces }) => {
+        if (!state.users) return state;
+
+        const updatedUsers = state.users.map((user) =>
+          user.id === userId ? { ...user, interfaces } : user,
+        );
+
+        return {
+          ...state,
+          users: updatedUsers,
+          isLoading: false,
+        };
+      },
+    ),
+    on(UsersActions.loadUserInterfacesFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
+
     // Создание
-    on(UsersActions.createUserWithRole, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.createUserWithRoleSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.createUserWithRole, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.createUserWithRoleSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
     // Удаление
-    on(UsersActions.deleteUserWithRole, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.deleteUserWithRoleSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.deleteUserWithRole, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.deleteUserWithRoleSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
     // Обновление пользователя
-    on(UsersActions.updateUser, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.updateUserSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.updateUser, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.updateUserSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
     // Обновление роли
-    on(UsersActions.updateUserRole, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.updateUserRoleSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.updateUserRole, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.updateUserRoleSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
     // Интерфейсы
-    on(UsersActions.createUserInterface, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.createUserInterfaceSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.createUserInterface, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.createUserInterfaceSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
-    on(UsersActions.deleteUserInterface, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.deleteUserInterfaceSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.deleteUserInterface, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.deleteUserInterfaceSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
-    on(UsersActions.updateUserInterface, state => ({ ...state, isLoading: true, error: null })),
-    on(UsersActions.updateUserInterfaceSuccess, state => ({ ...state, isLoading: false })),
+    on(UsersActions.updateUserInterface, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(UsersActions.updateUserInterfaceSuccess, (state) => ({
+      ...state,
+      isLoading: false,
+    })),
 
     // Ошибки
     on(
@@ -68,10 +149,10 @@ export const UsersFeature = createFeature({
       UsersActions.createUserInterfaceFailure,
       UsersActions.deleteUserInterfaceFailure,
       UsersActions.updateUserInterfaceFailure,
-      (state, { error }) => ({ ...state, isLoading: false, error })
+      (state, { error }) => ({ ...state, isLoading: false, error }),
     ),
 
     // Очистка
-    on(UsersActions.clearUsers, () => ({ ...initialState, users: null }))
+    on(UsersActions.clearUsers, () => ({ ...initialState, users: null })),
   ),
 });

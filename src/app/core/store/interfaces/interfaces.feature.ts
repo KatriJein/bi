@@ -10,6 +10,7 @@ export interface InterfaceDto {
 
 export interface InterfacesState {
   interfaces: InterfaceDto[];
+  allInterfaces: InterfaceDto[];
   activeInterfaceId: string;
   isLoading: boolean;
   error: string | null;
@@ -17,6 +18,7 @@ export interface InterfacesState {
 
 export const initialState: InterfacesState = {
   interfaces: [],
+  allInterfaces: [],
   activeInterfaceId: '',
   isLoading: false,
   error: null,
@@ -42,6 +44,23 @@ export const InterfacesFeature = createFeature({
       };
     }),
     on(InterfaceActions.loadInterfacesFailure, (state, { error }) => ({
+      ...state,
+      isLoading: false,
+      error,
+    })),
+
+    // Загрузка всех
+    on(InterfaceActions.loadAllInterfaces, (state) => ({
+      ...state,
+      isLoading: true,
+      error: null,
+    })),
+    on(InterfaceActions.loadAllInterfacesSuccess, (state, { interfaces }) => ({
+      ...state,
+      allInterfaces: interfaces,
+      isLoading: false,
+    })),
+    on(InterfaceActions.loadAllInterfacesFailure, (state, { error }) => ({
       ...state,
       isLoading: false,
       error,

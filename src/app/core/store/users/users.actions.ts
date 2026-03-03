@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { UserDto } from '../user';
+import { InterfaceDto } from '../interfaces';
 
 export const loadUsers = createAction('[Users] Load Users');
 export const loadUsersSuccess = createAction(
@@ -8,6 +9,21 @@ export const loadUsersSuccess = createAction(
 );
 export const loadUsersFailure = createAction(
   '[Users] Load Users Failure',
+  props<{ error: string }>()
+);
+
+export const loadUserInterfaces = createAction(
+  '[Users] Load User Interfaces',
+  props<{ userId: string }>()
+);
+
+export const loadUserInterfacesSuccess = createAction(
+  '[Users] Load User Interfaces Success',
+  props<{ userId: string; interfaces: InterfaceDto[] }>()
+);
+
+export const loadUserInterfacesFailure = createAction(
+  '[Users] Load User Interfaces Failure',
   props<{ error: string }>()
 );
 

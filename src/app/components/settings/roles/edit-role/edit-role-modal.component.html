@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>
+  {{ data.mode === 'create' ? 'Создать роль' : 'Редактировать роль' }}
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  <form [formGroup]="roleForm">
+    <!-- ID (только для редактирования) -->
+    <mat-form-field
+      appearance="outline"
+      class="full-width input"
+      *ngIf="data.mode === 'edit'"
+    >
+      <mat-label>ID</mat-label>
+      <input matInput formControlName="id" />
+    </mat-form-field>
+
+    <!-- Название роли -->
+    <mat-form-field appearance="outline" class="full-width input">
+      <mat-label>Название роли</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        required
+      />
+      <mat-error *ngIf="roleForm.get('name')?.hasError('required')">
+        Название обязательно
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Права доступа -->
+    <div class="permissions-section">
+      <h3>Права доступа</h3>
+      <div class="permissions-list">
+        <mat-checkbox
+          *ngFor="let perm of allPermissions"
+          [checked]="roleForm.get('permissions')?.value?.includes(perm)"
+          (change)="togglePermission(perm)"
+        >
+          {{ permissionLabels[perm] }}
+        </mat-checkbox>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Отмена</button>
+  <button
+    mat-flat-button
+    color="primary"
+    [disabled]="roleForm.invalid"
+    (click)="onSubmit()"
+    type="button"
+  >
+    {{ data.mode === 'create' ? 'Создать' : 'Сохранить' }}
+  </button>
+</mat-dialog-actions>

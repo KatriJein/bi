@@ -5,3 +5,4 @@ export * from './deleteInterface.type';
 export * from './deleteUserInterface.type';
 export * from './updateInterface.type';
 export * from './updateInterfaceOrder.type';
+export * from './getInterfaces.type';

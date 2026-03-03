@@ -40,6 +40,27 @@ export const RolesFeature = createFeature({
       error,
     })),
 
+    on(
+      RolesActions.createRole,
+      RolesActions.updateRole,
+      RolesActions.deleteRole,
+      state => ({ ...state, isLoading: true, error: null })
+    ),
+
+    on(
+      RolesActions.createRoleSuccess,
+      RolesActions.updateRoleSuccess,
+      RolesActions.deleteRoleSuccess,
+      state => ({ ...state, isLoading: false })
+    ),
+
+    on(
+      RolesActions.createRoleFailure,
+      RolesActions.updateRoleFailure,
+      RolesActions.deleteRoleFailure,
+      (state, { error }) => ({ ...state, isLoading: false, error })
+    ),
+
     // Очистка ролей
     on(RolesActions.clearRoles, () => ({
       ...initialState,

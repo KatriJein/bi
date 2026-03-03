@@ -12,6 +12,17 @@ export const loadInterfacesFailure = createAction(
   props<{ error: string }>()
 );
 
+// Загрузка всех
+export const loadAllInterfaces = createAction('[Interfaces] Load All Interfaces');
+export const loadAllInterfacesSuccess = createAction(
+  '[Interfaces] Load All Interfaces Success',
+  props<{ interfaces: InterfaceDto[] }>()
+);
+export const loadAllInterfacesFailure = createAction(
+  '[Interfaces] Load All Interfaces Failure',
+  props<{ error: string }>()
+);
+
 // Добавление
 export const createInterface = createAction(
   '[Interfaces] Create Interface',

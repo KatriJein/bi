@@ -14,6 +14,12 @@ export const selectUsersCount = createSelector(
   (users) => users?.length || 0,
 );
 
+export const selectUserInterfaces = (userId: string) =>
+  createSelector(
+    UsersFeature.selectUsers,
+    (users) => users?.find(user => user.id === userId)?.interfaces || []
+  );
+
 export const selectUserById = (userId: string) =>
   createSelector(
     selectUsers,
