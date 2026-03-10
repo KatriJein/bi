@@ -39,12 +39,13 @@ import { getUsersQuery } from '../graphql/queries/users';
 import { GraphqlService } from './grapghql.service';
 import { InterfaceDto } from '../../store/interfaces';
 import { getUserInterfacesQuery } from '../graphql/queries';
+import { UserDto } from '../../store/user';
 
 export interface RawUser {
   id: string;
   name: string;
   roleId: string | null;
-  interfaceIds: string[];
+  interfaces: InterfaceDto[];
   password?: string;
 }
 
@@ -56,13 +57,29 @@ export class UsersService {
     return this.graphql.watchQuery<GetUsersType>(undefined, getUsersQuery).pipe(
       map((response) => {
         if (!response?.users?.nodes) return [];
-        return response.users.nodes.map((node) => ({
-          id: node.id,
-          name: node.name,
-          roleId: node.userRoles.nodes[0]?.roleId || null,
-          interfaceIds: node.userInterfaces.nodes.map((n) => n.interfaceId),
-          password: node.password,
-        }));
+
+        return response.users.nodes.map((node) => {
+          const roleId =
+            node.userRoles.nodes.length > 0
+              ? node.userRoles.nodes[0].roleId
+              : null;
+
+          const interfaces = node.userInterfaces.nodes
+            .filter((n) => n.interface)
+            .map((n) => ({
+              id: n.interface!.id,
+              name: n.interface!.name,
+              order: n.order,
+            }));
+
+          return {
+            id: node.id,
+            name: node.name,
+            roleId,
+            interfaces,
+            password: node.password,
+          };
+        });
       }),
     );
   }

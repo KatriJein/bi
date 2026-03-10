@@ -1,0 +1,53 @@
+.full-width {
+  width: 100%;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.input {
+  padding-top: 0.5rem;
+}
+
+.search-field {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.permissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px 0;
+
+  mat-checkbox {
+    font-size: 16px;
+    margin: 0;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+}
+
+::ng-deep .mdc-label {
+  font-size: 16px !important;
+}
+
+.no-results {
+  text-align: center;
+  padding: 24px;
+  color: #999;
+  font-style: italic;
+  font-size: 16px;
+}

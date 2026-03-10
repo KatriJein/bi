@@ -31,8 +31,10 @@ import {
   buildDashboardHierarchy,
   findFirstDashboardWithWidgets,
   getFallbackDashboard,
+  PermissionMap,
 } from '../../utils';
 import { GlobalDataService } from '../../core/services/global-data.service';
+import { UserSelectors } from '../../core/store/user';
 
 @Component({
   selector: 'app-main',
@@ -55,18 +57,18 @@ export class MainComponent implements OnInit {
   private store = inject(Store);
   private router = inject(Router);
   private titleService = inject(Title);
-  private globalData = inject(GlobalDataService);
+  // private globalData = inject(GlobalDataService);
 
-  interfaces$ = this.store.select(InterfacesSelectors.selectAllInterfaces);
+  interfaces$ = this.store.select(InterfacesSelectors.selectInterfaces);
   activeInterface$ = this.store.select(
-    InterfacesSelectors.selectActiveInterface
+    InterfacesSelectors.selectActiveInterface,
   );
   activeInterfaceId$ = this.store.select(
-    InterfacesSelectors.selectActiveInterfaceId
+    InterfacesSelectors.selectActiveInterfaceId,
   );
-
+  
   loading$ = combineLatest([
-    this.store.select(InterfacesSelectors.selectInterfacesLoading),
+    this.store.select(InterfacesSelectors.selectIsLoading),
     this.store.select(DashboardsSelectors.selectIsLoading),
   ]).pipe(map((loadings) => loadings.some((loading) => loading)));
 
@@ -77,8 +79,8 @@ export class MainComponent implements OnInit {
       return this.store
         .select(
           DashboardsSelectors.selectRootDashboardsByInterfaceId(
-            activeInterface.id
-          )
+            activeInterface.id,
+          ),
         )
         .pipe(
           map((dashboards) => {
@@ -87,16 +89,16 @@ export class MainComponent implements OnInit {
               first: dashboards.slice(0, splitIndex),
               second: dashboards.slice(splitIndex),
             };
-          })
+          }),
         );
-    })
+    }),
   );
 
   firstColumnDashboards$ = this.dashboardsSplit$.pipe(
-    map((split) => split.first)
+    map((split) => split.first),
   );
   secondColumnDashboards$ = this.dashboardsSplit$.pipe(
-    map((split) => split.second)
+    map((split) => split.second),
   );
 
   handleDashboardClick(rootDashboardId: string | undefined): void {
@@ -111,11 +113,13 @@ export class MainComponent implements OnInit {
         switchMap((activeInterfaceId) => {
           if (!activeInterfaceId) {
             this.router.navigate(['/dashboard', rootDashboardId]);
-            return EMPTY; // ✅
+            return EMPTY;
           }
 
           const dashboards$ = this.store.select(
-            DashboardsSelectors.selectDashboardsByInterfaceId(activeInterfaceId)
+            DashboardsSelectors.selectDashboardsByInterfaceId(
+              activeInterfaceId,
+            ),
           );
           const widgets$ = this.store.select(WidgetsSelectors.selectWidgets);
 
@@ -132,7 +136,7 @@ export class MainComponent implements OnInit {
 
               const dashboardWithWidgets = findFirstDashboardWithWidgets(
                 root,
-                widgetsRecord
+                widgetsRecord,
               );
 
               if (dashboardWithWidgets) {
@@ -141,9 +145,9 @@ export class MainComponent implements OnInit {
                 const fallbackId = getFallbackDashboard(root);
                 this.router.navigate(['/dashboard', fallbackId]);
               }
-            })
+            }),
           );
-        })
+        }),
       )
       .subscribe();
   }
@@ -152,7 +156,7 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.setTitle('Главная страница');
-    this.globalData.ensureLoaded();
+    // this.globalData.ensureLoaded();
   }
 
   setActiveInterface(id: string | undefined) {

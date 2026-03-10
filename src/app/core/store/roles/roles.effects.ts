@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, exhaustMap, map, switchMap, tap } from 'rxjs/operators';
 import * as RolesActions from './roles.actions';
 import { RolesService } from '../../api/services/roles.service';
 
@@ -13,7 +13,7 @@ export class RolesEffects {
   loadRoles$ = createEffect(() =>
     this.actions$.pipe(
       ofType(RolesActions.loadRoles),
-      switchMap(() =>
+      exhaustMap(() =>
         this.rolesService.loadRoles().pipe(
           map((roles) => RolesActions.loadRolesSuccess({ roles })),
           catchError((error) =>

@@ -14,14 +14,10 @@
       <input matInput formControlName="id" />
     </mat-form-field>
 
-    <!-- Название роли -->
+    <!-- Название роли (на всю ширину) -->
     <mat-form-field appearance="outline" class="full-width input">
       <mat-label>Название роли</mat-label>
-      <input
-        matInput
-        formControlName="name"
-        required
-      />
+      <input matInput formControlName="name" required />
       <mat-error *ngIf="roleForm.get('name')?.hasError('required')">
         Название обязательно
       </mat-error>
@@ -30,14 +26,42 @@
     <!-- Права доступа -->
     <div class="permissions-section">
       <h3>Права доступа</h3>
+
+      <!-- Поле поиска -->
+      <mat-form-field appearance="outline" class="search-field full-width">
+        <mat-label>Поиск прав</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchTerm"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="Введите название права..."
+        />
+        <button
+          *ngIf="searchTerm"
+          matSuffix
+          mat-icon-button
+          (click)="searchTerm = ''"
+          type="button"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Список чекбоксов -->
       <div class="permissions-list">
         <mat-checkbox
-          *ngFor="let perm of allPermissions"
+          *ngFor="let perm of filteredPermissions"
           [checked]="roleForm.get('permissions')?.value?.includes(perm)"
           (change)="togglePermission(perm)"
+          color="accent"
         >
           {{ permissionLabels[perm] }}
         </mat-checkbox>
+
+        <div *ngIf="filteredPermissions.length === 0" class="no-results">
+          Права не найдены
+        </div>
       </div>
     </div>
   </form>

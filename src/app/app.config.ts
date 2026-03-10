@@ -31,6 +31,7 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { UsersEffects, UsersFeature } from './core/store/users';
 import { RolesEffects, RolesFeature } from './core/store/roles';
+import { metaReducers } from './core/store/meta-reducers';
 
 function getGraphQLUri(): string {
   return `http://${window.location.hostname}:5000/graphql`;
@@ -91,17 +92,20 @@ export const appConfig: ApplicationConfig = {
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions()),
-    provideStore({
-      [InterfacesFeature.name]: InterfacesFeature.reducer,
-      [UserFeature.name]: UserFeature.reducer,
-      [DashboardsFeature.name]: DashboardsFeature.reducer,
-      [ConnectionsFeature.name]: ConnectionsFeature.reducer,
-      [DatasetsFeature.name]: DatasetsFeature.reducer,
-      [ChartsFeature.name]: ChartsFeature.reducer,
-      [WidgetsFeature.name]: WidgetsFeature.reducer,
-      [UsersFeature.name]: UsersFeature.reducer,
-      [RolesFeature.name]: RolesFeature.reducer,
-    }),
+    provideStore(
+      {
+        [InterfacesFeature.name]: InterfacesFeature.reducer,
+        [UserFeature.name]: UserFeature.reducer,
+        [DashboardsFeature.name]: DashboardsFeature.reducer,
+        [ConnectionsFeature.name]: ConnectionsFeature.reducer,
+        [DatasetsFeature.name]: DatasetsFeature.reducer,
+        [ChartsFeature.name]: ChartsFeature.reducer,
+        [WidgetsFeature.name]: WidgetsFeature.reducer,
+        [UsersFeature.name]: UsersFeature.reducer,
+        [RolesFeature.name]: RolesFeature.reducer,
+      },
+      { metaReducers },
+    ),
     provideEffects([
       InterfacesEffects,
       UserEffects,

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ChartService } from '../../api/services/chart.service';
 import { ChartsActions } from '.';
@@ -16,7 +16,7 @@ export class ChartsEffects {
   loadCharts$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ChartsActions.loadCharts),
-      switchMap(() =>
+      exhaustMap(() =>
         this.chartService.getCharts().pipe(
           map((charts) => ChartsActions.loadChartsSuccess({ charts })),
           catchError((error) =>
@@ -155,7 +155,7 @@ export class ChartsEffects {
     this.actions$.pipe(
       ofType(ChartsActions.loadChart),
       switchMap(({ chartId }) =>
-        
+
         this.chartService.getChartById(chartId).pipe(
           map((chart) => {
             if (!chart) throw new Error('Chart not found');

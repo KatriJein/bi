@@ -14,6 +14,7 @@ export interface InterfacesState {
   activeInterfaceId: string;
   isLoading: boolean;
   error: string | null;
+  loaded: boolean
 }
 
 export const initialState: InterfacesState = {
@@ -22,6 +23,7 @@ export const initialState: InterfacesState = {
   activeInterfaceId: '',
   isLoading: false,
   error: null,
+  loaded: false
 };
 
 export const InterfacesFeature = createFeature({
@@ -59,6 +61,7 @@ export const InterfacesFeature = createFeature({
       ...state,
       allInterfaces: interfaces,
       isLoading: false,
+      loaded: true,
     })),
     on(InterfaceActions.loadAllInterfacesFailure, (state, { error }) => ({
       ...state,

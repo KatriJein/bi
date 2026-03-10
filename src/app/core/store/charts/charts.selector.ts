@@ -1,7 +1,7 @@
 import { createSelector } from '@ngrx/store';
 import { ChartsFeature } from './charts.feature';
 
-export const { selectCharts, selectError, selectIsLoading } = ChartsFeature;
+export const { selectCharts, selectError, selectIsLoading, selectLoaded } = ChartsFeature;
 
 export const selectChartById = (id: string) =>
   createSelector(selectCharts, (charts) => charts.find((c) => c.id === id));

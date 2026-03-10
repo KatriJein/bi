@@ -25,13 +25,16 @@
         <div class="navigation" *ngIf="!isSidebarCollapsed">
           <app-main-button />
           <div class="buttons">
-            <button
-              mat-icon-button
-              class="nav-button"
-              [routerLink]="['/settings']"
-            >
-              <mat-icon>settings</mat-icon>
-            </button>
+            @if (hasAnySettingsPermission$ | async) {
+              <button
+                mat-icon-button
+                class="nav-button"
+                [routerLink]="['/settings']"
+              >
+                <mat-icon>settings</mat-icon>
+              </button>
+            }
+
             <button
               mat-icon-button
               (click)="toggleSidebar()"
@@ -138,13 +141,14 @@
                   [matTooltip]="
                     isEditMode() ? 'Заблокировать' : 'Редактировать'
                   "
+                  *ngIf="hasDashboardManage$ | async"
                 >
                   <mat-icon>{{ isEditMode() ? "lock" : "edit" }}</mat-icon>
                 </button>
 
                 <button
                   mat-icon-button
-                  *ngIf="isEditMode()"
+                  *ngIf="(hasDashboardManage$ | async) && isEditMode()"
                   [matMenuTriggerFor]="addWidgetMenu"
                   color="primary"
                   class="add-widget-button"
@@ -183,7 +187,7 @@
                 *ngFor="let filter of filters$ | async"
                 [selectable]="false"
                 (click)="onFilterClick(filter)"
-                [removable]="true"
+                [removable]="(hasFilterManage$ | async) === true"
                 (removed)="removeFilter(filter)"
               >
                 <div class="filter-chip-content">
@@ -193,7 +197,9 @@
                     {{ formatFilterValue(filter) }}</span
                   >
                 </div>
-                <mat-icon matChipRemove>cancel</mat-icon>
+                <mat-icon *ngIf="hasFilterManage$ | async" matChipRemove
+                  >cancel</mat-icon
+                >
               </mat-chip-option>
             </mat-chip-listbox>
 
@@ -202,6 +208,7 @@
               color="primary"
               (click)="openAddFilterDialog()"
               class="add-filter-btn"
+              *ngIf="hasFilterManage$ | async"
             >
               <mat-icon>add</mat-icon>
               Добавить фильтр

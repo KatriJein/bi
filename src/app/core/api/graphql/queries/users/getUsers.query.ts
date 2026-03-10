@@ -14,7 +14,11 @@ query GetUsers {
       }
       userInterfaces {
         nodes {
-          interfaceId
+          order
+          interface {
+            id
+            name
+          }
         }
       }
       password

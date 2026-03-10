@@ -16,12 +16,14 @@ export interface DatasetsState {
   datasets: DatasetDto[];
   isLoading: boolean;
   error: string | null;
+  loaded: boolean
 }
 
 export const initialState: DatasetsState = {
   datasets: [],
   isLoading: false,
   error: null,
+  loaded: false
 };
 
 export const DatasetsFeature = createFeature({
@@ -38,13 +40,14 @@ export const DatasetsFeature = createFeature({
       ...state,
       datasets,
       isLoading: false,
+      loaded: true,
     })),
     on(DatasetsActions.loadDatasetsFailure, (state, { error }) => ({
       ...state,
       isLoading: false,
       error,
     })),
-    
+
     // Загрузка датасета
     on(DatasetsActions.loadDataset, (state) => ({
       ...state,

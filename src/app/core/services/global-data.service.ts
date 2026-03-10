@@ -16,10 +16,10 @@ export class GlobalDataService {
   ensureLoaded(): void {
     if (this.isLoaded) return;
 
-    this.store.dispatch(DatasetsActions.loadDatasets());
-    this.store.dispatch(ChartsActions.loadCharts());
-    this.store.dispatch(RolesActions.loadRoles());
-    this.store.dispatch(UsersActions.loadUsers());
+    // this.store.dispatch(DatasetsActions.loadDatasets());
+    // this.store.dispatch(ChartsActions.loadCharts());
+    // this.store.dispatch(RolesActions.loadRoles());
+    // this.store.dispatch(UsersActions.loadUsers());
 
     this.isLoaded = true;
   }

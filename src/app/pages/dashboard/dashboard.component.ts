@@ -67,11 +67,13 @@ import {
   DashboardSelectionModalComponent,
 } from '../../components/dashboard';
 import { SelectionTypeDashboard } from '../../core/store/charts';
-import { formatFilterValue, formatSingle } from '../../utils';
+import { formatFilterValue, formatSingle, PermissionMap } from '../../utils';
 import { SelectionColumnType } from '../../constants';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Title } from '@angular/platform-browser';
 import { GlobalDataService } from '../../core/services/global-data.service';
+import { Store } from '@ngrx/store';
+import { UserSelectors } from '../../core/store/user';
 
 export type FilterTypeExp = {
   field: string;
@@ -114,9 +116,38 @@ export type FilterEmitType = {
 export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private titleService = inject(Title);
   private cdr = inject(ChangeDetectorRef);
-  private globalData = inject(GlobalDataService);
+  // private globalData = inject(GlobalDataService);
+  private store = inject(Store);
 
   private destroy$ = new Subject<void>();
+  permissions$ = this.store.select(UserSelectors.selectCurrentUserPermissions);
+
+  hasDashboardManage$ = this.permissions$.pipe(
+    map(
+      (perms) =>
+        perms.includes('full_access') || perms.includes('dashboards.manage'),
+    ),
+  );
+
+  hasFilterManage$ = this.permissions$.pipe(
+    map(
+      (perms) =>
+        perms.includes('full_access') ||
+        perms.includes('dashboard_filters.manage'),
+    ),
+  );
+
+  hasAnySettingsPermission$ = this.permissions$.pipe(
+    map((permissions) => {
+      const hasFullAccess = permissions.includes('full_access');
+
+      return Object.values(PermissionMap).some(
+        (requiredPermissions) =>
+          hasFullAccess ||
+          requiredPermissions.some((p) => permissions.includes(p)),
+      );
+    }),
+  );
 
   @ViewChild('gridStackContainer', { static: true })
   gridStackContainer!: ElementRef<HTMLDivElement>;
@@ -159,7 +190,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   activeDashboardId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
     filter((id): id is string => !!id),
-    tap((id) => this.stateService.setActiveDashboard(id))
+    tap((id) => this.stateService.setActiveDashboard(id)),
   );
 
   private grid: GridStack | undefined;
@@ -174,7 +205,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   formatOption = (
     option: any,
     fieldType: string,
-    dateGranularity?: DateGranularity
+    dateGranularity?: DateGranularity,
   ) => formatSingle(option, fieldType as SelectionColumnType, dateGranularity);
 
   ngAfterViewInit() {
@@ -186,7 +217,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    this.globalData.ensureLoaded();
+    // this.globalData.ensureLoaded();
     this.stateService.multipleFilters$
       .pipe(takeUntil(this.destroy$))
       .subscribe((filters) => {
@@ -210,7 +241,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
     if (!this.isResizing) return;
     const newWidth = Math.min(
       this.maxWidth,
-      Math.max(this.minWidth, event.clientX)
+      Math.max(this.minWidth, event.clientX),
     );
     setTimeout(() => {
       this.sidenavWidth = newWidth;
@@ -272,7 +303,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
 
       this.grid = GridStack.init(
         options,
-        this.gridStackContainer.nativeElement
+        this.gridStackContainer.nativeElement,
       );
 
       this.restoreGridPositions(currentPositions);
@@ -287,12 +318,12 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
       y?: number;
       width?: number;
       height?: number;
-    }>
+    }>,
   ) {
     if (positions.length > 0) {
       positions.forEach((pos) => {
         const el = this.gridStackContainer.nativeElement.querySelector(
-          `[gs-id="${pos.id}"]`
+          `[gs-id="${pos.id}"]`,
         );
         if (el) {
           this.grid?.update(el as GridItemHTMLElement, {
@@ -368,7 +399,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
       this.isUpdatingWidgets = true;
 
       const existingIds = new Set(
-        this.grid.engine.nodes?.map((n) => n.id?.toString()) ?? []
+        this.grid.engine.nodes?.map((n) => n.id?.toString()) ?? [],
       );
       const incomingIds = new Set(widgets.map((w) => w.id));
 
@@ -376,12 +407,12 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
 
       const widgetsToUpdate = widgets.filter((w) => existingIds.has(w.id));
       const widgetsToRemove = [...existingIds].filter(
-        (id) => !incomingIds.has(id as string)
+        (id) => !incomingIds.has(id as string),
       );
 
       widgetsToRemove.forEach((id) => {
         const el = this.grid!.el.querySelector(
-          `.grid-stack-item[gs-id="${id}"]`
+          `.grid-stack-item[gs-id="${id}"]`,
         );
         if (el) {
           this.grid?.removeWidget(el as GridItemHTMLElement);
@@ -395,7 +426,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
 
       widgetsToUpdate.forEach((widget) => {
         const el = this.grid!.el.querySelector(
-          `.grid-stack-item[gs-id="${widget.id}"]`
+          `.grid-stack-item[gs-id="${widget.id}"]`,
         );
         if (el) {
           this.grid!.update(el as GridItemHTMLElement, {
@@ -438,7 +469,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
 
   private createWidget(widget: Widget) {
     const existingEl = this.grid!.el.querySelector(
-      `.grid-stack-item[gs-id="${widget.id}"]`
+      `.grid-stack-item[gs-id="${widget.id}"]`,
     );
     if (existingEl) {
       return;
@@ -481,14 +512,15 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   toggleEditMode(): void {
-    this.isEditMode.update((mode) => !mode);
-
-    this.widgetComponentRefs.forEach((compRef) => {
-      compRef.instance.isEditMode = this.isEditMode();
-      compRef.changeDetectorRef.detectChanges();
+    this.hasDashboardManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      this.isEditMode.update((mode) => !mode);
+      this.widgetComponentRefs.forEach((compRef) => {
+        compRef.instance.isEditMode = this.isEditMode();
+        compRef.changeDetectorRef.detectChanges();
+      });
+      this.initGridStack();
     });
-
-    this.initGridStack();
   }
 
   toggleFilters() {
@@ -500,33 +532,38 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   openAddFilterDialog(): void {
-    const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
-      width: '600px',
-      data: {},
-    });
-
-    dialogRef.afterClosed().subscribe((result: SelectionTypeDashboard) => {
-      if (result) {
-        this.stateService.addFilter(result);
-      }
+    this.hasFilterManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
+        width: '600px',
+        data: {},
+      });
+      dialogRef.afterClosed().subscribe((result: SelectionTypeDashboard) => {
+        if (result) {
+          this.stateService.addFilter(result);
+        }
+      });
     });
   }
 
   onFilterClick(filter: DashboardFilter): void {
-    const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
-      width: '600px',
-      data: {
-        filter: filter,
-      },
-    });
-
-    dialogRef
-      .afterClosed()
-      .subscribe((result: SelectionTypeDashboard | undefined) => {
-        if (result) {
-          this.stateService.updateFilter(filter.id, result);
-        }
+    this.hasFilterManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      const dialogRef = this.dialog.open(DashboardSelectionModalComponent, {
+        width: '600px',
+        data: {
+          filter: filter,
+        },
       });
+
+      dialogRef
+        .afterClosed()
+        .subscribe((result: SelectionTypeDashboard | undefined) => {
+          if (result) {
+            this.stateService.updateFilter(filter.id, result);
+          }
+        });
+    });
   }
 
   onMultipleSelectionClick(filterId: string, value: any) {
@@ -538,7 +575,10 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   removeFilter(filter: DashboardFilter): void {
-    this.stateService.removeFilter(filter);
+    this.hasFilterManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      this.stateService.removeFilter(filter);
+    });
   }
 
   openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
@@ -556,64 +596,72 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
     this.openExpandedChart(event.chartId, event.filters);
   }
 
-  openEditWidgetDialog(widgetId: string) {
-    this.dialog.open(EditWidgetModalComponent, {
-      data: { widgetId },
-      width: '600px',
+  openEditWidgetDialog(widgetId: string): void {
+    this.hasDashboardManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      this.dialog.open(EditWidgetModalComponent, {
+        data: { widgetId },
+        width: '600px',
+      });
     });
   }
 
-  openWidgetDialog(type: WidgetType) {
-    this.dialog
-      .open(CreateWidgetModalComponent, {
-        data: { type },
-      })
-      .afterClosed()
-      .pipe(
-        filter(
-          (result): result is { name: string; chartId?: string } =>
-            !!result?.name
-        ),
-        switchMap((formValue) => {
-          const widgetType = formValue.chartId
-            ? this.stateService.getWidgetType(formValue.chartId)
-            : type;
-
-          return combineLatest([
-            this.stateService.activeDashboard$.pipe(
-              filter((dashboard): dashboard is DashboardDto => !!dashboard?.id),
-              take(1)
-            ),
-            this.widgets$.pipe(take(1)),
-          ]).pipe(
-            switchMap(([dashboard, widgets]) => {
-              const maxBottom = widgets.reduce((max, w) => {
-                const bottom = (w.position.y ?? 0) + (w.position.height ?? 1);
-                return Math.max(max, bottom);
-              }, 0);
-
-              const widgetData: Omit<Widget, 'id'> = {
-                dashboardId: dashboard.id as string,
-                title: formValue.name,
-                position: {
-                  width: 8,
-                  height: widgetType === 'text' ? 1 : 6,
-                  x: 0,
-                  y: maxBottom,
-                },
-                type: widgetType,
-                ...(widgetType === 'chart' || widgetType === 'table'
-                  ? { chartId: formValue.chartId }
-                  : {}),
-              };
-
-              this.stateService.createWidget(widgetData);
-              return of(null);
-            })
-          );
+  openWidgetDialog(type: WidgetType): void {
+    this.hasDashboardManage$.pipe(take(1)).subscribe((hasRight) => {
+      if (!hasRight) return;
+      this.dialog
+        .open(CreateWidgetModalComponent, {
+          data: { type },
         })
-      )
-      .subscribe();
+        .afterClosed()
+        .pipe(
+          filter(
+            (result): result is { name: string; chartId?: string } =>
+              !!result?.name,
+          ),
+          switchMap((formValue) => {
+            const widgetType = formValue.chartId
+              ? this.stateService.getWidgetType(formValue.chartId)
+              : type;
+
+            return combineLatest([
+              this.stateService.activeDashboard$.pipe(
+                filter(
+                  (dashboard): dashboard is DashboardDto => !!dashboard?.id,
+                ),
+                take(1),
+              ),
+              this.widgets$.pipe(take(1)),
+            ]).pipe(
+              switchMap(([dashboard, widgets]) => {
+                const maxBottom = widgets.reduce((max, w) => {
+                  const bottom = (w.position.y ?? 0) + (w.position.height ?? 1);
+                  return Math.max(max, bottom);
+                }, 0);
+
+                const widgetData: Omit<Widget, 'id'> = {
+                  dashboardId: dashboard.id as string,
+                  title: formValue.name,
+                  position: {
+                    width: 8,
+                    height: widgetType === 'text' ? 1 : 6,
+                    x: 0,
+                    y: maxBottom,
+                  },
+                  type: widgetType,
+                  ...(widgetType === 'chart' || widgetType === 'table'
+                    ? { chartId: formValue.chartId }
+                    : {}),
+                };
+
+                this.stateService.createWidget(widgetData);
+                return of(null);
+              }),
+            );
+          }),
+        )
+        .subscribe();
+    });
   }
 
   onRefreshWidgets() {

@@ -63,14 +63,14 @@ export class UsersSettingsComponent {
   );
 
   constructor() {
-    this.store.dispatch(RolesActions.loadRoles());
-    this.store.dispatch(UsersActions.loadUsers());
-    this.store.dispatch(InterfacesActions.loadAllInterfaces())
-    
+    // this.store.dispatch(RolesActions.loadRoles());
+    // this.store.dispatch(UsersActions.loadUsers());
+    // this.store.dispatch(InterfacesActions.loadAllInterfaces())
+
   }
 
   onDelete(user: UserDto, event: Event): void {
-    event.stopPropagation(); // ← остаётся, чтобы не сработал клик по списку
+    event.stopPropagation();
 
     if (!user.role) {
       alert('Невозможно удалить пользователя без роли');
@@ -88,7 +88,6 @@ export class UsersSettingsComponent {
   }
 
   onUserClick(user: UserDto, event: Event): void {
-    // Не открываем редактирование, если кликнули по кнопке удаления
     if ((event.target as HTMLElement).closest('.delete-button')) {
       return;
     }

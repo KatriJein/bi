@@ -53,7 +53,7 @@ mat-nav-list {
   }
 
   &.selected {
-    background-color: var(--blue) !important;
+    background-color: var( --color-primary) !important;
     color: white !important;
 
     ::ng-deep .mdc-list-item__primary-text {

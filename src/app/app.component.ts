@@ -3,10 +3,12 @@ import { RouterOutlet, RouterModule } from '@angular/router';
 import { ApolloClientsService } from './core/api/services';
 import { Connection } from './core/models';
 import { Store } from '@ngrx/store';
-import { UserActions } from './core/store/user';
+import { UserActions, UserSelectors } from './core/store/user';
 import { DatasetsActions } from './core/store/datasets';
 import { ChartsActions } from './core/store/charts';
 import { SvgIconInitializerComponent } from './components/common';
+import { DataLoadingService } from './core/services/data-loading.service';
+import { distinctUntilChanged, filter } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +19,7 @@ import { SvgIconInitializerComponent } from './components/common';
 export class AppComponent implements OnInit {
   private store = inject(Store);
   private apolloClientsService = inject(ApolloClientsService);
+  private dataLoadingService = inject(DataLoadingService);
 
   constructor() {}
 
@@ -42,5 +45,17 @@ export class AppComponent implements OnInit {
 
     // this.store.dispatch(DatasetsActions.loadDatasets());
     // this.store.dispatch(ChartsActions.loadCharts());
+
+    this.store
+      .select(UserSelectors.selectCurrentUserPermissions)
+      .pipe(
+        filter((permissions) => permissions.length > 0),
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr),
+        ),
+      )
+      .subscribe((permissions) => {
+        this.dataLoadingService.loadRequiredData(permissions);
+      });
   }
 }

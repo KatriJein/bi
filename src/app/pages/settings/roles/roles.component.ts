@@ -51,7 +51,7 @@ export class RolesSettingsComponent {
   );
 
   constructor() {
-    this.store.dispatch(RolesActions.loadRoles());
+    // this.store.dispatch(RolesActions.loadRoles());
   }
 
   onDelete(role: RoleDto, event: Event): void {
@@ -80,7 +80,7 @@ export class RolesSettingsComponent {
     if ((event.target as HTMLElement).closest('.delete-button')) {
       return;
     }
-    this.openEditRoleModal(role); 
+    this.openEditRoleModal(role);
   }
 
   trackById(index: number, item: RoleDto): string {

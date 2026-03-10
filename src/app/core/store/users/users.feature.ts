@@ -6,12 +6,14 @@ export interface UsersState {
   users: UserDto[] | null;
   isLoading: boolean;
   error: string | null;
+  loaded: boolean
 }
 
 export const initialState: UsersState = {
   users: null,
   isLoading: false,
   error: null,
+  loaded: false
 };
 
 export const UsersFeature = createFeature({
@@ -30,6 +32,7 @@ export const UsersFeature = createFeature({
       users,
       isLoading: false,
       error: null,
+      loaded: true,
     })),
     on(UsersActions.loadUsersFailure, (state, { error }) => ({
       ...state,

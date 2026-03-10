@@ -8,7 +8,13 @@ export type GetUsersType = {
         nodes: { roleId: string }[];
       };
       userInterfaces: {
-        nodes: { interfaceId: string }[];
+        nodes: {
+          interface: {
+            id: string;
+            name: string;
+          };
+          order: number;
+        }[];
       };
     }[];
   };

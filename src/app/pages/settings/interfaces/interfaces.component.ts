@@ -100,71 +100,71 @@ export class InterfacesSettingsComponent {
     });
   }
 
-  async moveInterfaceUp(
-    interfaceData: InterfaceDto,
-    event: Event
-  ): Promise<void> {
-    event.stopPropagation();
-    event.preventDefault();
+  // async moveInterfaceUp(
+  //   interfaceData: InterfaceDto,
+  //   event: Event
+  // ): Promise<void> {
+  //   event.stopPropagation();
+  //   event.preventDefault();
 
-    const interfaces = await firstValueFrom(this.interfaces$);
-    const currentIndex = interfaces.findIndex((i) => i.id === interfaceData.id);
+  //   const interfaces = await firstValueFrom(this.interfaces$);
+  //   const currentIndex = interfaces.findIndex((i) => i.id === interfaceData.id);
 
-    if (currentIndex > 0) {
-      const newOrder = currentIndex;
-      const prevInterface = interfaces[currentIndex - 1];
-      const prevNewOrder = currentIndex + 1;
+  //   if (currentIndex > 0) {
+  //     const newOrder = currentIndex;
+  //     const prevInterface = interfaces[currentIndex - 1];
+  //     const prevNewOrder = currentIndex + 1;
 
-      this.store.dispatch(
-        InterfacesActions.updateInterfaceOrder({
-          interfaceId: interfaceData.id || '',
-          order: interfaceData.order || 0,
-          newOrder,
-        })
-      );
+  //     this.store.dispatch(
+  //       InterfacesActions.updateInterfaceOrder({
+  //         interfaceId: interfaceData.id || '',
+  //         order: interfaceData.order || 0,
+  //         newOrder,
+  //       })
+  //     );
 
-      this.store.dispatch(
-        InterfacesActions.updateInterfaceOrder({
-          interfaceId: prevInterface.id || '',
-          order: prevInterface.order || 0,
-          newOrder: prevNewOrder,
-        })
-      );
-    }
-  }
+  //     this.store.dispatch(
+  //       InterfacesActions.updateInterfaceOrder({
+  //         interfaceId: prevInterface.id || '',
+  //         order: prevInterface.order || 0,
+  //         newOrder: prevNewOrder,
+  //       })
+  //     );
+  //   }
+  // }
 
-  async moveInterfaceDown(
-    interfaceData: InterfaceDto,
-    event: Event
-  ): Promise<void> {
-    event.stopPropagation();
-    event.preventDefault();
+  // async moveInterfaceDown(
+  //   interfaceData: InterfaceDto,
+  //   event: Event
+  // ): Promise<void> {
+  //   event.stopPropagation();
+  //   event.preventDefault();
 
-    const interfaces = await firstValueFrom(this.interfaces$);
-    const currentIndex = interfaces.findIndex((i) => i.id === interfaceData.id);
+  //   const interfaces = await firstValueFrom(this.interfaces$);
+  //   const currentIndex = interfaces.findIndex((i) => i.id === interfaceData.id);
 
-    if (currentIndex < interfaces.length - 1) {
-      const newOrder = currentIndex + 2;
-      const nextInterface = interfaces[currentIndex + 1];
-      const nextNewOrder = currentIndex + 1;
+  //   if (currentIndex < interfaces.length - 1) {
+  //     const newOrder = currentIndex + 2;
+  //     const nextInterface = interfaces[currentIndex + 1];
+  //     const nextNewOrder = currentIndex + 1;
 
-      this.store.dispatch(
-        InterfacesActions.updateInterfaceOrder({
-          interfaceId: interfaceData.id || '',
-          order: interfaceData.order || 0,
-          newOrder,
-        })
-      );
+  //     this.store.dispatch(
+  //       InterfacesActions.updateInterfaceOrder({
+  //         interfaceId: interfaceData.id || '',
+  //         order: interfaceData.order || 0,
+  //         newOrder,
+  //       })
+  //     );
 
-      this.store.dispatch(
-        InterfacesActions.updateInterfaceOrder({
-          interfaceId: nextInterface.id || '',
-          order: nextInterface.order || 0,
-          newOrder: nextNewOrder,
-        })
-      );
-    }
-  }
+  //     this.store.dispatch(
+  //       InterfacesActions.updateInterfaceOrder({
+  //         interfaceId: nextInterface.id || '',
+  //         order: nextInterface.order || 0,
+  //         newOrder: nextNewOrder,
+  //       })
+  //     );
+  //   }
+  // }
 
   trackById(index: number, item: InterfaceDto): string {
     return item.id || '';

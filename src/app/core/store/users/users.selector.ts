@@ -2,7 +2,8 @@ import { createSelector } from '@ngrx/store';
 import { UsersFeature } from './users.feature';
 import { RoleDto } from '../user';
 
-export const { selectUsers, selectIsLoading, selectError } = UsersFeature;
+export const { selectUsers, selectIsLoading, selectError, selectLoaded } =
+  UsersFeature;
 
 export const selectHasUsers = createSelector(
   selectUsers,
@@ -17,7 +18,7 @@ export const selectUsersCount = createSelector(
 export const selectUserInterfaces = (userId: string) =>
   createSelector(
     UsersFeature.selectUsers,
-    (users) => users?.find(user => user.id === userId)?.interfaces || []
+    (users) => users?.find((user) => user.id === userId)?.interfaces || [],
   );
 
 export const selectUserById = (userId: string) =>
@@ -27,8 +28,9 @@ export const selectUserById = (userId: string) =>
   );
 
 export const selectUsersByRoleId = (roleId: string) =>
-  createSelector(selectUsers, users =>
-    users?.filter(u => u.role?.id === roleId) || []
+  createSelector(
+    selectUsers,
+    (users) => users?.filter((u) => u.role?.id === roleId) || [],
   );
 
 export const selectUniqueUserRoles = createSelector(selectUsers, (users) => {

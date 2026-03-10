@@ -2,17 +2,18 @@ import { createFeature, createReducer, on } from '@ngrx/store';
 import * as RolesActions from './roles.actions';
 import { RoleDto } from '../user';
 
-
 export interface RolesState {
   roles: RoleDto[] | null;
   isLoading: boolean;
   error: string | null;
+  loaded: boolean;
 }
 
 export const initialState: RolesState = {
   roles: null,
   isLoading: false,
   error: null,
+  loaded: false,
 };
 
 export const RolesFeature = createFeature({
@@ -32,6 +33,7 @@ export const RolesFeature = createFeature({
       roles,
       isLoading: false,
       error: null,
+      loaded: true,
     })),
 
     on(RolesActions.loadRolesFailure, (state, { error }) => ({
@@ -44,27 +46,27 @@ export const RolesFeature = createFeature({
       RolesActions.createRole,
       RolesActions.updateRole,
       RolesActions.deleteRole,
-      state => ({ ...state, isLoading: true, error: null })
+      (state) => ({ ...state, isLoading: true, error: null }),
     ),
 
     on(
       RolesActions.createRoleSuccess,
       RolesActions.updateRoleSuccess,
       RolesActions.deleteRoleSuccess,
-      state => ({ ...state, isLoading: false })
+      (state) => ({ ...state, isLoading: false }),
     ),
 
     on(
       RolesActions.createRoleFailure,
       RolesActions.updateRoleFailure,
       RolesActions.deleteRoleFailure,
-      (state, { error }) => ({ ...state, isLoading: false, error })
+      (state, { error }) => ({ ...state, isLoading: false, error }),
     ),
 
     // Очистка ролей
     on(RolesActions.clearRoles, () => ({
       ...initialState,
       roles: null,
-    }))
+    })),
   ),
 });

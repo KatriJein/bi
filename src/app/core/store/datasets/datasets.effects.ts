@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import * as DatasetsActions from './datasets.actions';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { DatasetService } from '../../api/services';
 import { Router } from '@angular/router';
@@ -15,7 +15,7 @@ export class DatasetsEffects {
   loadDatasets$ = createEffect(() =>
     this.actions$.pipe(
       ofType(DatasetsActions.loadDatasets),
-      switchMap(() =>
+      exhaustMap(() =>
         this.datasetService.getDatasets().pipe(
           map((datasets) => DatasetsActions.loadDatasetsSuccess({ datasets })),
           catchError((error) =>

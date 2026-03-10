@@ -1,7 +1,15 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { catchError, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { of, race } from 'rxjs';
+import {
+  catchError,
+  exhaustMap,
+  filter,
+  map,
+  switchMap,
+  take,
+  withLatestFrom,
+} from 'rxjs/operators';
 import * as UsersActions from './users.actions';
 import { UsersService } from '../../api/services/users.service';
 import { Store } from '@ngrx/store';
@@ -11,6 +19,7 @@ import {
   InterfacesFeature,
 } from '../interfaces/interfaces.feature';
 import { RoleDto, UserDto } from '../user';
+import { RolesActions } from '../roles';
 
 @Injectable()
 export class UsersEffects {
@@ -21,29 +30,33 @@ export class UsersEffects {
   loadUsers$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UsersActions.loadUsers),
-      withLatestFrom(
-        this.store.select(RolesFeature.selectRoles),
-        this.store.select(InterfacesFeature.selectInterfaces),
-      ),
-      switchMap(([, roles, interfaces]) =>
-        this.usersService.getUsers().pipe(
-          map((rawUsers) => {
-            const normalized = rawUsers.map((user) => {
-              const role = roles?.find((r) => r.id === user.roleId) || null;
-              // const userInterfaces = (user.interfaceIds || [])
-              //   .map((id) => interfaces.find((i) => i.id === id) || null)
-              //   .filter(Boolean) as any[];
-              return { ...user, role, };
-            });
-            return UsersActions.loadUsersSuccess({
-              users: normalized as UserDto[],
-            });
-          }),
-          catchError((err) =>
-            of(
-              UsersActions.loadUsersFailure({
-                error: err.message || 'Failed to load users',
+      exhaustMap(() =>
+        race(
+          this.store.select(RolesFeature.selectLoaded).pipe(
+            filter((loaded) => loaded),
+            take(1),
+            switchMap(() =>
+              this.store.select(RolesFeature.selectRoles).pipe(take(1)),
+            ),
+          ),
+          this.actions$.pipe(
+            ofType(RolesActions.loadRolesFailure),
+            take(1),
+            map(() => null as RoleDto[] | null),
+          ),
+        ).pipe(
+          switchMap((roles) =>
+            this.usersService.getUsers().pipe(
+              map((rawUsers) => {
+                const usersWithRoles = rawUsers.map((user) => ({
+                  ...user,
+                  role: roles?.find((r) => r.id === user.roleId) || null,
+                }));
+                return UsersActions.loadUsersSuccess({ users: usersWithRoles });
               }),
+              catchError((err) =>
+                of(UsersActions.loadUsersFailure({ error: err.message })),
+              ),
             ),
           ),
         ),

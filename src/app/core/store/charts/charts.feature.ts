@@ -60,12 +60,14 @@ export interface ChartsState {
   charts: ChartDto[];
   isLoading: boolean;
   error: string | null;
+  loaded: boolean
 }
 
 export const initialState: ChartsState = {
   charts: [],
   isLoading: false,
   error: null,
+  loaded: false
 };
 
 export const ChartsFeature = createFeature({
@@ -83,6 +85,7 @@ export const ChartsFeature = createFeature({
       ...state,
       charts,
       isLoading: false,
+      loaded: true,
     })),
     on(ChartsActions.loadChartsFailure, (state, { error }) => ({
       ...state,

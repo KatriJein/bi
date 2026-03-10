@@ -33,8 +33,9 @@ export class AuthGuard implements CanActivate {
         }
 
         if (onlyUnAuth && user) {
-          const returnUrl = route.queryParams['returnUrl'] || '/';
-          return this.router.createUrlTree([returnUrl]);
+          const returnUrl = route.queryParams['returnUrl'];
+          const target = returnUrl && !returnUrl.startsWith('/auth') ? returnUrl : '/';
+          return this.router.createUrlTree([target]);
         }
 
         return true;

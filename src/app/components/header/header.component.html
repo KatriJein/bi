@@ -1,52 +1,37 @@
-<!-- <header class="header">
-  <app-logo class="logo" />
-  @if (user$ | async; as user) {
-  <button mat-button class="user" [matMenuTriggerFor]="userMenu">
-    <div class="container">
-      <img class="photo" src="/assets/img/acc.png" alt="personal photo" />
-      <span class="name">{{ user.name }}</span>
-    </div>
-  </button>
-
-  <mat-menu #userMenu>
-    <ng-template matMenuContent>
-      <button mat-menu-item [routerLink]="'/settings'">Настройки</button>
-      <button mat-menu-item>Выйти</button>
-    </ng-template>
-  </mat-menu>
-  }
-</header> -->
 <header class="header">
   <div class="header-inner">
     <app-logo class="logo" />
 
     @if (user$ | async; as user) {
-    <button
-      mat-button
-      class="user"
-      [matMenuTriggerFor]="userMenu"
-      aria-label="Меню пользователя"
-    >
-      <div class="container">
-        <mat-icon class="photo">account_circle</mat-icon>
-        <div class="user-info">
-          <span class="name">{{ user.name }}</span>
+      <button
+        mat-button
+        class="user"
+        [matMenuTriggerFor]="userMenu"
+        aria-label="Меню пользователя"
+      >
+        <div class="container">
+          <mat-icon class="photo">account_circle</mat-icon>
+          <div class="user-info">
+            <span class="name">{{ user.name }}</span>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
 
-    <mat-menu #userMenu>
-      <ng-template matMenuContent>
-        <button mat-menu-item [routerLink]="'/settings'">
-          <mat-icon>settings</mat-icon>
-          Настройки
-        </button>
-        <button mat-menu-item>
-          <mat-icon>logout</mat-icon>
-          Выйти
-        </button>
-      </ng-template>
-    </mat-menu>
+      <mat-menu #userMenu>
+        <ng-template matMenuContent>
+          @if (hasAnySettingsPermission$ | async) {
+            <button mat-menu-item [routerLink]="'/settings'">
+              <mat-icon>settings</mat-icon>
+              Настройки
+            </button>
+          }
+
+          <button mat-menu-item (click)="onLogout()">
+            <mat-icon>logout</mat-icon>
+            Выйти
+          </button>
+        </ng-template>
+      </mat-menu>
     }
   </div>
 </header>

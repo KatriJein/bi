@@ -1,7 +1,8 @@
 import { createSelector } from '@ngrx/store';
 import { RolesFeature } from './roles.feature';
 
-export const { selectRoles, selectIsLoading, selectError } = RolesFeature;
+export const { selectRoles, selectIsLoading, selectError, selectLoaded } =
+  RolesFeature;
 
 export const selectRoleById = (roleId: string) =>
   createSelector(
@@ -14,3 +15,4 @@ export const selectIsLoadingWithDelay = createSelector(
   selectRoles,
   (isLoading, roles) => isLoading && roles === null,
 );
+

@@ -33,7 +33,7 @@
     <mat-nav-list class="settings-list">
       <a
         mat-list-item
-        *ngFor="let button of buttons"
+        *ngFor="let button of filteredButtons$ | async"
         [routerLink]="button.link"
         [routerLinkActive]="'active'"
         class="settings-list-item"

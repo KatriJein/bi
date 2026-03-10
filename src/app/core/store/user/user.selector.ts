@@ -23,3 +23,8 @@ export const selectUserId = createSelector(
   selectUser,
   (user: UserDto | null) => user?.id
 );
+
+export const selectCurrentUserPermissions = createSelector(
+  selectUser,
+  (user) => user?.role?.permissions || []
+);
