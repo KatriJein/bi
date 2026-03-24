@@ -57,7 +57,6 @@ export class MainComponent implements OnInit {
   private store = inject(Store);
   private router = inject(Router);
   private titleService = inject(Title);
-  // private globalData = inject(GlobalDataService);
 
   interfaces$ = this.store.select(InterfacesSelectors.selectInterfaces);
   activeInterface$ = this.store.select(
@@ -66,7 +65,7 @@ export class MainComponent implements OnInit {
   activeInterfaceId$ = this.store.select(
     InterfacesSelectors.selectActiveInterfaceId,
   );
-  
+
   loading$ = combineLatest([
     this.store.select(InterfacesSelectors.selectIsLoading),
     this.store.select(DashboardsSelectors.selectIsLoading),
@@ -156,7 +155,6 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.setTitle('Главная страница');
-    // this.globalData.ensureLoaded();
   }
 
   setActiveInterface(id: string | undefined) {

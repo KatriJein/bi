@@ -34,7 +34,7 @@ export class RolesService {
         { name, permissions }
       )
       .pipe(
-        map(() => void 0), // ← ничего не возвращаем
+        map(() => void 0),
         catchError(error => {
           console.error('Error creating role:', error);
           throw error;

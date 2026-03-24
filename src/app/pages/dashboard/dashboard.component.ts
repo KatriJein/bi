@@ -116,7 +116,6 @@ export type FilterEmitType = {
 export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   private titleService = inject(Title);
   private cdr = inject(ChangeDetectorRef);
-  // private globalData = inject(GlobalDataService);
   private store = inject(Store);
 
   private destroy$ = new Subject<void>();
@@ -217,7 +216,6 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   ngOnInit() {
-    // this.globalData.ensureLoaded();
     this.stateService.multipleFilters$
       .pipe(takeUntil(this.destroy$))
       .subscribe((filters) => {

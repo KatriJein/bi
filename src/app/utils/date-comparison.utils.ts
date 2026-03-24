@@ -25,8 +25,6 @@ export function applyDateRangeFilterWithGranularity(
   const startDate = safeParseDate(startValue);
   const endDate = safeParseDate(endValue);
 
-  // console.log('startDate', startDate, 'endDate', endDate);
-
   if (!startDate || !endDate) {
     console.warn(`Invalid date range values for field ${column}:`, value);
     return aqTable;

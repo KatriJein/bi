@@ -42,7 +42,6 @@ import { PermissionMap } from '../../utils';
 export class SettingsComponent implements OnInit {
   private titleService = inject(Title);
   private store = inject(Store);
-  // private globalData = inject(GlobalDataService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -80,7 +79,6 @@ export class SettingsComponent implements OnInit {
 
   constructor() {
     this.titleService.setTitle('Страница настроек');
-    // this.globalData.ensureLoaded();
   }
 
   ngOnInit(): void {

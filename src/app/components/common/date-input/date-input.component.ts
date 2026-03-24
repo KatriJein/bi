@@ -19,24 +19,11 @@ import {
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
-  NativeDateAdapter,
 } from '@angular/material/core';
 import { FormsModule } from '@angular/forms';
-import { formatDate, parseDateFromAnyFormat } from '../../../utils';
+import { formatDate } from '../../../utils';
 import { DateGranularity } from '../../../core/api/graphql/types';
 import { GranularDateAdapter } from './custom-date-adapter';
-
-// export const MY_DATE_FORMATS = {
-//   parse: {
-//     dateInput: ['DD.MM.YYYY', 'YYYY-MM-DD'],
-//   },
-//   display: {
-//     dateInput: 'DD.MM.YYYY',
-//     monthYearLabel: 'MMM YYYY',
-//     dateA11yLabel: 'LL',
-//     monthYearA11yLabel: 'MMMM YYYY',
-//   },
-// };
 
 export const MY_DATE_FORMATS = {
   parse: { dateInput: null },
@@ -80,7 +67,7 @@ export class DateInputComponent implements OnChanges {
 
   constructor(
     private dateAdapter: DateAdapter<Date>,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -103,15 +90,15 @@ export class DateInputComponent implements OnChanges {
 
   private adjustDateByGranularity(
     date: Date,
-    granularity: DateGranularity
+    granularity: DateGranularity,
   ): Date {
     switch (granularity) {
       case 'month':
-        return new Date(date.getFullYear(), date.getMonth(), 1); // начало месяца
+        return new Date(date.getFullYear(), date.getMonth(), 1);
       case 'year':
-        return new Date(date.getFullYear(), 0, 1); // начало года
+        return new Date(date.getFullYear(), 0, 1); 
       default:
-        return date; // день оставляем как есть
+        return date;
     }
   }
 
@@ -129,21 +116,18 @@ export class DateInputComponent implements OnChanges {
   }
 
   onDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
-    // console.log('onDatePickerChange', event.value);
     const value = event.value ? formatDate(event.value, 'yyyy-MM-dd') : null;
     this.dateValueChange.emit(value);
   }
 
   /** Обработка выбора месяца */
   monthSelected(date: Date, datepicker: MatDatepicker<Date>) {
-    // console.log('monthSelected', date);
     const result = new Date(date.getFullYear(), date.getMonth(), 1);
     this.emitAndClose(result, datepicker);
   }
 
   /** Обработка выбора года */
   yearSelected(date: Date, datepicker: MatDatepicker<Date>) {
-    // console.log('yearSelected', date);
     const result = new Date(date.getFullYear(), 0, 1);
     this.emitAndClose(result, datepicker);
   }
@@ -151,11 +135,8 @@ export class DateInputComponent implements OnChanges {
   /** Универсальный метод для закрытия и вывода */
   private emitAndClose(date: Date, datepicker: MatDatepicker<Date>) {
     const formatted = this.formatByGranularity(date);
-    // console.log('formatted', formatted.value);
     this.dateValueChange.emit(formatted.value);
-    // this.dateValue = formatted.value;
     datepicker.close();
-    // console.log('this.dateValue', this.dateValue);
   }
 
   /** Форматирование по granularity */
@@ -178,17 +159,4 @@ export class DateInputComponent implements OnChanges {
         };
     }
   }
-  // onDatePickerChange(event: MatDatepickerInputEvent<Date>): void {
-  //   const value = event.value ? formatDate(event.value, 'yyyy-MM-dd') : null;
-  //   this.dateValueChange.emit(value);
-  // }
-
-  // onDateInputChange(event: any): void {
-  //   const inputValue = event.target.value;
-  //   const parsedDate = parseDateFromAnyFormat(inputValue, 'DD.MM.YYYY');
-  //   const value = parsedDate
-  //     ? formatDate(parsedDate, 'yyyy-MM-dd')
-  //     : inputValue;
-  //   this.dateValueChange.emit(value);
-  // }
 }
