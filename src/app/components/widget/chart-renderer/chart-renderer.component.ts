@@ -41,10 +41,12 @@ import { Column } from '../../../core/models';
 import { ChartService } from '../../../core/api/services';
 import { FilterEmitType, FilterTypeExp } from '../../../pages';
 import { DoughnutChartComponent } from '../../chart/custom-charts/doughnut-procent/doughnut-procent.component';
+import { MatIconModule } from "@angular/material/icon";
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-chart-renderer',
-  imports: [CommonModule, BaseChartDirective, DoughnutChartComponent],
+  imports: [CommonModule, BaseChartDirective, DoughnutChartComponent, MatIconModule, MatButtonModule],
   templateUrl: './chart-renderer.component.html',
   styleUrl: './chart-renderer.component.scss',
 })
@@ -55,22 +57,23 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
   @Input() chartId!: string;
   @Input() initialFilters?: FilterTypeExp[] | null;
   @Output() chartClick = new EventEmitter<FilterEmitType>();
+  @Output() filterRemoved = new EventEmitter<string>();
 
   private chartSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
+  private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
 
   private chartSub?: Subscription;
   private datasetSub?: Subscription;
+  private sub?: Subscription;
 
   chart$ = this.chartSubject.asObservable();
   dataset$ = this.datasetSubject.asObservable();
+  filters$ = this.filtersSubject.asObservable();
 
   chartData: ChartConfiguration['data'] | undefined = undefined;
   chartOptions: ChartConfiguration['options'] | undefined = undefined;
   chartType: ChartConfiguration['type'] = 'line';
-
-  private sub?: Subscription;
-  private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
 
   chartData$: Observable<any> = combineLatest([
     this.chart$.pipe(filter((chart): chart is ChartDto => chart !== null)),
@@ -87,7 +90,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
         : [];
 
       const combinedFilters = this.combineFilters(chart.filters || [], filters);
-
+console.log('combinedFilters', combinedFilters);
       const filtersColumns: FilterColumn[] = combinedFilters
         .map((f) => {
           const baseCol = findColumnByName(f.columnName, dataset);
@@ -105,11 +108,11 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
       const sortingColumns = Array.isArray(chart.sorting)
         ? findColumnsByNames(
             chart.sorting.map((s) => s.columnName),
-            dataset
+            dataset,
           )
             .map((col) => {
               const sortingItem = chart.sorting!.find(
-                (s) => s.columnName === col.columnName
+                (s) => s.columnName === col.columnName,
               );
               return sortingItem
                 ? {
@@ -120,7 +123,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
             })
             .filter(
               (col): col is Column & { direction: 'asc' | 'desc' } =>
-                col !== null
+                col !== null,
             )
         : [];
 
@@ -128,7 +131,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
         xAxisColumn,
         yAxisColumns,
         filtersColumns,
-        sortingColumns
+        sortingColumns,
       );
 
       const colsByTable = groupColumnsByTable(allCols);
@@ -147,9 +150,9 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
                 chart.xAxis as string,
                 yAxisColumns,
                 sortingColumns,
-                filtersColumns
-              )
-            )
+                filtersColumns,
+              ),
+            ),
           )
         : combineLatest(requests).pipe(
             map((results) => {
@@ -159,11 +162,11 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
                 chart.xAxis as string,
                 yAxisColumns,
                 sortingColumns,
-                filtersColumns
+                filtersColumns,
               );
-            })
+            }),
           );
-    })
+    }),
   );
 
   constructor() {}
@@ -224,12 +227,12 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
               xAxis.filter((col): col is Column => col !== null),
               yAxis,
               chart.settings?.chartType || 'line',
-              chart.settings?.colors
+              chart.settings?.colors,
             );
             this.chartOptions = buildChartOptions(
               xAxis.filter((col): col is Column => col !== null),
               yAxis,
-              chart.settings?.chartType || 'line'
+              chart.settings?.chartType || 'line',
             );
           });
         });
@@ -243,9 +246,21 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
     this.datasetSub?.unsubscribe();
   }
 
+  onRemoveFilter(field: string): void {
+    this.filtersSubject.next(
+      this.filtersSubject.value.filter((filter) => filter.field !== field),
+    );
+
+    this.filterRemoved.emit(field);
+  }
+
+  trackByFilter(index: number, filter: FilterTypeExp): string {
+    return `${filter.field}_${filter.value}`;
+  }
+
   private combineFilters(
     chartFilters: any[],
-    initialFilters: FilterTypeExp[]
+    initialFilters: FilterTypeExp[],
   ): FilterColumn[] {
     const initialAsFilterColumns = initialFilters.map((filter) => ({
       columnName: filter.field,
@@ -258,7 +273,7 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
 
     initialAsFilterColumns.forEach((initialFilter) => {
       const existingIndex = combined.findIndex(
-        (f) => f.columnName === initialFilter.columnName
+        (f) => f.columnName === initialFilter.columnName,
       );
       if (existingIndex >= 0) {
         combined[existingIndex] = initialFilter;

@@ -1,11 +1,32 @@
 <ng-container *ngIf="chart$ | async as chart">
   <ng-container *ngIf="dataset$ | async as dataset">
-    <div class="chart-container" [class.has-filters]="initialFilters?.length">
-      <div *ngIf="initialFilters?.length" class="filter-indicator">
-        <span *ngFor="let filter of initialFilters; let last = last">
-          {{ filter.field }} = {{ filter.value }}{{ last ? "" : ", " }}
-        </span>
+    <div
+      class="chart-container"
+      [class.has-filters]="(filters$ | async)?.length"
+    >
+      <div *ngIf="filters$ | async as filters">
+        <div class="filter-indicator" *ngIf="filters.length > 0">
+          <div class="filters">
+            <span
+              *ngFor="let filter of filters; trackBy: trackByFilter"
+              class="filter-badge"
+            >
+              {{ filter.field }} = <strong>{{ filter.value }}</strong>
+
+              <button
+                mat-icon-button
+                type="button"
+                class="icon-button"
+                (click)="onRemoveFilter(filter.field)"
+                aria-label="Удалить фильтр"
+              >
+                <mat-icon class="icon">close</mat-icon>
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
+
       <div class="chart-wrapper" #canvasWrapper>
         <app-doughnut-chart
           *ngIf="chart.settings?.chartType === 'doughnutPercent'"

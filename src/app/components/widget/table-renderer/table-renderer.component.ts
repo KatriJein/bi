@@ -57,6 +57,7 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
   private tableSubject = new BehaviorSubject<ChartDto | null>(null);
   private datasetSubject = new BehaviorSubject<DatasetDto | null>(null);
   private filtersSubject = new BehaviorSubject<FilterTypeExp[]>([]);
+  filters$ = this.filtersSubject.asObservable();
   private sub?: Subscription;
   private tableSub?: Subscription;
   private datasetSub?: Subscription;
@@ -70,15 +71,15 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
   ]).pipe(
     map(([table, dataset]) => {
       return findColumnsByNames(table?.yAxis || [], dataset);
-    })
+    }),
   );
 
   chartData$: Observable<any[]> = combineLatest([
     this.table$.pipe(
       filter(
         (table): table is ChartDto =>
-          !!table && Array.isArray(table.yAxis) && table.yAxis.length > 0
-      )
+          !!table && Array.isArray(table.yAxis) && table.yAxis.length > 0,
+      ),
     ),
     this.dataset$.pipe(filter((d): d is DatasetDto => d !== null)),
     this.filtersSubject,
@@ -127,7 +128,7 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
         null,
         tableColumns,
         allFiltersColumns,
-        sortingColumns
+        sortingColumns,
       );
 
       const colsByTable = groupColumnsByTable(allCols);
@@ -146,9 +147,9 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
                 '',
                 tableColumns,
                 sortingColumns,
-                allFiltersColumns
+                allFiltersColumns,
               );
-            })
+            }),
           )
         : combineLatest(requests).pipe(
             map((results) => {
@@ -158,11 +159,11 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
                 '',
                 tableColumns,
                 sortingColumns,
-                allFiltersColumns
+                allFiltersColumns,
               );
-            })
+            }),
           );
-    })
+    }),
   );
 
   colDefs$: Observable<ColDef[]> = this.tableColumns$.pipe(
@@ -174,8 +175,8 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
         filterParams: {
           buttons: ['reset', 'apply'],
         },
-      }))
-    )
+      })),
+    ),
   );
 
   defaultColDef: ColDef = {
@@ -190,6 +191,7 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
 
     if (changes['initialFilters']) {
       this.filtersSubject.next(this.initialFilters || []);
+      console.log(this.initialFilters, 'init');
     }
   }
 
@@ -234,7 +236,15 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
     });
   }
 
+  onFilterRemoved(colId: string): void {
+    const current = this.filtersSubject.value;
+    console.log('current', current);
+    console.log('colId', colId);
+
+    this.filtersSubject.next(current.filter((f) => f.field !== colId));
+  }
+
   shouldShowTable$ = combineLatest([this.table$, this.dataset$]).pipe(
-    map(([table, dataset]) => !!table && !!dataset)
+    map(([table, dataset]) => !!table && !!dataset),
   );
 }

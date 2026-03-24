@@ -584,6 +584,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   openExpandedChart(chartId: string, filters: FilterTypeExp[]): void {
     this.expandedChartId = chartId;
     this.expandedChartFilter = filters;
+    console.log(chartId, filters);
     this.expandedChartName = this.stateService.getTableName(chartId);
     this.isDetailMode.set(true);
   }
@@ -593,6 +594,7 @@ export class DashboardComponent implements OnDestroy, AfterViewInit, OnInit {
   }
 
   handleChartExpanded(event: FilterEmitType): void {
+    console.log('event');
     this.openExpandedChart(event.chartId, event.filters);
   }
 

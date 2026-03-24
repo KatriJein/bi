@@ -32,6 +32,12 @@ import { DateGranularity } from '../../../core/api/graphql/types';
 
 ModuleRegistry.registerModules([AllCommunityModule, DateFilterModule]);
 
+type ActiveFilter = {
+  colId: string;
+  value: string;
+  dateGranularity?: DateGranularity;
+};
+
 @Component({
   selector: 'app-table',
   imports: [AgGridAngular, MatIconModule, CommonModule, MatButtonModule],
@@ -44,6 +50,7 @@ export class TableComponent implements OnChanges {
   @Input() defaultColDef: ColDef = {};
   @Input() initialFilters?: FilterTypeExp[] | null;
 
+  @Output() filterRemoved = new EventEmitter<string>();
   @Output() cellDoubleClicked = new EventEmitter<FilterTypeExp>();
 
   @HostListener('document:contextmenu', ['$event'])
@@ -60,21 +67,17 @@ export class TableComponent implements OnChanges {
   }
 
   gridApi!: GridApi;
-  private isGridReady = false;
-  private pendingFilters: FilterTypeExp[] | null = null;
+  // private isGridReady = false;
+  // private pendingFilters: FilterTypeExp[] | null = null;
 
-  activeFilters: {
-    colId: string;
-    value: any;
-    dateGranularity?: DateGranularity;
-  }[] = [];
-  colIdToHeaderName: { [key: string]: string } = {};
+  activeFilters: ActiveFilter[] = [];
+  colIdToHeaderName: Record<string, string> = {};
 
   myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
     ...AG_GRID_THEME,
   });
 
-  localeText = AG_GRID_LOCALE_RU;
+  readonly localeText = AG_GRID_LOCALE_RU;
 
   private clickSubject = new Subject<{ field: string; value: any } | null>();
   private clickSubscription: Subscription;
@@ -83,7 +86,7 @@ export class TableComponent implements OnChanges {
     this.clickSubscription = this.clickSubject
       .pipe(
         debounceTime(300),
-        filter((cell) => cell !== null)
+        filter((cell) => cell !== null),
       )
       .subscribe(async (cell) => {
         await this.applyFilterAppending(cell.field, cell.value);
@@ -92,57 +95,143 @@ export class TableComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['columnDefs'] && this.columnDefs) {
-      this.colIdToHeaderName = this.columnDefs.reduce((acc, col) => {
+      this.colIdToHeaderName = this.buildHeaderMap(this.columnDefs);
+    }
+
+    if (changes['initialFilters']) {
+      this.applyInitialFilters();
+      this.updateActiveFilters();
+    }
+  }
+  private buildHeaderMap(columns: ColDef[]): Record<string, string> {
+    return columns.reduce(
+      (acc, col) => {
         if (col.field) {
           acc[col.field] = col.headerName ?? col.field;
         }
         return acc;
-      }, {} as { [key: string]: string });
-    }
-
-    if (changes['initialFilters']) {
-      this.updateActiveFilters();
-    }
+      },
+      {} as Record<string, string>,
+    );
   }
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   if (changes['columnDefs'] && this.columnDefs) {
+  //     this.colIdToHeaderName = this.columnDefs.reduce(
+  //       (acc, col) => {
+  //         if (col.field) {
+  //           acc[col.field] = col.headerName ?? col.field;
+  //         }
+  //         return acc;
+  //       },
+  //       {} as { [key: string]: string },
+  //     );
+  //   }
+
+  //   if (changes['initialFilters']) {
+  //     // this.updateActiveFilters();
+  //     this.applyInitialFilters();
+  //     //  this.updateActiveFiltersFromInput(this.initialFilters || []);
+  //   }
+  // }
+
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   if (changes['columnDefs'] && this.columnDefs) {
+  //     this.colIdToHeaderName = this.columnDefs.reduce(
+  //       (acc, col) => {
+  //         if (col.field) {
+  //           acc[col.field] = col.headerName ?? col.field;
+  //         }
+  //         return acc;
+  //       },
+  //       {} as { [key: string]: string },
+  //     );
+  //   }
+
+  //   if (changes['initialFilters']) {
+  //     this.updateActiveFiltersFromInput(this.initialFilters || []);
+  //     this.applyInitialFilters();
+  //   }
+  // }
+
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   if (changes['columnDefs'] && this.columnDefs) {
+  //     this.colIdToHeaderName = this.columnDefs.reduce(
+  //       (acc, col) => {
+  //         if (col.field) {
+  //           acc[col.field] = col.headerName ?? col.field;
+  //         }
+  //         return acc;
+  //       },
+  //       {} as { [key: string]: string },
+  //     );
+  //   }
+
+  //   if (changes['initialFilters']) {
+  //     console.log('initialFilters in app-table:', this.initialFilters);
+  //     this.activeFilters = (this.initialFilters || []).map((filter) => ({
+  //       colId: toCamelCase(filter.field),
+  //       value: this.formatFilterValue(filter),
+  //       dateGranularity: filter.dateGranularity,
+  //     }));
+
+  //     this.applyInitialFilters();
+  //     console.log('activeFilters in app-table:', this.activeFilters);
+  //   }
+  // }
 
   ngOnDestroy() {
     this.clickSubscription.unsubscribe();
   }
 
+  // onGridReady(params: any): void {
+  //   this.gridApi = params.api;
+  //   this.isGridReady = true;
+  //   this.updateActiveFilters();
+  // }
+
   onGridReady(params: any): void {
     this.gridApi = params.api;
-    this.isGridReady = true;
-    this.updateActiveFilters();
+    // this.isGridReady = true;
+
+    // if (this.pendingFilters?.length) {
+    //   this.applyFiltersReplacingAll(this.pendingFilters);
+    //   this.pendingFilters = null;
+    //   return;
+    // }
+
+    this.applyInitialFilters();
+    // this.updateActiveFilters();
   }
 
-  async onCellClicked(event: any): Promise<void> {
-    const columnField = event.colDef.field;
-    const cellValue = event.value;
+  // async onCellClicked(event: any): Promise<void> {
+  //   const columnField = event.colDef.field;
+  //   const cellValue = event.value;
 
-    if (!columnField || cellValue === undefined || cellValue === null) return;
+  //   if (!columnField || cellValue === undefined || cellValue === null) return;
 
-    const colDef = this.gridApi.getColumnDef(columnField);
-    const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+  //   const colDef = this.gridApi.getColumnDef(columnField);
+  //   const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
-    let filterValue = cellValue;
+  //   let filterValue = cellValue;
 
-    if (isDateColumn) {
-      const parsedDate = parseDateFromAnyFormat(cellValue);
-      if (parsedDate) {
-        filterValue = parsedDate.getTime();
-      } else {
-        return;
-      }
-    }
+  //   if (isDateColumn) {
+  //     const parsedDate = parseDateFromAnyFormat(cellValue);
+  //     if (parsedDate) {
+  //       filterValue = parsedDate.getTime();
+  //     } else {
+  //       return;
+  //     }
+  //   }
 
-    this.clickSubject.next({
-      field: columnField,
-      value: filterValue,
-    });
-  }
+  //   this.clickSubject.next({
+  //     field: columnField,
+  //     value: filterValue,
+  //   });
+  // }
 
   onCellDoubleClicked(event: any): void {
     this.clickSubject.next(null);
+    console.log(event);
 
     this.cellDoubleClicked.emit({
       field: event.colDef.field,
@@ -181,186 +270,391 @@ export class TableComponent implements OnChanges {
   private async applyInitialFilters(): Promise<void> {
     if (!this.initialFilters || this.initialFilters.length === 0) return;
 
-    if (this.gridApi && this.isGridReady) {
-      await this.applyFiltersReplacingAll(this.initialFilters);
-    } else {
-      this.pendingFilters = [...this.initialFilters];
-    }
+    // if (this.gridApi && this.isGridReady) {
+    //   await this.applyFiltersReplacingAll(this.initialFilters);
+    // } else {
+    //   this.pendingFilters = [...this.initialFilters];
+    // }
+
+    this.updateActiveFilters();
   }
 
-  private async applyFiltersReplacingAll(
-    filters: FilterTypeExp[]
-  ): Promise<void> {
-    if (!filters || filters.length === 0) {
-      this.clearAllFilters();
-      return;
-    }
+  // private async applyFiltersReplacingAll(
+  //   filters: FilterTypeExp[],
+  // ): Promise<void> {
+  //   if (!filters || filters.length === 0) {
+  //     this.clearAllFilters();
+  //     return;
+  //   }
 
-    if (!this.gridApi) {
-      this.pendingFilters = [...filters];
-      return;
-    }
+  //   if (!this.gridApi) {
+  //     this.pendingFilters = [...filters];
+  //     return;
+  //   }
 
-    try {
-      this.clearAllFilters();
-      const availableColumns = this.gridApi.getColumnDefs() as ColDef[];
-      const availableFields = new Set(
-        availableColumns.map((col) => col.field).filter(Boolean)
-      );
+  //   try {
+  //     this.clearAllFilters();
+  //     const availableColumns = this.gridApi.getColumnDefs() as ColDef[];
+  //     const availableFields = new Set(
+  //       availableColumns.map((col) => col.field).filter(Boolean),
+  //     );
 
-      const filterPromises = filters.map(async (filter) => {
-        const camelCaseField = toCamelCase(filter.field);
+  //     const filterPromises = filters.map(async (filter) => {
+  //       const camelCaseField = toCamelCase(filter.field);
 
-        if (!availableFields.has(camelCaseField)) {
-          return;
-        }
+  //       if (!availableFields.has(camelCaseField)) {
+  //         return;
+  //       }
 
-        try {
-          const filterInstance = await this.gridApi.getColumnFilterInstance(
-            camelCaseField
-          );
-          if (!filterInstance?.setModel) return;
+  //       try {
+  //         const filterInstance =
+  //           await this.gridApi.getColumnFilterInstance(camelCaseField);
+  //         if (!filterInstance?.setModel) return;
 
-          const colDef = this.gridApi.getColumnDef(camelCaseField);
-          const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+  //         const colDef = this.gridApi.getColumnDef(camelCaseField);
+  //         const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
-          if (isDateColumn) {
-            await this.applyDateFilterWithGranularity(
-              filterInstance,
-              filter.value,
-              filter.dateGranularity
-            );
-          } else {
-            filterInstance.setModel({
-              type: 'equals',
-              filter: filter.value,
-            });
-          }
-        } catch (error) {
-          console.error(
-            `Ошибка при установке фильтра для ${camelCaseField}:`,
-            error
-          );
-        }
-      });
+  //         if (isDateColumn) {
+  //           await this.applyDateFilterWithGranularity(
+  //             filterInstance,
+  //             filter.value,
+  //             filter.dateGranularity,
+  //           );
+  //         } else {
+  //           filterInstance.setModel({
+  //             type: 'equals',
+  //             filter: filter.value,
+  //           });
+  //         }
+  //       } catch (error) {
+  //         console.error(
+  //           `Ошибка при установке фильтра для ${camelCaseField}:`,
+  //           error,
+  //         );
+  //       }
+  //     });
 
-      await Promise.all(filterPromises);
-      this.gridApi.onFilterChanged();
-      this.updateActiveFilters();
-    } catch (error) {
-      console.error('Error applying filters:', error);
-      this.pendingFilters = [...filters];
-    }
-  }
+  //     await Promise.all(filterPromises);
+  //     this.gridApi.onFilterChanged();
+  //     this.updateActiveFilters();
+  //   } catch (error) {
+  //     console.error('Error applying filters:', error);
+  //     this.pendingFilters = [...filters];
+  //   }
+  // }
 
-  private async applyDateFilterWithGranularity(
-    filterInstance: any,
-    value: any,
-    granularity?: DateGranularity
-  ): Promise<void> {
-    const date = parseDateFromAnyFormat(value);
-    if (!date) return;
+  // private async applyFiltersReplacingAll(
+  //   filters: FilterTypeExp[],
+  // ): Promise<void> {
+  //   // if (!this.gridApi) {
+  //   //   this.pendingFilters = [...filters];
+  //   //   return;
+  //   // }
 
-    let startDate: Date;
-    let endDate: Date;
+  //   if (!filters || filters.length === 0) {
+  //     this.clearAllFilters();
+  //     return;
+  //   }
 
-    switch (granularity) {
-      case 'year':
-        startDate = new Date(Date.UTC(date.getFullYear(), 0, 1, 0, 0, 0, 0));
-        endDate = new Date(
-          Date.UTC(date.getFullYear(), 11, 31, 23, 59, 59, 999)
-        );
-        break;
+  //   try {
+  //     this.clearAllFilters();
 
-      case 'month':
-        startDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
-        );
-        endDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0)
-        );
-        break;
+  //     const availableColumns = this.gridApi.getColumnDefs() as ColDef[];
+  //     const availableFields = new Set(
+  //       availableColumns.map((col) => col.field).filter(Boolean),
+  //     );
 
-      case 'day':
-      default:
-        startDate = new Date(
-          Date.UTC(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate(),
-            0,
-            0,
-            0,
-            0
-          )
-        );
-        endDate = new Date(
-          Date.UTC(
-            date.getFullYear(),
-            date.getMonth(),
-            date.getDate() + 1,
-            0,
-            0,
-            0,
-            0
-          )
-        );
-        break;
-    }
-    filterInstance.setModel({
-      type: 'inRange',
-      dateFrom: startDate.toISOString(),
-      dateTo: endDate.toISOString(),
-    });
-  }
+  //     for (const filter of filters) {
+  //       const camelCaseField = toCamelCase(filter.field);
+
+  //       if (!availableFields.has(camelCaseField)) {
+  //         continue;
+  //       }
+
+  //       const colDef = this.gridApi.getColumnDef(camelCaseField);
+  //       const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+  //       if (isDateColumn) {
+  //         const model = this.buildDateFilterModel(
+  //           filter.value,
+  //           filter.dateGranularity,
+  //         );
+
+  //         if (model) {
+  //           await this.gridApi.setColumnFilterModel(camelCaseField, model);
+  //         }
+  //       } else {
+  //         await this.gridApi.setColumnFilterModel(camelCaseField, {
+  //           filterType: 'text',
+  //           type: 'equals',
+  //           filter: filter.value,
+  //         });
+  //       }
+  //     }
+
+  //     this.gridApi.onFilterChanged();
+  //     console.log('this.gridApi.onFilterChanged()', filters);
+  //     this.updateActiveFilters();
+  //   } catch (error) {
+  //     console.error('Error applying filters:', error);
+  //     // this.pendingFilters = [...filters];
+  //   }
+  // }
+
+  // private async applyDateFilterWithGranularity(
+  //   filterInstance: any,
+  //   value: any,
+  //   granularity?: DateGranularity,
+  // ): Promise<void> {
+  //   const date = parseDateFromAnyFormat(value);
+  //   if (!date) return;
+
+  //   let startDate: Date;
+  //   let endDate: Date;
+
+  //   switch (granularity) {
+  //     case 'year':
+  //       startDate = new Date(Date.UTC(date.getFullYear(), 0, 1, 0, 0, 0, 0));
+  //       endDate = new Date(
+  //         Date.UTC(date.getFullYear(), 11, 31, 23, 59, 59, 999),
+  //       );
+  //       break;
+
+  //     case 'month':
+  //       startDate = new Date(
+  //         Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0),
+  //       );
+  //       endDate = new Date(
+  //         Date.UTC(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0),
+  //       );
+  //       break;
+
+  //     case 'day':
+  //     default:
+  //       startDate = new Date(
+  //         Date.UTC(
+  //           date.getFullYear(),
+  //           date.getMonth(),
+  //           date.getDate(),
+  //           0,
+  //           0,
+  //           0,
+  //           0,
+  //         ),
+  //       );
+  //       endDate = new Date(
+  //         Date.UTC(
+  //           date.getFullYear(),
+  //           date.getMonth(),
+  //           date.getDate() + 1,
+  //           0,
+  //           0,
+  //           0,
+  //           0,
+  //         ),
+  //       );
+  //       break;
+  //   }
+  //   filterInstance.setModel({
+  //     type: 'inRange',
+  //     dateFrom: startDate.toISOString(),
+  //     dateTo: endDate.toISOString(),
+  //   });
+  // }
+
+  // private buildDateFilterModel(
+  //   value: any,
+  //   granularity?: DateGranularity,
+  // ): any | null {
+  //   const date = parseDateFromAnyFormat(value);
+  //   if (!date) return null;
+
+  //   let startDate: Date;
+  //   let endDate: Date;
+
+  //   switch (granularity) {
+  //     case 'year':
+  //       startDate = new Date(Date.UTC(date.getFullYear(), 0, 1, 0, 0, 0, 0));
+  //       endDate = new Date(
+  //         Date.UTC(date.getFullYear(), 11, 31, 23, 59, 59, 999),
+  //       );
+  //       break;
+
+  //     case 'month':
+  //       startDate = new Date(
+  //         Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0),
+  //       );
+  //       endDate = new Date(
+  //         Date.UTC(date.getFullYear(), date.getMonth() + 1, 1, 0, 0, 0, 0),
+  //       );
+  //       break;
+
+  //     case 'day':
+  //     default:
+  //       startDate = new Date(
+  //         Date.UTC(
+  //           date.getFullYear(),
+  //           date.getMonth(),
+  //           date.getDate(),
+  //           0,
+  //           0,
+  //           0,
+  //           0,
+  //         ),
+  //       );
+  //       endDate = new Date(
+  //         Date.UTC(
+  //           date.getFullYear(),
+  //           date.getMonth(),
+  //           date.getDate() + 1,
+  //           0,
+  //           0,
+  //           0,
+  //           0,
+  //         ),
+  //       );
+  //       break;
+  //   }
+
+  //   return {
+  //     filterType: 'date',
+  //     type: 'inRange',
+  //     dateFrom: startDate.toISOString(),
+  //     dateTo: endDate.toISOString(),
+  //   };
+  // }
 
   private async applyFilterAppending(field: string, value: any): Promise<void> {
     if (!this.gridApi) {
-      this.pendingFilters = [{ field, value }];
       return;
     }
 
-    try {
-      const filterInstance = await this.gridApi.getColumnFilterInstance(field);
-      if (filterInstance?.setModel) {
-        const colDef = this.gridApi.getColumnDef(field);
-        const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+    const colDef = this.gridApi.getColumnDef(field);
+    const isDateColumn = colDef?.filter === 'agDateColumnFilter';
 
-        if (isDateColumn) {
-          const date = parseDateFromAnyFormat(value);
-          if (!date) return;
-
-          const utcDate = new Date(
-            Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-          );
-
-          filterInstance.setModel({
-            type: 'equals',
-            dateFrom: utcDate.toISOString(),
-            dateTo: new Date(utcDate.getTime() + 86400000 - 1).toISOString(),
-          });
-        } else {
-          filterInstance.setModel({
-            type: 'equals',
-            filter: value,
-          });
-        }
-
-        this.gridApi.onFilterChanged();
-        this.updateActiveFilters();
+    if (isDateColumn) {
+      const date = parseDateFromAnyFormat(value);
+      if (!date) {
+        return;
       }
-    } catch (error) {
-      console.error('Error applying filter (appending):', error);
-      this.pendingFilters = [{ field, value }];
-    }
-  }
 
-  async removeFilter(colId: string): Promise<void> {
-    const filterInstance = await this.gridApi.getColumnFilterInstance(colId);
-    filterInstance?.setModel?.(null);
+      const utcDate = new Date(
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+      );
+
+      await this.gridApi.setColumnFilterModel(field, {
+        filterType: 'date',
+        type: 'equals',
+        dateFrom: utcDate.toISOString(),
+      });
+    } else {
+      await this.gridApi.setColumnFilterModel(field, {
+        filterType: 'text',
+        type: 'equals',
+        filter: value,
+      });
+    }
 
     this.gridApi.onFilterChanged();
-    this.updateActiveFilters();
+  }
+
+  // private async applyFilterAppending(field: string, value: any): Promise<void> {
+  //   // if (!this.gridApi) {
+  //   //   this.pendingFilters = [{ field, value }];
+  //   //   return;
+  //   // }
+
+  //   try {
+  //     const filterInstance = await this.gridApi.getColumnFilterInstance(field);
+  //     if (filterInstance?.setModel) {
+  //       const colDef = this.gridApi.getColumnDef(field);
+  //       const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+  //       if (isDateColumn) {
+  //         const date = parseDateFromAnyFormat(value);
+  //         if (!date) return;
+
+  //         const utcDate = new Date(
+  //           Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  //         );
+
+  //         filterInstance.setModel({
+  //           type: 'equals',
+  //           dateFrom: utcDate.toISOString(),
+  //           dateTo: new Date(utcDate.getTime() + 86400000 - 1).toISOString(),
+  //         });
+  //       } else {
+  //         filterInstance.setModel({
+  //           type: 'equals',
+  //           filter: value,
+  //         });
+  //       }
+
+  //       this.gridApi.onFilterChanged();
+  //       // this.updateActiveFilters();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error applying filter (appending):', error);
+  //     // this.pendingFilters = [{ field, value }];
+  //   }
+  // }
+
+  // private async applyFilterAppending(field: string, value: any): Promise<void> {
+  //   if (!this.gridApi) {
+  //     this.pendingFilters = [{ field, value }];
+  //     return;
+  //   }
+
+  //   try {
+  //     const colDef = this.gridApi.getColumnDef(field);
+  //     const isDateColumn = colDef?.filter === 'agDateColumnFilter';
+
+  //     if (isDateColumn) {
+  //       const date = parseDateFromAnyFormat(value);
+  //       if (!date) return;
+
+  //       const utcDate = new Date(
+  //         Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  //       );
+
+  //       await this.gridApi.setColumnFilterModel(field, {
+  //         filterType: 'date',
+  //         type: 'equals',
+  //         dateFrom: utcDate.toISOString(),
+  //       });
+  //     } else {
+  //       await this.gridApi.setColumnFilterModel(field, {
+  //         filterType: 'text',
+  //         type: 'equals',
+  //         filter: value,
+  //       });
+  //     }
+
+  //     this.gridApi.onFilterChanged();
+  //   } catch (error) {
+  //     console.error('Error applying filter (appending):', error);
+  //     this.pendingFilters = [{ field, value }];
+  //   }
+  // }
+
+  // async removeFilter(colId: string): Promise<void> {
+  //   if (!this.gridApi) return;
+
+  //   await this.gridApi.setColumnFilterModel(colId, null);
+  //   this.gridApi.onFilterChanged();
+
+  //   this.updateActiveFilters();
+  // }
+
+  async removeFilter(colId: string): Promise<void> {
+    if (!this.gridApi) return;
+
+    // await this.gridApi.setColumnFilterModel(colId, null);
+    // this.gridApi.onFilterChanged();
+
+    // this.activeFilters = this.activeFilters.filter((f) => f.colId !== colId);
+
+    this.filterRemoved.emit(colId);
   }
 
   clearAllFilters(): void {
@@ -383,6 +677,15 @@ export class TableComponent implements OnChanges {
       dateGranularity: filter.dateGranularity,
     }));
   }
+
+  // private updateActiveFiltersFromInput(filters: FilterTypeExp[]): void {
+  //   this.activeFilters = filters.map((filter) => ({
+  //     colId: filter.field,
+  //     value: this.formatFilterValue(filter),
+  //     dateGranularity: filter.dateGranularity,
+  //   }));
+  //   console.log('this.activeFilters 3', this.activeFilters);
+  // }
 
   private formatFilterValue(filter: FilterTypeExp): string {
     if (filter.dateGranularity) {
