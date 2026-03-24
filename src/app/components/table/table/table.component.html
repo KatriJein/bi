@@ -2,12 +2,23 @@
   <div class="active-filters-panel" *ngIf="activeFilters.length > 0">
     <div class="filters">
       <span *ngFor="let filter of activeFilters" class="filter-badge">
-        {{ filter.colId }} =
+        {{ colIdToHeaderName[filter.colId] || filter.colId }} =
         <strong>{{ filter.value }}</strong>
+
+        <button
+          mat-icon-button
+          type="button"
+          class="icon-button"
+          (click)="removeFilter(filter.colId)"
+          aria-label="Удалить фильтр"
+        >
+          <mat-icon class="icon">close</mat-icon>
+        </button>
       </span>
     </div>
-    <!-- <button mat-raised-button color="warn" (click)="clearAllFilters()">
-      Сбросить все фильтры
+
+    <!-- <button mat-button type="button" (click)="clearAllFilters()">
+      Сбросить все
     </button> -->
   </div>
 

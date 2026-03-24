@@ -1,11 +1,5 @@
 import { Component, inject } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogContent,
-  MatDialogActions,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import {
   FormBuilder,
@@ -33,8 +27,6 @@ import { UsersActions } from '../../../../core/store/users';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatDialogContent,
-    MatDialogActions,
     MatDialogModule,
   ],
   templateUrl: './create-user-modal.component.html',

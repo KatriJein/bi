@@ -97,55 +97,66 @@
   ></app-color-picker>
 
   <!-- Секция отборов -->
-  <mat-divider></mat-divider>
+  <ng-container *ngIf="!isText">
+    <mat-divider></mat-divider>
 
-  <div class="form-section">
-    <div class="section-header">
-      <h3>Отборы</h3>
-      <button mat-button color="primary" (click)="openAddBindingForm()">
-        <mat-icon>add</mat-icon>
-        Добавить отбор
-      </button>
-    </div>
+    <div class="form-section">
+      <div class="section-header">
+        <h3>Отборы</h3>
+        <button mat-button color="primary" (click)="openAddBindingForm()">
+          <mat-icon>add</mat-icon>
+          Добавить отбор
+        </button>
+      </div>
 
-    <!-- Форма добавления нового отбора -->
-    <div *ngIf="bindingFormMode === 'add'">
-      <ng-container *ngTemplateOutlet="bindingFormTemplate"></ng-container>
-    </div>
+      <!-- Форма добавления нового отбора -->
+      <div *ngIf="bindingFormMode === 'add'">
+        <ng-container *ngTemplateOutlet="bindingFormTemplate"></ng-container>
+      </div>
 
-    <!-- Список всех отборов -->
-    <mat-list *ngIf="widgetFilterBindings?.length" class="filter-list">
-      <ng-container *ngFor="let binding of widgetFilterBindings">
-        <mat-list-item
-          *ngIf="bindingFormMode !== 'edit' || currentBindingId !== binding.id"
-        >
-          <div class="filter-item">
-            <div class="filter-binding" (click)="startEditBinding(binding)">
-              <span>{{
-                getDashboardFilterName(binding.dashboardFilterId) | async
-              }}</span>
-              <mat-icon>arrow_forward</mat-icon>
-              <span>{{
-                getChartFilterName(binding.chartFilterId) | async
-              }}</span>
+      <!-- Список всех отборов -->
+      <mat-list *ngIf="widgetFilterBindings?.length" class="filter-list">
+        <ng-container *ngFor="let binding of widgetFilterBindings">
+          <mat-list-item
+            *ngIf="
+              bindingFormMode !== 'edit' || currentBindingId !== binding.id
+            "
+          >
+            <div class="filter-item">
+              <div class="filter-binding" (click)="startEditBinding(binding)">
+                <span>{{
+                  getDashboardFilterName(binding.dashboardFilterId) | async
+                }}</span>
+                <mat-icon>arrow_forward</mat-icon>
+                <span>{{
+                  getChartFilterName(binding.chartFilterId) | async
+                }}</span>
+              </div>
+
+              <button
+                mat-icon-button
+                (click)="onRemoveFilterBinding(binding.id)"
+              >
+                <mat-icon class="delete-icon">delete</mat-icon>
+              </button>
             </div>
+          </mat-list-item>
 
-            <button mat-icon-button (click)="onRemoveFilterBinding(binding.id)">
-              <mat-icon class="delete-icon">delete</mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-
-        <!-- Форма редактирования отбора -->
-        <mat-list-item
-          *ngIf="bindingFormMode === 'edit' && currentBindingId === binding.id"
-          class="edit-form-container"
-        >
-          <ng-container *ngTemplateOutlet="bindingFormTemplate"></ng-container>
-        </mat-list-item>
-      </ng-container>
-    </mat-list>
-  </div>
+          <!-- Форма редактирования отбора -->
+          <mat-list-item
+            *ngIf="
+              bindingFormMode === 'edit' && currentBindingId === binding.id
+            "
+            class="edit-form-container"
+          >
+            <ng-container
+              *ngTemplateOutlet="bindingFormTemplate"
+            ></ng-container>
+          </mat-list-item>
+        </ng-container>
+      </mat-list>
+    </div>
+  </ng-container>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end" class="widget-actions">

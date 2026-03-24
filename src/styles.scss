@@ -53,8 +53,7 @@ $bi-light-theme: mat.m2-define-light-theme(
       accent: $accent-palette,
       warn: $warn-palette,
     ),
-    typography:
-      mat.m2-define-typography-config(
+    typography: mat.m2-define-typography-config(
         $font-family: "Inter, Roboto, sans-serif",
       ),
     density: 0,
@@ -62,22 +61,6 @@ $bi-light-theme: mat.m2-define-light-theme(
 );
 
 @include mat.all-component-themes($bi-light-theme);
-
-:root {
-  --color-primary: #3696a2;
-  --color-primary-hover: #3ba3b1;
-  --color-secondary: #9d9e9e;
-  --color-bg: #f5f6f8;
-  --color-card: #ffffff;
-  --color-text: #1f1f1f;
-  --grey: #9ea09f;
-
-  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
-
-  --border-radius: 0.75rem;
-  --transition: all 0.25s ease;
-}
 
 $default-min-bp: 375px;
 $default-max-bp: 1920px;
@@ -113,6 +96,46 @@ $default-max-bp: 1920px;
     #{$slope-to-unit}#{$unit} + #{$intercept-rem},
     #{$max-size-rem}
   );
+}
+
+:root {
+  --color-primary: #3696a2;
+  --color-primary-hover: #3ba3b1;
+  --color-secondary: #9d9e9e;
+  --color-bg: #f5f6f8;
+  --color-card: #ffffff;
+  --color-text: #1f1f1f;
+  --grey: #9ea09f;
+
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  --border-radius: 0.75rem;
+  --transition: all 0.25s ease;
+
+  --font-size-16: #{fluid(14px, 16px)};
+  --font-size-18: #{fluid(16px, 18px)};
+  --font-size-20: #{fluid(18px, 20px)};
+  --font-size-22: #{fluid(20px, 22px)};
+  --font-size-24: #{fluid(22px, 24px)};
+  --font-size-26: #{fluid(24px, 26px)};
+  --font-size-28: #{fluid(26px, 28px)};
+  --font-size-30: #{fluid(28px, 30px)};
+  --font-size-32: #{fluid(24px, 32px)};
+  --font-size-38: #{fluid(26px, 38px)};
+  --font-size-48: #{fluid(35px, 48px)};
+  --font-size-85: #{fluid(60px, 85px)};
+
+  --blue: #50b8c5;
+  --blue-hover: #1a7480;
+  --grey: #9ea09f;
+  --grey-button: #c8c9c9;
+  --grey-button-hover: #babbbb;
+  --blue-button: #9dd6dd;
+  --blue-button-hover: #85cdd6;
+  --light-blue: #daf0f3;
+  --light-blue-hover: #e7f5f7;
+  --red: #f44336;
 }
 
 * {
@@ -225,4 +248,3 @@ h3 {
     background-color: transparent;
   }
 }
-

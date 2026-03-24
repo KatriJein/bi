@@ -1,7 +1,7 @@
 import { ChartType } from '../core/store/charts';
 import { COLORS } from './colors';
 
-export const fontSizes = [16, 18, 20, 22, 24];
+export const fontSizes = [16, 18, 20, 22, 24, 26, 28];
 
 export const predefinedColors = ['#000000', ...COLORS];
 
