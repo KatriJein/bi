@@ -31,6 +31,15 @@ export const fieldTypes = [
   },
 ];
 
+export const aggregateLabelMap: Record<string, string> = {
+  SUM: 'Сумма',
+  AVG: 'Среднее',
+  MIN: 'Минимум',
+  MAX: 'Максимум',
+  COUNT: 'Количество',
+  NONE: 'Без агрегации',
+};
+
 export const aggregateOptionsByType: Record<string, string[]> = {
   string: ['COUNT', 'NONE'],
   number: ['SUM', 'AVG', 'MIN', 'MAX', 'COUNT', 'NONE'],

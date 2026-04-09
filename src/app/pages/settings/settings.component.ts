@@ -1,5 +1,10 @@
 import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  RouterModule,
+} from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,7 +16,15 @@ import {
   UserDto,
   UserSelectors,
 } from '../../core/store/user';
-import { filter, first, map, Observable, switchMap } from 'rxjs';
+import {
+  filter,
+  first,
+  map,
+  Observable,
+  Subject,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 import { CommonModule } from '@angular/common';
 import {
   OnMainButtonComponent,
@@ -43,7 +56,7 @@ export class SettingsComponent implements OnInit {
   private titleService = inject(Title);
   private store = inject(Store);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
+  private destroy$ = new Subject<void>();
 
   user$: Observable<UserDto | null> = this.store.select(
     UserSelectors.selectUser,
@@ -82,35 +95,48 @@ export class SettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.route.firstChild === null) {
-      this.user$
-        .pipe(
-          filter((user): user is UserDto => !!user),
-          first(),
-          switchMap(() => this.permissions$.pipe(first()))
-        )
-        .subscribe((permissions) => {
-          console.log('Permissions loaded:', permissions);
-          const hasFullAccess = permissions.includes('full_access');
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.redirectFromBareSettings());
 
-          const firstAvailable = this.buttons.find((button) => {
-            const requiredPermissions = PermissionMap[button.link];
-            if (!requiredPermissions) return true;
-            return (
-              hasFullAccess ||
-              requiredPermissions.some((p) => permissions.includes(p))
-            );
-          });
+    this.redirectFromBareSettings();
+  }
 
-          if (firstAvailable) {
-            this.router.navigate([firstAvailable.link], {
-              relativeTo: this.route,
-            });
-          } else {
-            this.router.navigateByUrl('/');
-          }
-        });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private redirectFromBareSettings(): void {
+    const currentUrl = this.router.url;
+    if (currentUrl !== '/settings' && currentUrl !== '/settings/') {
+      return;
     }
+
+    this.permissions$.pipe(first()).subscribe((permissions) => {
+      const hasFullAccess = permissions.includes('full_access');
+      const firstAvailable = this.buttons.find((button) => {
+        const requiredPermissions = PermissionMap[button.link];
+        return (
+          hasFullAccess ||
+          requiredPermissions.some((permission) =>
+            permissions.includes(permission),
+          )
+        );
+      });
+
+      if (!firstAvailable) {
+        this.router.navigateByUrl('/');
+        return;
+      }
+
+      this.router.navigateByUrl(`/settings/${firstAvailable.link}`);
+    });
   }
 
   toggleSidebar() {

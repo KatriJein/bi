@@ -188,6 +188,25 @@ button,
   box-shadow: var(--shadow-hover);
 }
 
+.mat-mdc-checkbox {
+  .mdc-checkbox__background {
+    background-color: #ffffff !important;
+    border-color: #b8bbbd !important;
+  }
+
+  .mdc-checkbox__checkmark-path {
+    stroke: var(--blue) !important;
+  }
+
+  &.mat-mdc-checkbox-checked,
+  &.mat-mdc-checkbox-indeterminate {
+    .mdc-checkbox__background {
+      background-color: #ffffff !important;
+      border-color: var(--blue) !important;
+    }
+  }
+}
+
 h1,
 h2,
 h3 {

@@ -11,7 +11,7 @@
               *ngFor="let filter of filters; trackBy: trackByFilter"
               class="filter-badge"
             >
-              {{ filter.field }} = <strong>{{ filter.value }}</strong>
+              {{ getFilterLabel(filter.field) }} = <strong>{{ filter.value }}</strong>
 
               <button
                 mat-icon-button

@@ -191,7 +191,6 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
 
     if (changes['initialFilters']) {
       this.filtersSubject.next(this.initialFilters || []);
-      console.log(this.initialFilters, 'init');
     }
   }
 
@@ -225,22 +224,44 @@ export class TableRendererComponent implements OnChanges, OnDestroy {
   }
 
   onTableDoubleClick(event: FilterTypeExp): void {
-    if (!this.tableSubject.value?.childId) {
-      console.error('Child chart ID is missing');
+    const childId = this.tableSubject.value?.childId;
+    if (!childId) {
       return;
     }
 
     this.tableDoubleClick.emit({
-      chartId: this.tableSubject.value.childId,
+      chartId: childId,
       filters: [{ field: event.field, value: event.value }],
     });
+    // this.store
+    //   .select(ChartsSelectors.selectChartById(childId))
+    //   .pipe(take(1))
+    //   .subscribe((childChart) => {
+    //     if (!childChart?.datasetId) {
+    //       return;
+    //     }
+
+    //     this.store
+    //       .select(DatasetsSelectors.selectDatasetById(childChart.datasetId))
+    //       .pipe(take(1))
+    //       .subscribe((childDataset) => {
+    //         const clickedFilter = { field: event.field, value: event.value };
+    //         const childFilters = (childDataset?.columns || []).some(
+    //           (column) => column.columnName === clickedFilter.field,
+    //         )
+    //           ? [clickedFilter]
+    //           : [];
+
+    //         this.tableDoubleClick.emit({
+    //           chartId: childId,
+    //           filters: childFilters,
+    //         });
+    //       });
+    //   });
   }
 
   onFilterRemoved(colId: string): void {
     const current = this.filtersSubject.value;
-    console.log('current', current);
-    console.log('colId', colId);
-
     this.filtersSubject.next(current.filter((f) => f.field !== colId));
   }
 

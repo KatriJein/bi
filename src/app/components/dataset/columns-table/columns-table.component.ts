@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Column, Dataset } from '../../../core/models';
 import { Observable, Subscription } from 'rxjs';
 import {
+  aggregateLabelMap,
   aggregateOptionsByType,
   fieldTypes,
 } from '../../../utils/columns-table.utils';
@@ -36,6 +37,7 @@ export class ColumnsTableComponent implements OnDestroy {
 
   fieldTypes = fieldTypes;
   aggregateOptions = aggregateOptionsByType;
+  aggregateLabels = aggregateLabelMap;
   displayedColumns: string[] = [
     'alias',
     'columnName',

@@ -25,6 +25,7 @@ import {
 } from '../../core/store/charts';
 import { WidgetFilterBinding } from '../../core/api/graphql/types';
 import { DatasetsActions } from '../../core/store/datasets';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-fullscreen-widget',
@@ -35,6 +36,7 @@ import { DatasetsActions } from '../../core/store/datasets';
 export class FullscreenWidgetComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private store = inject(Store);
+  private titleService = inject(Title);
   private destroy$ = new Subject<void>();
 
   widgetId!: string;
@@ -60,7 +62,8 @@ export class FullscreenWidgetComponent implements OnInit, OnDestroy {
             );
         }),
         tap((widget) => {
-          this.title = widget.title;
+          this.title = widget.title?.trim();
+          this.titleService.setTitle(this.title || 'Виджет');
           this.chartId = widget.chartId || '';
           this.widgetSelections$ = this.store.select(
             WidgetsSelectors.selectSelectionsByWidgetId(widget.id)

@@ -15,7 +15,7 @@ import {
   SettingsComponent,
   UsersSettingsComponent,
 } from './pages';
-import { AuthGuard, PermissionGuard } from './guards';
+import { AuthGuard, PermissionGuard, SettingsLandingGuard } from './guards';
 
 export const routes: Routes = [
   {
@@ -64,7 +64,7 @@ export const routes: Routes = [
   {
     path: 'settings',
     component: SettingsComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, SettingsLandingGuard],
     children: [
       // { path: '',  },
       {

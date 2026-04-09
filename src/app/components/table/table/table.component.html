@@ -1,4 +1,4 @@
-<div class="table-container">
+<div class="table-container" (contextmenu)="onContainerContextMenu($event)">
   <div class="active-filters-panel" *ngIf="activeFilters.length > 0">
     <div class="filters">
       <span *ngFor="let filter of activeFilters" class="filter-badge">
@@ -30,6 +30,7 @@
     [gridOptions]="{
       suppressMovableColumns: true
     }"
+    (contextmenu)="onContainerContextMenu($event)"
     (gridReady)="onGridReady($event)"
     (cellContextMenu)="onCellContextMenu($event)"
     (cellDoubleClicked)="onCellDoubleClicked($event)"

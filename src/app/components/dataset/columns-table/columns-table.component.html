@@ -67,7 +67,7 @@
               *ngFor="let option of aggregateOptions[column.dataType] || []"
               [value]="option"
             >
-              {{ option }}
+              {{ aggregateLabels[option] || option }}
             </mat-option>
           </mat-select>
         </mat-form-field>

@@ -44,7 +44,11 @@ export class PermissionGuard implements CanActivate {
           const navigation = this.router.getCurrentNavigation();
           const previousUrl =
             navigation?.previousNavigation?.finalUrl?.toString();
-          if (previousUrl) {
+          if (
+            previousUrl &&
+            !previousUrl.startsWith('/auth') &&
+            previousUrl !== state.url
+          ) {
             return this.router.parseUrl(previousUrl);
           }
           return this.router.parseUrl('/');

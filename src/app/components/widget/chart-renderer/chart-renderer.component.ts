@@ -41,12 +41,18 @@ import { Column } from '../../../core/models';
 import { ChartService } from '../../../core/api/services';
 import { FilterEmitType, FilterTypeExp } from '../../../pages';
 import { DoughnutChartComponent } from '../../chart/custom-charts/doughnut-procent/doughnut-procent.component';
-import { MatIconModule } from "@angular/material/icon";
+import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-chart-renderer',
-  imports: [CommonModule, BaseChartDirective, DoughnutChartComponent, MatIconModule, MatButtonModule],
+  imports: [
+    CommonModule,
+    BaseChartDirective,
+    DoughnutChartComponent,
+    MatIconModule,
+    MatButtonModule,
+  ],
   templateUrl: './chart-renderer.component.html',
   styleUrl: './chart-renderer.component.scss',
 })
@@ -90,7 +96,6 @@ export class ChartRendererComponent implements OnChanges, OnDestroy {
         : [];
 
       const combinedFilters = this.combineFilters(chart.filters || [], filters);
-console.log('combinedFilters', combinedFilters);
       const filtersColumns: FilterColumn[] = combinedFilters
         .map((f) => {
           const baseCol = findColumnByName(f.columnName, dataset);
@@ -285,10 +290,11 @@ console.log('combinedFilters', combinedFilters);
   }
 
   onChartClick(event: any) {
-    if (!this.chartSubject.value?.childId) {
-      console.error('Child chart ID is missing');
+    const childId = this.chartSubject.value?.childId;
+    if (!childId) {
       return;
     }
+    const resolvedChildId: string = childId;
 
     if (event.active?.length > 0) {
       const clickedElementIndex = event.active[0].index;
@@ -320,11 +326,45 @@ console.log('combinedFilters', combinedFilters);
             xAxis === yAxis ? [{ field: xAxis, value: xValue }] : filters;
 
           this.chartClick.emit({
-            chartId: chart.childId || '',
+            chartId: resolvedChildId,
             filters: uniqueFilters,
           });
+          //   this.store
+          //     .select(ChartsSelectors.selectChartById(childId))
+          //     .pipe(take(1))
+          //     .subscribe((childChart) => {
+          //       if (!childChart?.datasetId) {
+          //         return;
+          //       }
+
+          //       this.store
+          //         .select(
+          //           DatasetsSelectors.selectDatasetById(childChart.datasetId),
+          //         )
+          //         .pipe(take(1))
+          //         .subscribe((childDataset) => {
+          //           const childFilters = (childDataset?.columns || []).length
+          //             ? uniqueFilters.filter((filterItem) =>
+          //                 (childDataset?.columns || []).some(
+          //                   (column) => column.columnName === filterItem.field,
+          //                 ),
+          //               )
+          //             : [];
+
+          //           this.chartClick.emit({
+          //             chartId: childId,
+          //             filters: childFilters,
+          //           });
+          //         });
+          //     });
         });
       });
     }
+  }
+
+  getFilterLabel(field: string): string {
+    const dataset = this.datasetSubject.value;
+    const column = dataset?.columns?.find((col) => col.columnName === field);
+    return column?.alias || field;
   }
 }

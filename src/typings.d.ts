@@ -3,3 +3,4 @@ declare module '*.graphql' {
   const content: DocumentNode;
   export default content;
 }
+declare module 'gridstack/dist/gridstack.min.css';

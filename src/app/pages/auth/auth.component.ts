@@ -55,8 +55,15 @@ export class AuthComponent {
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-          this.router.navigateByUrl(returnUrl);
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          const targetUrl =
+            returnUrl && !returnUrl.startsWith('/auth') ? returnUrl : '/';
+
+          this.router.navigateByUrl(targetUrl).then((navigated) => {
+            if (!navigated) {
+              this.router.navigateByUrl('/');
+            }
+          });
         }
       });
 
@@ -87,7 +94,7 @@ export class AuthComponent {
       UserActions.login({
         name: login,
         password: password,
-      })
+      }),
     );
   }
 

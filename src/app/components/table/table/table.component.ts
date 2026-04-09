@@ -60,6 +60,11 @@ export class TableComponent implements OnChanges {
     event.preventDefault();
   }
 
+  onContainerContextMenu(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   private isEventInsideGrid(event: MouseEvent): boolean {
     const gridElement = document.querySelector('ag-grid-angular');
     return gridElement?.contains(event.target as Node) ?? false;
@@ -124,7 +129,6 @@ export class TableComponent implements OnChanges {
 
   onCellDoubleClicked(event: any): void {
     this.clickSubject.next(null);
-    console.log(event);
 
     this.cellDoubleClicked.emit({
       field: event.colDef.field,

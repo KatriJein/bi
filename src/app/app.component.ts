@@ -3,12 +3,10 @@ import { RouterOutlet, RouterModule } from '@angular/router';
 import { ApolloClientsService } from './core/api/services';
 import { Connection } from './core/models';
 import { Store } from '@ngrx/store';
-import { UserActions, UserSelectors } from './core/store/user';
-import { DatasetsActions } from './core/store/datasets';
-import { ChartsActions } from './core/store/charts';
+import { UserSelectors } from './core/store/user';
 import { SvgIconInitializerComponent } from './components/common';
 import { DataLoadingService } from './core/services/data-loading.service';
-import { distinctUntilChanged, filter } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +16,7 @@ import { distinctUntilChanged, filter } from 'rxjs';
 })
 export class AppComponent implements OnInit {
   private store = inject(Store);
-  private apolloClientsService = inject(ApolloClientsService);
+  // private apolloClientsService = inject(ApolloClientsService);
   private dataLoadingService = inject(DataLoadingService);
 
   constructor() {}
@@ -49,7 +47,6 @@ export class AppComponent implements OnInit {
     this.store
       .select(UserSelectors.selectCurrentUserPermissions)
       .pipe(
-        filter((permissions) => permissions.length > 0),
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr),
         ),

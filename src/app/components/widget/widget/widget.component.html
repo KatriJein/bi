@@ -5,6 +5,7 @@
   (click)="handleClick($event)"
 >
   <button
+    *ngIf="widget.type !== 'text'"
     mat-icon-button
     class="fullscreen-btn"
     (click)="expandToFullscreen($event)"
@@ -18,14 +19,17 @@
         'var(--font-size-' + widget.visualSettings?.fontSizeTitle + ')',
       color: widget.visualSettings?.colorTitle,
       'text-align': widget.visualSettings?.textAlign || 'left',
-      'align-items': widget.type === 'text' ? getVerticalAlign(widget.visualSettings?.verticalAlign) : null,
+      'align-items':
+        widget.type === 'text'
+          ? getVerticalAlign(widget.visualSettings?.verticalAlign)
+          : null,
     }"
   >
     <span
       class="title"
       [ngStyle]="{
-      'text-align': widget.visualSettings?.textAlign || 'left',
-    }"
+        'text-align': widget.visualSettings?.textAlign || 'left',
+      }"
       >{{ widget.title || "Без названия" }}</span
     >
   </p>
