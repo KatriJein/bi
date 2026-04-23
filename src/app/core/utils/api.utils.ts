@@ -108,7 +108,7 @@ export function pluralizeTableName(tableName: string): string {
 
     if (
       word.endsWith('o') &&
-      !['photo', 'piano', 'halo'].some((w) => word.endsWith(w))
+      !['photo', 'piano', 'halo', 'demo'].some((w) => word.endsWith(w))
     ) {
       return word + 'es';
     }
