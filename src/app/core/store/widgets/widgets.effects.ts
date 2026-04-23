@@ -30,7 +30,6 @@ export class WidgetsEffects {
     ),
   );
   
-
   createWidget$ = createEffect(() =>
     this.actions$.pipe(
       ofType(WidgetsActions.createWidget),
